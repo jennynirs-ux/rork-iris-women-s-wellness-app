@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   Modal,
   Platform,
@@ -488,154 +489,162 @@ export default function HomeScreen() {
     );
   }
 
+  const renderHeaderComponent = useCallback(() => (
+    <View>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>IRIS</Text>
+      </View>
+
+      <View style={styles.summaryCard}>
+        <View style={styles.phaseHeader}>
+          <View style={[styles.phaseIconContainer, { backgroundColor: lifeStagePhase.color + "30" }]}>
+            <lifeStagePhase.icon size={32} color={lifeStagePhase.color} />
+          </View>
+          <View style={styles.phaseInfo}>
+            <Text style={styles.phaseLabel}>{t.home.phase}</Text>
+            <Text style={styles.phaseName}>{lifeStagePhase.label}</Text>
+          </View>
+          {userProfile.lifeStage === 'regular' && (
+            <TouchableOpacity
+              style={styles.editPhaseButton}
+              onPress={() => {
+                setTempDate(new Date(userProfile.lastPeriodDate));
+                setShowEditPeriodModal(true);
+              }}
+            >
+              <Edit2 size={20} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.scoresContainer}>
+          <View style={styles.scoreItem}>
+            <CircularProgress
+              size={56}
+              strokeWidth={3}
+              progress={(todaySummary.stressScore / 10) * 100}
+              progressColor={colors.stressHigh}
+              trackColor={colors.borderLight}
+              fillColor={colors.stressFill}
+            >
+              <Zap size={20} color={colors.stressHigh} />
+            </CircularProgress>
+            <Text style={styles.scoreLabel}>{t.home.stress}</Text>
+          </View>
+          <View style={styles.scoreItem}>
+            <CircularProgress
+              size={56}
+              strokeWidth={3}
+              progress={(todaySummary.energyScore / 10) * 100}
+              progressColor={colors.energyHigh}
+              trackColor={colors.borderLight}
+              fillColor={colors.energyFill}
+            >
+              <Battery size={20} color={colors.energyHigh} />
+            </CircularProgress>
+            <Text style={styles.scoreLabel}>{t.home.energy}</Text>
+          </View>
+          <View style={styles.scoreItem}>
+            <CircularProgress
+              size={56}
+              strokeWidth={3}
+              progress={(todaySummary.recoveryScore / 10) * 100}
+              progressColor={colors.recoveryHigh}
+              trackColor={colors.borderLight}
+              fillColor={colors.recoveryFill}
+            >
+              <Heart size={20} color={colors.recoveryHigh} />
+            </CircularProgress>
+            <Text style={styles.scoreLabel}>{t.home.recovery}</Text>
+          </View>
+        </View>
+
+        <View style={styles.focusContainer}>
+          <Text style={styles.focusLabel}>{t.home.recommendedFocus}</Text>
+          <Text style={styles.focusText}>{todaySummary.recommendedFocus}</Text>
+        </View>
+      </View>
+
+      {lifeStageSuggestion && (
+        <View style={styles.suggestionBanner}>
+          <View style={styles.suggestionIconRow}>
+            <View style={[
+              styles.suggestionIcon,
+              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? '#F4C8D420' : '#B8A4E820' },
+            ]}>
+              {lifeStageSuggestion.type === 'pregnancy' ? (
+                <Baby size={22} color="#E89BA4" />
+              ) : (
+                <Thermometer size={22} color="#B8A4E8" />
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={() => dismissLifeStageSuggestion(lifeStageSuggestion.type)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <X size={18} color={colors.textTertiary} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.suggestionText}>{lifeStageSuggestion.message}</Text>
+          <TouchableOpacity
+            style={styles.suggestionButton}
+            onPress={() => router.push('/profile' as any)}
+          >
+            <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
+            <ArrowRight size={14} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {shouldShowDailyRitualCard && (
+        <TouchableOpacity
+          style={styles.dailyRitualCard}
+          onPress={() => router.push("/scan" as any)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.ritualIconContainer}>
+            <View style={styles.ritualIconCircle}>
+              <Eye size={24} color={colors.primary} />
+            </View>
+          </View>
+          <View style={styles.ritualContent}>
+            <Text style={styles.ritualTitle}>{t.home.dailyRitual}</Text>
+            <Text style={styles.ritualSubtext}>{t.home.startYourDay}</Text>
+          </View>
+          <View style={styles.ritualButton}>
+            <Text style={styles.ritualButtonText}>Start</Text>
+            <ArrowRight size={16} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
+      )}
+
+      <View style={styles.habitsList}>
+        <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
+      </View>
+    </View>
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard]);
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>IRIS</Text>
-        </View>
-
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+        <FlatList
+          data={todayHabits}
+          renderItem={({ item: habit }) => (
+            <HabitCard
+              habit={habit}
+              colors={colors}
+              onPress={handleHabitPress}
+              styles={styles}
+            />
+          )}
+          keyExtractor={(habit) => habit.id}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          ListHeaderComponent={renderHeaderComponent}
+          contentContainerStyle={styles.flatListContent}
           showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.summaryCard}>
-            <View style={styles.phaseHeader}>
-              <View style={[styles.phaseIconContainer, { backgroundColor: lifeStagePhase.color + "30" }]}>
-                <lifeStagePhase.icon size={32} color={lifeStagePhase.color} />
-              </View>
-              <View style={styles.phaseInfo}>
-                <Text style={styles.phaseLabel}>{t.home.phase}</Text>
-                <Text style={styles.phaseName}>{lifeStagePhase.label}</Text>
-              </View>
-              {userProfile.lifeStage === 'regular' && (
-                <TouchableOpacity
-                  style={styles.editPhaseButton}
-                  onPress={() => {
-                    setTempDate(new Date(userProfile.lastPeriodDate));
-                    setShowEditPeriodModal(true);
-                  }}
-                >
-                  <Edit2 size={20} color={colors.primary} />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.scoresContainer}>
-              <View style={styles.scoreItem}>
-                <CircularProgress
-                  size={56}
-                  strokeWidth={3}
-                  progress={(todaySummary.stressScore / 10) * 100}
-                  progressColor={colors.stressHigh}
-                  trackColor={colors.borderLight}
-                  fillColor={colors.stressFill}
-                >
-                  <Zap size={20} color={colors.stressHigh} />
-                </CircularProgress>
-                <Text style={styles.scoreLabel}>{t.home.stress}</Text>
-              </View>
-              <View style={styles.scoreItem}>
-                <CircularProgress
-                  size={56}
-                  strokeWidth={3}
-                  progress={(todaySummary.energyScore / 10) * 100}
-                  progressColor={colors.energyHigh}
-                  trackColor={colors.borderLight}
-                  fillColor={colors.energyFill}
-                >
-                  <Battery size={20} color={colors.energyHigh} />
-                </CircularProgress>
-                <Text style={styles.scoreLabel}>{t.home.energy}</Text>
-              </View>
-              <View style={styles.scoreItem}>
-                <CircularProgress
-                  size={56}
-                  strokeWidth={3}
-                  progress={(todaySummary.recoveryScore / 10) * 100}
-                  progressColor={colors.recoveryHigh}
-                  trackColor={colors.borderLight}
-                  fillColor={colors.recoveryFill}
-                >
-                  <Heart size={20} color={colors.recoveryHigh} />
-                </CircularProgress>
-                <Text style={styles.scoreLabel}>{t.home.recovery}</Text>
-              </View>
-            </View>
-
-            <View style={styles.focusContainer}>
-              <Text style={styles.focusLabel}>{t.home.recommendedFocus}</Text>
-              <Text style={styles.focusText}>{todaySummary.recommendedFocus}</Text>
-            </View>
-          </View>
-
-          {lifeStageSuggestion && (
-            <View style={styles.suggestionBanner}>
-              <View style={styles.suggestionIconRow}>
-                <View style={[
-                  styles.suggestionIcon,
-                  { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? '#F4C8D420' : '#B8A4E820' },
-                ]}>
-                  {lifeStageSuggestion.type === 'pregnancy' ? (
-                    <Baby size={22} color="#E89BA4" />
-                  ) : (
-                    <Thermometer size={22} color="#B8A4E8" />
-                  )}
-                </View>
-                <TouchableOpacity
-                  onPress={() => dismissLifeStageSuggestion(lifeStageSuggestion.type)}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <X size={18} color={colors.textTertiary} />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.suggestionText}>{lifeStageSuggestion.message}</Text>
-              <TouchableOpacity
-                style={styles.suggestionButton}
-                onPress={() => router.push('/profile' as any)}
-              >
-                <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
-                <ArrowRight size={14} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {shouldShowDailyRitualCard && (
-            <TouchableOpacity 
-              style={styles.dailyRitualCard}
-              onPress={() => router.push("/scan" as any)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.ritualIconContainer}>
-                <View style={styles.ritualIconCircle}>
-                  <Eye size={24} color={colors.primary} />
-                </View>
-              </View>
-              <View style={styles.ritualContent}>
-                <Text style={styles.ritualTitle}>{t.home.dailyRitual}</Text>
-                <Text style={styles.ritualSubtext}>{t.home.startYourDay}</Text>
-              </View>
-              <View style={styles.ritualButton}>
-                <Text style={styles.ritualButtonText}>Start</Text>
-                <ArrowRight size={16} color="#FFFFFF" />
-              </View>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.habitsSection}>
-            <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
-            {todayHabits.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                colors={colors}
-                onPress={handleHabitPress}
-                styles={styles}
-              />
-            ))}
-          </View>
-        </ScrollView>
+        />
 
         <Modal
           visible={showEditPeriodModal}
@@ -725,14 +734,6 @@ function createStyles(colors: typeof Colors.light) {
       color: colors.primary,
       letterSpacing: 2,
     },
-    scrollView: {
-      flex: 1,
-    },
-    scrollContent: {
-      padding: 20,
-      paddingTop: 0,
-      paddingBottom: 40,
-    },
     summaryCard: {
       backgroundColor: colors.card,
       borderRadius: 20,
@@ -805,8 +806,13 @@ function createStyles(colors: typeof Colors.light) {
       fontWeight: "600" as const,
       color: colors.primary,
     },
-    habitsSection: {
-      marginBottom: 24,
+    habitsList: {
+      marginBottom: 16,
+      paddingHorizontal: 20,
+    },
+    flatListContent: {
+      paddingHorizontal: 20,
+      paddingBottom: 40,
     },
     sectionTitle: {
       fontSize: 20,

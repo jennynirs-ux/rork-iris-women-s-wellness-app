@@ -552,7 +552,7 @@ export default function ProfileScreen() {
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuText}>{t.profile.periodReminders}</Text>
                   <Text style={styles.menuSubtext}>
-                    {notificationsEnabled 
+                    {notificationsEnabled
                       ? t.profile.periodRemindersOn
                       : t.profile.periodRemindersOff}
                   </Text>
@@ -566,6 +566,21 @@ export default function ProfileScreen() {
                   ios_backgroundColor={colors.border}
                 />
               </View>
+
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => router.push('/notification-settings')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIcon}>
+                  <Settings size={20} color={colors.primary} />
+                </View>
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuText}>{t.notifications.title}</Text>
+                  <Text style={styles.menuSubtext}>Check-in, scan, hydration</Text>
+                </View>
+                <ChevronRight size={20} color={colors.textTertiary} />
+              </TouchableOpacity>
 
               <View style={styles.referralDashboardCard}>
                 <View style={styles.referralDashboardHeader}>
