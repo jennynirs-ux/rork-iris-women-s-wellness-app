@@ -60,6 +60,7 @@ export default function TabLayout() {
         options={{
           title: t.tabs.home,
           tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          tabBarAccessibilityLabel: t.tabs.home,
         }}
       />
       <Tabs.Screen
@@ -67,6 +68,7 @@ export default function TabLayout() {
         options={{
           title: t.tabs.calendar,
           tabBarIcon: ({ color, size }) => <Calendar color={color} size={size} />,
+          tabBarAccessibilityLabel: t.tabs.calendar,
         }}
       />
       <Tabs.Screen
@@ -81,6 +83,7 @@ export default function TabLayout() {
             </View>
           ),
           tabBarLabel: () => null,
+          tabBarAccessibilityLabel: t.tabs.scan,
         }}
       />
       <Tabs.Screen
@@ -88,6 +91,7 @@ export default function TabLayout() {
         options={{
           title: t.tabs.insights,
           tabBarIcon: ({ color, size }) => <BarChart3 color={color} size={size} />,
+          tabBarAccessibilityLabel: t.tabs.insights,
         }}
       />
       <Tabs.Screen
@@ -95,6 +99,7 @@ export default function TabLayout() {
         options={{
           title: t.tabs.profile,
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarAccessibilityLabel: t.tabs.profile,
         }}
       />
     </Tabs>

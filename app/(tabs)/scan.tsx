@@ -429,6 +429,8 @@ function ScanScreenInner() {
             onPress={handlePermission}
             activeOpacity={0.7}
             testID="camera-permission-button"
+            accessibilityLabel={showSettingsHint ? t.scan.openSettings : t.scan.grantPermission}
+            accessibilityRole="button"
           >
             <Text style={styles.permissionButtonText}>
               {showSettingsHint ? t.scan.openSettings : t.scan.grantPermission}
@@ -455,6 +457,8 @@ function ScanScreenInner() {
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => router.back()}
+              accessibilityLabel="Close"
+              accessibilityRole="button"
             >
               <X size={24} color={colors.card} />
             </TouchableOpacity>
@@ -469,7 +473,7 @@ function ScanScreenInner() {
                     : validationReason === 'no_face_detected' ? t.scan.validationNoFace
                     : t.scan.pleaseRetry}
                 </Text>
-                <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8} accessibilityLabel={t.scan.tryAgain} accessibilityRole="button">
                   <RefreshCw size={20} color={colors.card} />
                   <Text style={styles.retryButtonText}>{t.scan.tryAgain}</Text>
                 </TouchableOpacity>
@@ -479,7 +483,7 @@ function ScanScreenInner() {
                 <Eye size={48} color="rgba(255,255,255,0.8)" />
                 <Text style={styles.failedTitle}>{t.scan.noPupilsDetected}</Text>
                 <Text style={styles.failedText}>Could not analyze. Try again with better lighting.</Text>
-                <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8} accessibilityLabel={t.scan.tryAgain} accessibilityRole="button">
                   <RefreshCw size={20} color={colors.card} />
                   <Text style={styles.retryButtonText}>{t.scan.tryAgain}</Text>
                 </TouchableOpacity>
@@ -539,6 +543,9 @@ function ScanScreenInner() {
                   activeOpacity={0.8}
                   disabled={!faceDetected}
                   testID="start-scan-button"
+                  accessibilityLabel="Capture eye scan"
+                  accessibilityRole="button"
+                  accessibilityHint={!faceDetected ? "Face not detected. Position your face in the oval to enable scanning." : "Press to capture an eye scan"}
                 >
                   <Eye size={28} color={faceDetected ? colors.card : 'rgba(255,255,255,0.4)'} />
                   <Text style={[

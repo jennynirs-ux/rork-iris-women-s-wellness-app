@@ -44,7 +44,7 @@ function SectionCard({ title, icon, children, subtitle }: {
     <View style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
         {icon}
-        <View style={{ flex: 1 }}>
+        <View style={styles.sectionHeaderFlex}>
           <Text style={styles.sectionTitle}>{title}</Text>
           {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
         </View>
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
   // Block rendering until auth check completes — prevents content flash
   if (authLoading || !isAuthenticated) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#0F1117', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.authLoadingContainer}>
         <ActivityIndicator size="large" color="#8B5CF6" />
       </View>
     );
@@ -201,11 +201,11 @@ export default function AdminDashboard() {
   const canExport = hasPermission('export_data');
 
   const renderOverview = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No analytics data yet" />;
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Total Users"
@@ -297,13 +297,13 @@ export default function AdminDashboard() {
   };
 
   const renderFunnel = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No funnel data yet" />;
 
     const funnelColors = ['#60A5FA', '#8B5CF6', '#EC4899', '#F59E0B', '#34D399', '#14B8A6'];
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Total Users"
@@ -355,11 +355,11 @@ export default function AdminDashboard() {
   };
 
   const renderUsers = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No user data yet" />;
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Total"
@@ -421,11 +421,11 @@ export default function AdminDashboard() {
                 </View>
                 {stats.userList.map((user) => (
                   <View key={user.userId} style={styles.tableRow}>
-                    <Text style={[styles.tableCell, styles.tableCellWide, { fontSize: 9, color: '#9CA3AF' }]} numberOfLines={1}>
+                    <Text style={[styles.tableCell, styles.tableCellWide, styles.userIdText]} numberOfLines={1}>
                       {user.userId.slice(0, 14)}...
                     </Text>
-                    <View style={[styles.tableCell, styles.tableCellBadge, { backgroundColor: user.onboardingCompleted ? '#10B98118' : '#EF444418' }]}>
-                      <Text style={{ fontSize: 10, fontWeight: '600' as const, color: user.onboardingCompleted ? '#34D399' : '#EF4444' }}>
+                    <View style={[styles.tableCell, styles.tableCellBadge, user.onboardingCompleted ? styles.badgeOnboardedYes : styles.badgeOnboardedNo]}>
+                      <Text style={user.onboardingCompleted ? styles.badgeOnboardedYesText : styles.badgeOnboardedNoText}>
                         {user.onboardingCompleted ? 'Yes' : 'No'}
                       </Text>
                     </View>
@@ -435,16 +435,16 @@ export default function AdminDashboard() {
                     <View style={[styles.tableCell, styles.tableCellBadge]}>
                       <Text style={styles.tableCellText}>{user.totalScans}</Text>
                     </View>
-                    <View style={[styles.tableCell, styles.tableCellBadge, { backgroundColor: user.isPremium ? '#10B98118' : '#252838' }]}>
-                      <Text style={{ fontSize: 10, fontWeight: '600' as const, color: user.isPremium ? '#34D399' : '#6B7280' }}>
+                    <View style={[styles.tableCell, styles.tableCellBadge, user.isPremium ? styles.badgePremiumYes : styles.badgePremiumNo]}>
+                      <Text style={user.isPremium ? styles.badgePremiumYesText : styles.badgePremiumNoText}>
                         {user.isPremium ? 'Yes' : 'No'}
                       </Text>
                     </View>
                     <View style={[styles.tableCell, styles.tableCellBadge]}>
                       <Text style={[styles.tableCellText, { fontSize: 9 }]}>{user.lifeStage}</Text>
                     </View>
-                    <View style={[styles.tableCell, styles.tableCellBadge, { backgroundColor: '#1E3A5F' }]}>
-                      <Text style={{ fontSize: 9, fontWeight: '600' as const, color: '#93C5FD' }}>{user.platform}</Text>
+                    <View style={[styles.tableCell, styles.tableCellBadge, styles.platformBadgeTable]}>
+                      <Text style={styles.platformBadgeTableText}>{user.platform}</Text>
                     </View>
                   </View>
                 ))}
@@ -475,13 +475,13 @@ export default function AdminDashboard() {
   };
 
   const renderRevenue = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No revenue data yet" />;
 
     const rev = stats.revenue;
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Est. MRR"
@@ -550,13 +550,13 @@ export default function AdminDashboard() {
   };
 
   const renderReferrals = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No referral data yet" />;
 
     const ref = stats.referrals;
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Codes Generated"
@@ -608,7 +608,7 @@ export default function AdminDashboard() {
   const [eyeMetricsExpanded, setEyeMetricsExpanded] = useState(false);
 
   const renderWellness = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No wellness data yet" />;
 
     const wa = stats.wellnessAggregates;
@@ -653,7 +653,7 @@ export default function AdminDashboard() {
     };
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         {/* A) Key Metrics */}
         <View style={styles.metricsGrid}>
           <MetricCard
@@ -709,43 +709,43 @@ export default function AdminDashboard() {
             const midPct = total > 0 ? Math.round((dist.mid / total) * 100) : 0;
             const highPct = total > 0 ? Math.round((dist.high / total) * 100) : 0;
             return (
-              <View key={key} style={{ marginBottom: 10 }}>
-                <View style={{ flexDirection: 'row' as const, justifyContent: 'space-between' as const, marginBottom: 4 }}>
-                  <Text style={{ fontSize: 12, color: scoreColors[key], fontWeight: '600' as const, textTransform: 'capitalize' as const }}>{key}</Text>
-                  <Text style={{ fontSize: 10, color: '#6B7280' }}>n={total}</Text>
+              <View key={key} style={styles.scoreDistRow}>
+                <View style={styles.scoreDistHeader}>
+                  <Text style={[styles.scoreDistLabel, { color: scoreColors[key] }]}>{key}</Text>
+                  <Text style={styles.scoreDistCount}>n={total}</Text>
                 </View>
-                <View style={{ flexDirection: 'row' as const, height: 14, borderRadius: 7, overflow: 'hidden' as const, backgroundColor: '#1A1D2E' }}>
+                <View style={styles.scoreDistBarContainer}>
                   {lowPct > 0 && (
-                    <View style={{ width: `${lowPct}%`, backgroundColor: '#EF4444', justifyContent: 'center' as const, alignItems: 'center' as const }}>
-                      {lowPct >= 12 && <Text style={{ fontSize: 8, color: '#FFF', fontWeight: '700' as const }}>{lowPct}%</Text>}
+                    <View style={[styles.scoreDistBar, { width: `${lowPct}%`, backgroundColor: '#EF4444' }]}>
+                      {lowPct >= 12 && <Text style={styles.scoreDistBarText}>{lowPct}%</Text>}
                     </View>
                   )}
                   {midPct > 0 && (
-                    <View style={{ width: `${midPct}%`, backgroundColor: '#FBBF24', justifyContent: 'center' as const, alignItems: 'center' as const }}>
-                      {midPct >= 12 && <Text style={{ fontSize: 8, color: '#1A1D2E', fontWeight: '700' as const }}>{midPct}%</Text>}
+                    <View style={[styles.scoreDistBar, { width: `${midPct}%`, backgroundColor: '#FBBF24' }]}>
+                      {midPct >= 12 && <Text style={styles.scoreDistBarTextDark}>{midPct}%</Text>}
                     </View>
                   )}
                   {highPct > 0 && (
-                    <View style={{ width: `${highPct}%`, backgroundColor: '#34D399', justifyContent: 'center' as const, alignItems: 'center' as const }}>
-                      {highPct >= 12 && <Text style={{ fontSize: 8, color: '#1A1D2E', fontWeight: '700' as const }}>{highPct}%</Text>}
+                    <View style={[styles.scoreDistBar, { width: `${highPct}%`, backgroundColor: '#34D399' }]}>
+                      {highPct >= 12 && <Text style={styles.scoreDistBarTextDark}>{highPct}%</Text>}
                     </View>
                   )}
                 </View>
               </View>
             );
           })}
-          <View style={{ flexDirection: 'row' as const, gap: 12, marginTop: 6 }}>
-            <View style={{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' }} />
-              <Text style={{ fontSize: 10, color: '#6B7280' }}>Low</Text>
+          <View style={styles.scoreLegendContainer}>
+            <View style={styles.scoreLegendItem}>
+              <View style={[styles.scoreLegendDot, { backgroundColor: '#EF4444' }]} />
+              <Text style={styles.scoreLegendText}>Low</Text>
             </View>
-            <View style={{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#FBBF24' }} />
-              <Text style={{ fontSize: 10, color: '#6B7280' }}>Mid</Text>
+            <View style={styles.scoreLegendItem}>
+              <View style={[styles.scoreLegendDot, { backgroundColor: '#FBBF24' }]} />
+              <Text style={styles.scoreLegendText}>Mid</Text>
             </View>
-            <View style={{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 4 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#34D399' }} />
-              <Text style={{ fontSize: 10, color: '#6B7280' }}>High</Text>
+            <View style={styles.scoreLegendItem}>
+              <View style={[styles.scoreLegendDot, { backgroundColor: '#34D399' }]} />
+              <Text style={styles.scoreLegendText}>High</Text>
             </View>
           </View>
         </SectionCard>
@@ -769,23 +769,19 @@ export default function AdminDashboard() {
               );
             })}
           </View>
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontSize: 10, color: '#4B5563' }}>Showing avg energy score. Bars represent daily averages.</Text>
+          <View style={styles.trendInfoContainer}>
+            <Text style={styles.trendInfoText}>Showing avg energy score. Bars represent daily averages.</Text>
           </View>
         </SectionCard>
 
         {/* D) Cycle Phase Insights */}
         <SectionCard title="Cycle Phase Insights" icon={<Heart color="#EC4899" size={16} />} subtitle="Avg scores by menstrual phase">
-          <View style={{ flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 }}>
+          <View style={styles.phaseAnalyticsContainer}>
             {wa.phaseAnalytics.map(pa => (
-              <View key={pa.phase} style={{
-                flex: 1, minWidth: 140, backgroundColor: '#0B0E14',
-                borderRadius: 10, padding: 12, borderWidth: 1,
-                borderColor: phaseColors[pa.phase] ? phaseColors[pa.phase] + '40' : '#1F2335',
-              }}>
-                <View style={{ flexDirection: 'row' as const, alignItems: 'center' as const, gap: 6, marginBottom: 8 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: phaseColors[pa.phase] || '#6B7280' }} />
-                  <Text style={{ fontSize: 12, fontWeight: '600' as const, color: phaseColors[pa.phase] || '#D1D5DB', textTransform: 'capitalize' as const }}>
+              <View key={pa.phase} style={[styles.phaseCard, { borderColor: phaseColors[pa.phase] ? phaseColors[pa.phase] + '40' : '#1F2335' }]}>
+                <View style={styles.phaseCardHeader}>
+                  <View style={[styles.phaseDot, { backgroundColor: phaseColors[pa.phase] || '#6B7280' }]} />
+                  <Text style={[styles.phaseLabel, { color: phaseColors[pa.phase] || '#D1D5DB' }]}>
                     {pa.phase}
                   </Text>
                 </View>
@@ -805,8 +801,8 @@ export default function AdminDashboard() {
           <StatRow label="Avg Mood" value={wa.avgCheckIn.mood.toFixed(1)} valueColor="#FBBF24" />
 
           {wa.totalCheckIns > 0 && (
-            <View style={{ marginTop: 12 }}>
-              <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 6, fontWeight: '600' as const }}>Check-In Distributions</Text>
+            <View style={styles.checkInDistContainer}>
+              <Text style={styles.checkInDistTitle}>Check-In Distributions</Text>
               {(['energy', 'sleep', 'stress'] as const).map(key => {
                 const dist = wa.checkInDistributions[key];
                 const total = dist.low + dist.mid + dist.high;
@@ -814,12 +810,12 @@ export default function AdminDashboard() {
                 const midPct = total > 0 ? Math.round((dist.mid / total) * 100) : 0;
                 const highPct = total > 0 ? Math.round((dist.high / total) * 100) : 0;
                 return (
-                  <View key={key} style={{ marginBottom: 8 }}>
-                    <Text style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 3, textTransform: 'capitalize' as const }}>{key}</Text>
-                    <View style={{ flexDirection: 'row' as const, height: 12, borderRadius: 6, overflow: 'hidden' as const, backgroundColor: '#1A1D2E' }}>
-                      {lowPct > 0 && <View style={{ width: `${lowPct}%`, backgroundColor: '#EF4444' }} />}
-                      {midPct > 0 && <View style={{ width: `${midPct}%`, backgroundColor: '#FBBF24' }} />}
-                      {highPct > 0 && <View style={{ width: `${highPct}%`, backgroundColor: '#34D399' }} />}
+                  <View key={key} style={styles.checkInDistRow}>
+                    <Text style={styles.checkInDistKey}>{key}</Text>
+                    <View style={styles.checkInDistBarContainer}>
+                      {lowPct > 0 && <View style={[styles.checkInDistBar, { width: `${lowPct}%`, backgroundColor: '#EF4444' }]} />}
+                      {midPct > 0 && <View style={[styles.checkInDistBar, { width: `${midPct}%`, backgroundColor: '#FBBF24' }]} />}
+                      {highPct > 0 && <View style={[styles.checkInDistBar, { width: `${highPct}%`, backgroundColor: '#34D399' }]} />}
                     </View>
                   </View>
                 );
@@ -828,8 +824,8 @@ export default function AdminDashboard() {
           )}
 
           {wa.topSymptoms.length > 0 && (
-            <View style={{ marginTop: 12 }}>
-              <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 6, fontWeight: '600' as const }}>Top 5 Symptoms</Text>
+            <View style={styles.topSymptomsContainer}>
+              <Text style={styles.topSymptomsTitle}>Top 5 Symptoms</Text>
               {wa.topSymptoms.slice(0, 5).map((s, i) => {
                 const colors = ['#EF4444', '#F59E0B', '#FBBF24', '#34D399', '#60A5FA'];
                 return (
@@ -854,16 +850,16 @@ export default function AdminDashboard() {
         <SectionCard title="Raw Eye Metrics" icon={<Eye color="#8B5CF6" size={16} />} subtitle="For algorithm tuning (0-1 scale)">
           <TouchableOpacity
             onPress={() => setEyeMetricsExpanded(!eyeMetricsExpanded)}
-            style={{ flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, paddingVertical: 6 }}
+            style={styles.eyeMetricsToggle}
             activeOpacity={0.7}
           >
-            <Text style={{ fontSize: 12, color: '#60A5FA', fontWeight: '500' as const }}>
+            <Text style={styles.eyeMetricsToggleText}>
               {eyeMetricsExpanded ? 'Hide Details' : 'Show Details'}
             </Text>
-            <Text style={{ fontSize: 10, color: '#4B5563' }}>{eyeMetricsExpanded ? '▲' : '▼'}</Text>
+            <Text style={styles.eyeMetricsToggleIcon}>{eyeMetricsExpanded ? '▲' : '▼'}</Text>
           </TouchableOpacity>
           {eyeMetricsExpanded && (
-            <View style={{ marginTop: 8 }}>
+            <View style={styles.eyeMetricsDetailsContainer}>
               {[
                 { label: 'Sclera Yellowness', value: wa.avgEyeMetrics.scleraYellowness, color: '#FBBF24' },
                 { label: 'Under-Eye Darkness', value: wa.avgEyeMetrics.underEyeDarkness, color: '#A78BFA' },
@@ -888,16 +884,12 @@ export default function AdminDashboard() {
         {/* G) CSV Export */}
         {canExport && (
           <TouchableOpacity
-            style={{
-              backgroundColor: '#131620', borderRadius: 12, padding: 14,
-              borderWidth: 1, borderColor: '#1F2335', flexDirection: 'row' as const,
-              alignItems: 'center' as const, justifyContent: 'center' as const, gap: 8, marginBottom: 12,
-            }}
+            style={styles.exportWellnessButton}
             onPress={handleExportWellnessCSV}
             activeOpacity={0.7}
           >
             <Download color="#60A5FA" size={16} />
-            <Text style={{ fontSize: 13, fontWeight: '600' as const, color: '#60A5FA' }}>Export Wellness CSV</Text>
+            <Text style={styles.exportWellnessButtonText}>Export Wellness CSV</Text>
           </TouchableOpacity>
         )}
       </Animated.View>
@@ -905,11 +897,11 @@ export default function AdminDashboard() {
   };
 
   const renderEvents = () => {
-    if (isLoading) return <ActivityIndicator color="#60A5FA" style={{ marginTop: 40 }} />;
+    if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;
     if (!stats) return <EmptyState message="No events yet" />;
 
     return (
-      <Animated.View style={{ opacity: fadeAnim }}>
+      <Animated.View style={styles.animatedViewFade}>
         <View style={styles.metricsGrid}>
           <MetricCard
             label="Total Events"
@@ -962,7 +954,7 @@ export default function AdminDashboard() {
           <SectionCard title="Recent Events" icon={<Clock color="#F59E0B" size={16} />} subtitle="Last 20 events">
             {stats.recentEvents.slice(0, 20).map((evt, i) => (
               <View key={`${evt.timestamp}-${i}`} style={styles.recentEventRow}>
-                <View style={{ flex: 1 }}>
+                <View style={styles.recentEventRowFlex}>
                   <Text style={styles.recentEventName}>{evt.event.replace(/_/g, ' ')}</Text>
                   <Text style={styles.recentEventMeta}>
                     {evt.userId.slice(0, 12)}... · {new Date(evt.timestamp).toLocaleTimeString()}
@@ -1677,5 +1669,233 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '500' as const,
     marginTop: 1,
+  },
+  // New styles extracted from inline declarations
+  sectionHeaderFlex: {
+    flex: 1,
+  },
+  authLoadingContainer: {
+    flex: 1,
+    backgroundColor: '#0F1117',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  loadingIndicator: {
+    marginTop: 40,
+  },
+  animatedViewFade: {
+    opacity: 1, // Will be overridden by Animated.View's style prop
+  },
+  userIdText: {
+    fontSize: 9,
+    color: '#9CA3AF',
+  },
+  badgeOnboardedYes: {
+    backgroundColor: '#10B98118',
+  },
+  badgeOnboardedYesText: {
+    fontSize: 10,
+    fontWeight: '600' as const,
+    color: '#34D399',
+  },
+  badgeOnboardedNo: {
+    backgroundColor: '#EF444418',
+  },
+  badgeOnboardedNoText: {
+    fontSize: 10,
+    fontWeight: '600' as const,
+    color: '#EF4444',
+  },
+  badgePremiumYes: {
+    backgroundColor: '#10B98118',
+  },
+  badgePremiumYesText: {
+    fontSize: 10,
+    fontWeight: '600' as const,
+    color: '#34D399',
+  },
+  badgePremiumNo: {
+    backgroundColor: '#252838',
+  },
+  badgePremiumNoText: {
+    fontSize: 10,
+    fontWeight: '600' as const,
+    color: '#6B7280',
+  },
+  platformBadgeTable: {
+    backgroundColor: '#1E3A5F',
+  },
+  platformBadgeTableText: {
+    fontSize: 9,
+    fontWeight: '600' as const,
+    color: '#93C5FD',
+  },
+  scoreDistRow: {
+    marginBottom: 10,
+  },
+  scoreDistHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    marginBottom: 4,
+  },
+  scoreDistLabel: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    textTransform: 'capitalize' as const,
+  },
+  scoreDistCount: {
+    fontSize: 10,
+    color: '#6B7280',
+  },
+  scoreDistBarContainer: {
+    flexDirection: 'row' as const,
+    height: 14,
+    borderRadius: 7,
+    overflow: 'hidden' as const,
+    backgroundColor: '#1A1D2E',
+  },
+  scoreDistBar: {
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  scoreDistBarText: {
+    fontSize: 8,
+    color: '#FFF',
+    fontWeight: '700' as const,
+  },
+  scoreDistBarTextDark: {
+    fontSize: 8,
+    color: '#1A1D2E',
+    fontWeight: '700' as const,
+  },
+  scoreLegendContainer: {
+    flexDirection: 'row' as const,
+    gap: 12,
+    marginTop: 6,
+  },
+  scoreLegendItem: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+  },
+  scoreLegendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  scoreLegendText: {
+    fontSize: 10,
+    color: '#6B7280',
+  },
+  trendInfoContainer: {
+    marginTop: 8,
+  },
+  trendInfoText: {
+    fontSize: 10,
+    color: '#4B5563',
+  },
+  phaseAnalyticsContainer: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+  },
+  phaseCard: {
+    flex: 1,
+    minWidth: 140,
+    backgroundColor: '#0B0E14',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+  },
+  phaseCardHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    marginBottom: 8,
+  },
+  phaseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  phaseLabel: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    textTransform: 'capitalize' as const,
+  },
+  checkInDistContainer: {
+    marginTop: 12,
+  },
+  checkInDistTitle: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 6,
+    fontWeight: '600' as const,
+  },
+  checkInDistRow: {
+    marginBottom: 8,
+  },
+  checkInDistKey: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginBottom: 3,
+    textTransform: 'capitalize' as const,
+  },
+  checkInDistBarContainer: {
+    flexDirection: 'row' as const,
+    height: 12,
+    borderRadius: 6,
+    overflow: 'hidden' as const,
+    backgroundColor: '#1A1D2E',
+  },
+  checkInDistBar: {
+    height: '100%',
+  },
+  topSymptomsContainer: {
+    marginTop: 12,
+  },
+  topSymptomsTitle: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 6,
+    fontWeight: '600' as const,
+  },
+  eyeMetricsToggle: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingVertical: 6,
+  },
+  eyeMetricsToggleText: {
+    fontSize: 12,
+    color: '#60A5FA',
+    fontWeight: '500' as const,
+  },
+  eyeMetricsToggleIcon: {
+    fontSize: 10,
+    color: '#4B5563',
+  },
+  eyeMetricsDetailsContainer: {
+    marginTop: 8,
+  },
+  exportWellnessButton: {
+    backgroundColor: '#131620',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#1F2335',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 8,
+    marginBottom: 12,
+  },
+  exportWellnessButtonText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: '#60A5FA',
+  },
+  recentEventRowFlex: {
+    flex: 1,
   },
 });

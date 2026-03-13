@@ -281,9 +281,12 @@ export default function CheckInScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.wakeUpRested}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setActiveInfoModal("sleep")}
               style={styles.infoButton}
+              accessibilityLabel={t.checkIn.infoSleepTitle}
+              accessibilityRole="button"
+              accessibilityHint="Show information about sleep"
             >
               <Info size={20} color={colors.primary} />
             </TouchableOpacity>
@@ -307,6 +310,9 @@ export default function CheckInScreen() {
                   setRestedOption(option.key);
                   setSleep(option.value);
                 }}
+                accessibilityLabel={option.label}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
               >
                 <View style={styles.restedIconContainer}>
                   {option.icon === "sparkles" && <Sparkles size={24} color={iconColor} />}
@@ -347,6 +353,9 @@ export default function CheckInScreen() {
                   isActive && styles.restedChipActive,
                 ]}
                 onPress={() => setMood(option.key)}
+                accessibilityLabel={option.label}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
               >
                 <View style={styles.moodIconContainer}>
                   {option.icon === "smilePlus" && <SmilePlus size={22} color={iconColor} />}
@@ -385,6 +394,9 @@ export default function CheckInScreen() {
                   isActive && styles.restedChipActive,
                 ]}
                 onPress={() => setEnergy(option.key)}
+                accessibilityLabel={option.label}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: isActive }}
               >
                 <View style={styles.moodIconContainer}>
                   {option.icon === "zap" && <Zap size={22} color={iconColor} />}
@@ -407,9 +419,12 @@ export default function CheckInScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t.checkIn.bleedingStatus}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setActiveInfoModal("bleeding")}
                 style={styles.infoButton}
+                accessibilityLabel={t.checkIn.infoBleedingTitle}
+                accessibilityRole="button"
+                accessibilityHint="Show information about bleeding"
               >
                 <Info size={20} color={colors.primary} />
               </TouchableOpacity>
@@ -429,6 +444,9 @@ export default function CheckInScreen() {
                     bleedingLevel === option.value && styles.bleedingChipActive,
                   ]}
                   onPress={() => setBleedingLevel(option.value)}
+                  accessibilityLabel={option.label}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: bleedingLevel === option.value }}
                 >
                   <Text
                     style={[
@@ -447,9 +465,12 @@ export default function CheckInScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.lifestyleFactors}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setActiveInfoModal("lifestyle")}
               style={styles.infoButton}
+              accessibilityLabel={t.checkIn.infoLifestyleTitle}
+              accessibilityRole="button"
+              accessibilityHint="Show information about lifestyle factors"
             >
               <Info size={20} color={colors.primary} />
             </TouchableOpacity>
@@ -461,10 +482,13 @@ export default function CheckInScreen() {
                 hadCaffeine && styles.lifestyleChipActive,
               ]}
               onPress={() => setHadCaffeine(!hadCaffeine)}
+              accessibilityLabel={t.checkIn.caffeine}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: hadCaffeine }}
             >
               <View style={styles.lifestyleContent}>
-                <Coffee 
-                  size={16} 
+                <Coffee
+                  size={16}
                   color={hadCaffeine ? colors.primary : colors.textSecondary}
                 />
                 <Text
@@ -483,10 +507,13 @@ export default function CheckInScreen() {
                 hadAlcohol && styles.lifestyleChipActive,
               ]}
               onPress={() => setHadAlcohol(!hadAlcohol)}
+              accessibilityLabel={t.checkIn.alcohol}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: hadAlcohol }}
             >
               <View style={styles.lifestyleContent}>
-                <Wine 
-                  size={16} 
+                <Wine
+                  size={16}
                   color={hadAlcohol ? colors.primary : colors.textSecondary}
                 />
                 <Text
@@ -505,10 +532,13 @@ export default function CheckInScreen() {
                 isIll && styles.lifestyleChipActive,
               ]}
               onPress={() => setIsIll(!isIll)}
+              accessibilityLabel={t.checkIn.feelingIll}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: isIll }}
             >
               <View style={styles.lifestyleContent}>
-                <Thermometer 
-                  size={16} 
+                <Thermometer
+                  size={16}
                   color={isIll ? colors.primary : colors.textSecondary}
                 />
                 <Text
@@ -527,10 +557,13 @@ export default function CheckInScreen() {
                 hadSugar && styles.lifestyleChipActive,
               ]}
               onPress={() => setHadSugar(!hadSugar)}
+              accessibilityLabel={t.checkIn.sugar}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: hadSugar }}
             >
               <View style={styles.lifestyleContent}>
-                <Candy 
-                  size={16} 
+                <Candy
+                  size={16}
                   color={hadSugar ? colors.primary : colors.textSecondary}
                 />
                 <Text
@@ -549,10 +582,13 @@ export default function CheckInScreen() {
                 hadProcessedFood && styles.lifestyleChipActive,
               ]}
               onPress={() => setHadProcessedFood(!hadProcessedFood)}
+              accessibilityLabel={t.checkIn.processedFood}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: hadProcessedFood }}
             >
               <View style={styles.lifestyleContent}>
-                <Package 
-                  size={16} 
+                <Package
+                  size={16}
                   color={hadProcessedFood ? colors.primary : colors.textSecondary}
                 />
                 <Text
@@ -572,9 +608,12 @@ export default function CheckInScreen() {
           <View style={[styles.section, styles.adaptiveSection]}>
             <View style={styles.sectionHeader}>
               <View style={styles.adaptiveTitleRow}><Lightbulb size={18} color={colors.primary} /><Text style={styles.sectionTitle}>{t.checkIn.cervicalMucusOptional}</Text></View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setActiveInfoModal("cervicalMucus")}
                 style={styles.infoButton}
+                accessibilityLabel={t.checkIn.infoCervicalMucusTitle}
+                accessibilityRole="button"
+                accessibilityHint="Show information about cervical mucus"
               >
                 <Info size={20} color={colors.primary} />
               </TouchableOpacity>
@@ -596,6 +635,9 @@ export default function CheckInScreen() {
                     cervicalMucus === option.value && styles.mucusChipActive,
                   ]}
                   onPress={() => setCervicalMucus(option.value)}
+                  accessibilityLabel={option.label}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: cervicalMucus === option.value }}
                 >
                   <Text
                     style={[
@@ -615,9 +657,12 @@ export default function CheckInScreen() {
           <View style={[styles.section, styles.adaptiveSection]}>
             <View style={styles.sectionHeader}>
               <View style={styles.adaptiveTitleRow}><Lightbulb size={18} color={colors.primary} /><Text style={styles.sectionTitle}>{t.checkIn.ovulationPainOptional}</Text></View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setActiveInfoModal("ovulationPain")}
                 style={styles.infoButton}
+                accessibilityLabel={t.checkIn.infoOvulationPainTitle}
+                accessibilityRole="button"
+                accessibilityHint="Show information about ovulation pain"
               >
                 <Info size={20} color={colors.primary} />
               </TouchableOpacity>
@@ -632,6 +677,9 @@ export default function CheckInScreen() {
                   ovulationPain === true && styles.painButtonActive,
                 ]}
                 onPress={() => setOvulationPain(true)}
+                accessibilityLabel={t.common.yes}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: ovulationPain === true }}
               >
                 <Text
                   style={[
@@ -648,6 +696,9 @@ export default function CheckInScreen() {
                   ovulationPain === false && styles.painButtonActive,
                 ]}
                 onPress={() => setOvulationPain(false)}
+                accessibilityLabel={t.common.no}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: ovulationPain === false }}
               >
                 <Text
                   style={[
@@ -665,9 +716,12 @@ export default function CheckInScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.anySymptoms}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setActiveInfoModal("symptoms")}
               style={styles.infoButton}
+              accessibilityLabel={t.checkIn.infoSymptomsTitle}
+              accessibilityRole="button"
+              accessibilityHint="Show information about symptoms"
             >
               <Info size={20} color={colors.primary} />
             </TouchableOpacity>
@@ -681,6 +735,9 @@ export default function CheckInScreen() {
                   symptoms.includes(symptom) && styles.symptomChipActive,
                 ]}
                 onPress={() => handleSymptomToggle(symptom)}
+                accessibilityLabel={getSymptomLabel(symptom)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: symptoms.includes(symptom) }}
               >
                 <Text
                   style={[
@@ -705,10 +762,12 @@ export default function CheckInScreen() {
             numberOfLines={4}
             value={notes}
             onChangeText={setNotes}
+            accessibilityLabel={t.checkIn.notesOptional}
+            accessibilityHint="Enter optional notes about your day"
           />
         </View>
 
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} accessibilityLabel={isEditMode ? t.checkIn.updateCheckIn : t.checkIn.completeCheckIn} accessibilityRole="button">
           <Text style={styles.submitButtonText}>{isEditMode ? t.checkIn.updateCheckIn : t.checkIn.completeCheckIn}</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -719,15 +778,19 @@ export default function CheckInScreen() {
         animationType="fade"
         onRequestClose={() => setActiveInfoModal(null)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={() => setActiveInfoModal(null)}
+          accessibilityLabel="Close information modal"
+          accessibilityRole="button"
         >
           <View style={styles.modalContent}>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setActiveInfoModal(null)}
+              accessibilityLabel="Close"
+              accessibilityRole="button"
             >
               <X size={24} color={colors.text} />
             </TouchableOpacity>
