@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { trpcClient } from '@/lib/trpc';
+import { safeTrpcCall } from '@/lib/network';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import logger from "@/lib/logger";
 
@@ -76,18 +77,22 @@ async function processQueue(): Promise<void> {
     const item = eventQueue.shift();
     if (!item) break;
 
-    try {
-      await trpcClient.analytics.track.mutate({
+    const sent = await safeTrpcCall(
+      () => trpcClient.analytics.track.mutate({
         userId,
         event: item.event,
         properties: {
           ...item.properties,
           platform: Platform.OS,
         },
-      });
+      }),
+      null,
+      "Analytics"
+    );
+    if (sent) {
       logger.log('[Analytics] Sent event:', item.event);
-    } catch (e) {
-      logger.log('[Analytics] Failed to send event:', item.event, e);
+    } else {
+      logger.log('[Analytics] Skipped event (offline):', item.event);
     }
   }
 

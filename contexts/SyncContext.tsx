@@ -3,6 +3,7 @@ import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { trpcClient } from "@/lib/trpc";
+import { safeTrpcCall } from "@/lib/network";
 import { useApp } from "@/contexts/AppContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Alert } from "react-native";
@@ -83,17 +84,25 @@ export const [SyncContext, useSync] = createContextHook(() => {
       const phaseBaselinesStr = await AsyncStorage.getItem("iris_phase_baselines");
       const cycleHistoryStr = await AsyncStorage.getItem("iris_cycle_history");
 
-      const result = await trpcClient.sync.save.mutate({
-        userId: syncId,
-        userProfile,
-        checkIns,
-        scans,
-        baseline: baselineStr ? JSON.parse(baselineStr) : null,
-        phaseBaselines: phaseBaselinesStr ? JSON.parse(phaseBaselinesStr) : null,
-        cycleHistory: cycleHistoryStr ? JSON.parse(cycleHistoryStr) : [],
-        language,
-        themeMode,
-      });
+      const result = await safeTrpcCall(
+        () => trpcClient.sync.save.mutate({
+          userId: syncId,
+          userProfile,
+          checkIns,
+          scans,
+          baseline: baselineStr ? JSON.parse(baselineStr) : null,
+          phaseBaselines: phaseBaselinesStr ? JSON.parse(phaseBaselinesStr) : null,
+          cycleHistory: cycleHistoryStr ? JSON.parse(cycleHistoryStr) : [],
+          language,
+          themeMode,
+        }),
+        null,
+        "Sync.push"
+      );
+
+      if (!result) {
+        throw new Error("Server unavailable. Your data is saved locally.");
+      }
 
       const syncTime = result.lastSyncedAt;
       await AsyncStorage.setItem(STORAGE_KEY_LAST_SYNC, syncTime);
@@ -115,10 +124,14 @@ export const [SyncContext, useSync] = createContextHook(() => {
         throw new Error("No sync ID provided.");
       }
 
-      const result = await trpcClient.sync.load.query({ userId: id });
+      const result = await safeTrpcCall(
+        () => trpcClient.sync.load.query({ userId: id }),
+        null,
+        "Sync.pull"
+      );
 
-      if (!result.found || !result.data) {
-        throw new Error("No data found for this sync ID.");
+      if (!result || !result.found || !result.data) {
+        throw new Error("No data found for this sync ID, or the server is unavailable.");
       }
 
       await AsyncStorage.setItem("iris_user_profile", JSON.stringify(result.data.userProfile));

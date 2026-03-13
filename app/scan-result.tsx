@@ -7,8 +7,9 @@ import { router } from "expo-router";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { CheckCircle, Calendar } from "lucide-react-native";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
-export default function ScanResultScreen() {
+function ScanResultScreenInner() {
   const { latestScan, updateLastPeriodDate, currentPhase, t } = useApp();
   const { colors } = useTheme();
   const styles = useMemo(() => createScanResultStyles(colors), [colors]);
@@ -222,3 +223,11 @@ function createScanResultStyles(colors: typeof Colors.light) { return StyleSheet
     color: colors.textSecondary,
   },
 }); }
+
+export default function ScanResultScreen() {
+  return (
+    <ErrorBoundary>
+      <ScanResultScreenInner />
+    </ErrorBoundary>
+  );
+}

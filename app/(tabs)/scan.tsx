@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import { incrementScanCount, shouldPromptReview, showReviewPrompt } from "@/lib/reviewPrompt";
 import { analyzeEyeImage, computeWellnessScores, cropEyeRegion, cropUnderEyeRegion, validateEyeImage, detectFacePresence } from "@/lib/eyeAnalysis";
 import type { ImageValidationResult } from "@/lib/eyeAnalysis";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import logger from "@/lib/logger";
 
 type ScanStage = 'ready' | 'capturing' | 'analyzing' | 'failed' | 'invalid_image';
@@ -32,7 +33,7 @@ function getLocalDateString(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
-export default function ScanScreen() {
+function ScanScreenInner() {
   const { colors } = useTheme();
   const styles = useMemo(() => createScanStyles(colors), [colors]);
   const [facing] = useState<CameraType>("front");
@@ -594,11 +595,11 @@ function createScanStyles(colors: typeof Colors.light) { return StyleSheet.creat
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 16,
-    elevation: 4,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    elevation: 4,
     marginTop: 8,
   },
   permissionButtonText: {
@@ -780,3 +781,11 @@ function createScanStyles(colors: typeof Colors.light) { return StyleSheet.creat
     textAlign: "center" as const,
   },
 }); }
+
+export default function ScanScreen() {
+  return (
+    <ErrorBoundary>
+      <ScanScreenInner />
+    </ErrorBoundary>
+  );
+}
