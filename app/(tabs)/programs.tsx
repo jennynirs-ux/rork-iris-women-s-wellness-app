@@ -66,7 +66,8 @@ type LifeStagePhaseKey = keyof typeof LIFE_STAGE_INFO;
 function calculateCyclePhase(lastPeriodDate: string, cycleLength: number, date: Date): CyclePhase {
   const lastPeriod = new Date(lastPeriodDate);
   const daysSinceLastPeriod = Math.floor((date.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
-  const cycleDay = Math.max(1, daysSinceLastPeriod + 1);
+  // Don't clamp to 1 — let getPhaseForCycleDay handle negative days via modulo
+  const cycleDay = daysSinceLastPeriod + 1;
   return getPhaseForCycleDay(cycleDay, cycleLength);
 }
 

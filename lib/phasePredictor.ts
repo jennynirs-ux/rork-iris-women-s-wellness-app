@@ -106,7 +106,8 @@ export function getPhaseForCycleDay(
   cycleLength: number
 ): CyclePhase {
   const ranges = getPhaseRanges(cycleLength);
-  const dayInCycle = ((cycleDay - 1) % cycleLength) + 1;
+  // Use positive modulo to handle dates before lastPeriodDate (negative cycleDay)
+  const dayInCycle = (((cycleDay - 1) % cycleLength) + cycleLength) % cycleLength + 1;
 
   if (dayInCycle >= ranges.menstrual[0] && dayInCycle <= ranges.menstrual[1]) return 'menstrual';
   if (dayInCycle >= ranges.follicular[0] && dayInCycle <= ranges.follicular[1]) return 'follicular';
