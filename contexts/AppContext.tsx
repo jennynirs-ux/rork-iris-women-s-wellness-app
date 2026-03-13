@@ -29,6 +29,58 @@ const STORAGE_KEY_DISMISSED_SUGGESTION = "iris_dismissed_life_stage_suggestion";
 const STORAGE_KEY_LANGUAGE = "iris_language";
 const STORAGE_KEY_UNITS = "iris_units";
 
+// Memoized helper functions for lifeStageSuggestion calculation
+const calculatePregnancySymptomScore = (recentCheckIns: DailyCheckIn[]): number => {
+  const pregnancySymptoms = ['Nausea', 'Breast Tenderness', 'Fatigue', 'Mood Swings', 'Bloating'];
+  let score = 0;
+  for (const ci of recentCheckIns) {
+    for (const s of pregnancySymptoms) {
+      if (ci.symptoms.includes(s)) score++;
+    }
+  }
+  return score;
+};
+
+const calculatePeriSymptomScore = (recentCheckIns: DailyCheckIn[]): number => {
+  const periSymptoms = ['Hot Flashes', 'Night Sweats', 'Insomnia', 'Brain Fog', 'Mood Swings'];
+  let score = 0;
+  for (const ci of recentCheckIns) {
+    for (const s of periSymptoms) {
+      if (ci.symptoms.includes(s)) score++;
+    }
+  }
+  return score;
+};
+
+const calculateScanAverages = (scans: ScanResult[]): {
+  avgFatigue: number;
+  avgStress: number;
+  avgInflammation: number;
+  avgRecovery: number;
+  avgEnergy: number;
+  highFatigueCount: number;
+  highInflammationCount: number;
+  lowEnergyCount: number;
+} => {
+  const avgFatigue = scans.reduce((sum, s) => sum + s.fatigueLevel, 0) / scans.length;
+  const avgStress = scans.reduce((sum, s) => sum + s.stressScore, 0) / scans.length;
+  const avgInflammation = scans.reduce((sum, s) => sum + s.inflammation, 0) / scans.length;
+  const avgRecovery = scans.reduce((sum, s) => sum + s.recoveryScore, 0) / scans.length;
+  const avgEnergy = scans.reduce((sum, s) => sum + s.energyScore, 0) / scans.length;
+  const highFatigueCount = scans.filter(s => s.fatigueLevel > 7).length;
+  const highInflammationCount = scans.filter(s => s.inflammation > 6).length;
+  const lowEnergyCount = scans.filter(s => s.energyScore < 4).length;
+  return { avgFatigue, avgStress, avgInflammation, avgRecovery, avgEnergy, highFatigueCount: highFatigueCount, highInflammationCount, lowEnergyCount };
+};
+
+const calculateEnergyVolatility = (scans: ScanResult[]): boolean => {
+  if (scans.length < 3) return false;
+  const energies = scans.map(s => s.energyScore);
+  const mean = energies.reduce((a, b) => a + b, 0) / energies.length;
+  const variance = energies.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / energies.length;
+  return Math.sqrt(variance) > 2.5;
+};
+
 
 function getInitialUserProfile(): UserProfile {
   return {
@@ -524,19 +576,8 @@ export const [AppContext, useApp] = createContextHook(() => {
     let periScore = 0;
 
     if (hasEnoughCheckIns) {
-      const pregnancySymptoms = ['Nausea', 'Breast Tenderness', 'Fatigue', 'Mood Swings', 'Bloating'];
-      recentCheckIns.forEach(ci => {
-        pregnancySymptoms.forEach(s => {
-          if (ci.symptoms.includes(s)) pregnancyScore++;
-        });
-      });
-
-      const periSymptoms = ['Hot Flashes', 'Night Sweats', 'Insomnia', 'Brain Fog', 'Mood Swings'];
-      recentCheckIns.forEach(ci => {
-        periSymptoms.forEach(s => {
-          if (ci.symptoms.includes(s)) periScore++;
-        });
-      });
+      pregnancyScore = calculatePregnancySymptomScore(recentCheckIns);
+      periScore = calculatePeriSymptomScore(recentCheckIns);
     }
 
     const lastPeriod = new Date(userProfile.lastPeriodDate);
@@ -545,24 +586,16 @@ export const [AppContext, useApp] = createContextHook(() => {
     if (missedPeriod) pregnancyScore += 3;
 
     if (hasEnoughScans) {
-      const avgFatigue = recentScans.reduce((sum, s) => sum + s.fatigueLevel, 0) / recentScans.length;
-      const avgStress = recentScans.reduce((sum, s) => sum + s.stressScore, 0) / recentScans.length;
-      const avgInflammation = recentScans.reduce((sum, s) => sum + s.inflammation, 0) / recentScans.length;
-      const avgRecovery = recentScans.reduce((sum, s) => sum + s.recoveryScore, 0) / recentScans.length;
-      const avgEnergy = recentScans.reduce((sum, s) => sum + s.energyScore, 0) / recentScans.length;
-
-      const highFatigueScans = recentScans.filter(s => s.fatigueLevel > 7).length;
-      const highInflammationScans = recentScans.filter(s => s.inflammation > 6).length;
-      const lowEnergyScans = recentScans.filter(s => s.energyScore < 4).length;
+      const { avgFatigue, avgStress, avgInflammation, avgRecovery, avgEnergy, highFatigueCount, highInflammationCount, lowEnergyCount } = calculateScanAverages(recentScans);
 
       if (avgFatigue > 7) pregnancyScore += 2;
       else if (avgFatigue > 5.5) pregnancyScore += 1;
 
-      if (highFatigueScans >= recentScans.length * 0.6) pregnancyScore += 1;
+      if (highFatigueCount >= recentScans.length * 0.6) pregnancyScore += 1;
 
       if (avgInflammation > 5) pregnancyScore += 1;
 
-      if (lowEnergyScans >= recentScans.length * 0.5) pregnancyScore += 1;
+      if (lowEnergyCount >= recentScans.length * 0.5) pregnancyScore += 1;
 
       if (avgStress > 7) periScore += 2;
       else if (avgStress > 5.5) periScore += 1;
@@ -570,16 +603,11 @@ export const [AppContext, useApp] = createContextHook(() => {
       if (avgRecovery < 4) periScore += 2;
       else if (avgRecovery < 5.5) periScore += 1;
 
-      if (highInflammationScans >= recentScans.length * 0.5) periScore += 1;
+      if (highInflammationCount >= recentScans.length * 0.5) periScore += 1;
 
       if (avgFatigue > 6 && avgStress > 6) periScore += 1;
 
-      const hasVolatileEnergy = recentScans.length >= 3 && (() => {
-        const energies = recentScans.map(s => s.energyScore);
-        const mean = energies.reduce((a, b) => a + b, 0) / energies.length;
-        const variance = energies.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / energies.length;
-        return Math.sqrt(variance) > 2.5;
-      })();
+      const hasVolatileEnergy = calculateEnergyVolatility(recentScans);
       if (hasVolatileEnergy) periScore += 1;
 
       logger.log('[LifeStage] Scan analysis:', {
@@ -588,9 +616,9 @@ export const [AppContext, useApp] = createContextHook(() => {
         avgInflammation: avgInflammation.toFixed(1),
         avgRecovery: avgRecovery.toFixed(1),
         avgEnergy: avgEnergy.toFixed(1),
-        highFatigueScans,
-        highInflammationScans,
-        lowEnergyScans,
+        highFatigueScans: highFatigueCount,
+        highInflammationScans: highInflammationCount,
+        lowEnergyScans: lowEnergyCount,
         hasVolatileEnergy,
         scanCount: recentScans.length,
       });

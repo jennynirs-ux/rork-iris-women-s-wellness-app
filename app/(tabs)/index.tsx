@@ -71,6 +71,42 @@ const HABIT_COLORS = {
   pelvicfloor: "#F4C896",
 };
 
+interface HabitCardProps {
+  habit: Habit;
+  colors: typeof Colors.light;
+  onPress: (habitId: string, completed: boolean) => void;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps) => {
+  const IconComponent = HABIT_ICONS[habit.category];
+  const habitColor = HABIT_COLORS[habit.category];
+
+  return (
+    <TouchableOpacity
+      style={styles.habitCard}
+      onPress={() => onPress(habit.id, habit.completed)}
+    >
+      <View style={[styles.habitIcon, { backgroundColor: habitColor + "20" }]}>
+        <IconComponent size={20} color={habitColor} />
+      </View>
+      <View style={styles.habitContent}>
+        <Text style={styles.habitTitle}>{habit.title}</Text>
+        <Text style={styles.habitDescription}>{habit.description}</Text>
+      </View>
+      <View style={styles.habitCheckbox}>
+        {habit.completed ? (
+          <CheckCircle2 size={24} color={colors.primary} />
+        ) : (
+          <Circle size={24} color={colors.border} />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+});
+
+HabitCard.displayName = 'HabitCard';
+
 function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light }) {
   const monthRef = useRef<TextInput>(null);
   const dayRef = useRef<TextInput>(null);
@@ -239,7 +275,7 @@ export default function HomeScreen() {
     return latestScan.date === today;
   }, [latestScan]);
 
-  const shouldShowDailyRitualCard = !hasTodayScan || !todayCheckIn;
+  const shouldShowDailyRitualCard = useMemo(() => !hasTodayScan || !todayCheckIn, [hasTodayScan, todayCheckIn]);
 
   const generateTodayHabits = useCallback(() => {
     const scan = latestScan;
@@ -436,6 +472,11 @@ export default function HomeScreen() {
     return { color: info.color, icon: info.icon, label: enrichedPhaseInfo.phaseName };
   }, [enrichedPhaseInfo]);
 
+  const handleHabitPress = useCallback((habitId: string, completed: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    updateHabit({ habitId, completed: !completed });
+  }, [updateHabit]);
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
@@ -584,35 +625,15 @@ export default function HomeScreen() {
 
           <View style={styles.habitsSection}>
             <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
-            {todayHabits.map((habit) => {
-              const IconComponent = HABIT_ICONS[habit.category];
-              const habitColor = HABIT_COLORS[habit.category];
-              return (
-                <TouchableOpacity
-                  key={habit.id}
-                  style={styles.habitCard}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    updateHabit({ habitId: habit.id, completed: !habit.completed });
-                  }}
-                >
-                  <View style={[styles.habitIcon, { backgroundColor: habitColor + "20" }]}>
-                    <IconComponent size={20} color={habitColor} />
-                  </View>
-                  <View style={styles.habitContent}>
-                    <Text style={styles.habitTitle}>{habit.title}</Text>
-                    <Text style={styles.habitDescription}>{habit.description}</Text>
-                  </View>
-                  <View style={styles.habitCheckbox}>
-                    {habit.completed ? (
-                      <CheckCircle2 size={24} color={colors.primary} />
-                    ) : (
-                      <Circle size={24} color={colors.border} />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+            {todayHabits.map((habit) => (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                colors={colors}
+                onPress={handleHabitPress}
+                styles={styles}
+              />
+            ))}
           </View>
         </ScrollView>
 

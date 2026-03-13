@@ -55,11 +55,11 @@ export const [ThemeContext, useTheme] = createContextHook(() => {
     updateThemeMutation.mutate(mode);
   }, [updateThemeMutation]);
 
-  return {
+  return useMemo(() => ({
     themeMode,
     resolvedTheme,
     isDark,
     colors,
     setTheme,
-  };
+  }), [themeMode, resolvedTheme, isDark, colors, setTheme]);
 });

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
@@ -26,6 +26,17 @@ const getMetricStatus = (value: number, higherIsBetter: boolean, t: any): { labe
     if (value <= 6.9) return { label: t.insights.statusModerate, color: '#F59E0B', bgColor: '#FEF3C7' };
     return { label: t.insights.statusAttention, color: '#EF4444', bgColor: '#FEE2E2' };
   }
+};
+
+const calculateScanAverages = (scans: ScanResult[]) => {
+  if (scans.length === 0) return null;
+  return {
+    avgFatigue: scans.reduce((s, sc) => s + sc.fatigueLevel, 0) / scans.length,
+    avgStress: scans.reduce((s, sc) => s + sc.stressScore, 0) / scans.length,
+    avgRecovery: scans.reduce((s, sc) => s + sc.recoveryScore, 0) / scans.length,
+    avgEnergy: scans.reduce((s, sc) => s + sc.energyScore, 0) / scans.length,
+    avgInflammation: scans.reduce((s, sc) => s + sc.inflammation, 0) / scans.length,
+  };
 };
 
 const generateCheckInInsights = (
@@ -364,10 +375,10 @@ export default function InsightsScreen() {
   const [phaseGuidanceExpanded, setPhaseGuidanceExpanded] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(false);
 
-  const showMarkerInfo = (marker: MarkerType) => {
+  const showMarkerInfo = useCallback((marker: MarkerType) => {
     setSelectedMarker(marker);
     setInfoModalVisible(true);
-  };
+  }, []);
 
   const phaseGuidance = useMemo(() => {
     if (lifeStageOverride) {
@@ -424,23 +435,22 @@ export default function InsightsScreen() {
     }
 
     if (recentScans.length >= 2) {
-      const avgFatigue = recentScans.reduce((s, sc) => s + sc.fatigueLevel, 0) / recentScans.length;
-      const avgStress = recentScans.reduce((s, sc) => s + sc.stressScore, 0) / recentScans.length;
-      const avgRecovery = recentScans.reduce((s, sc) => s + sc.recoveryScore, 0) / recentScans.length;
-      const avgEnergy = recentScans.reduce((s, sc) => s + sc.energyScore, 0) / recentScans.length;
-      const avgInflammation = recentScans.reduce((s, sc) => s + sc.inflammation, 0) / recentScans.length;
+      const averages = calculateScanAverages(recentScans);
+      if (averages) {
+        const { avgFatigue, avgStress, avgRecovery, avgEnergy, avgInflammation } = averages;
 
-      pregnancyIndicators.push({ label: 'High fatigue pattern', detected: avgFatigue > 6 });
-      pregnancyIndicators.push({ label: 'Low energy pattern', detected: avgEnergy < 5 });
-      pregnancyIndicators.push({ label: 'Elevated inflammation', detected: avgInflammation > 5 });
+        pregnancyIndicators.push({ label: 'High fatigue pattern', detected: avgFatigue > 6 });
+        pregnancyIndicators.push({ label: 'Low energy pattern', detected: avgEnergy < 5 });
+        pregnancyIndicators.push({ label: 'Elevated inflammation', detected: avgInflammation > 5 });
 
-      periIndicators.push({ label: 'Elevated stress pattern', detected: avgStress > 6 });
-      periIndicators.push({ label: 'Low recovery pattern', detected: avgRecovery < 5 });
+        periIndicators.push({ label: 'Elevated stress pattern', detected: avgStress > 6 });
+        periIndicators.push({ label: 'Low recovery pattern', detected: avgRecovery < 5 });
 
-      const energies = recentScans.map(s => s.energyScore);
-      const mean = energies.reduce((a, b) => a + b, 0) / energies.length;
-      const variance = energies.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / energies.length;
-      periIndicators.push({ label: 'Volatile energy levels', detected: Math.sqrt(variance) > 2.5 });
+        const energies = recentScans.map(s => s.energyScore);
+        const mean = energies.reduce((a, b) => a + b, 0) / energies.length;
+        const variance = energies.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / energies.length;
+        periIndicators.push({ label: 'Volatile energy levels', detected: Math.sqrt(variance) > 2.5 });
+      }
     }
 
     let age = 0;

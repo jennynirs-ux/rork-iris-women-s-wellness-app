@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -265,10 +265,10 @@ export default function CalendarScreen() {
     return days;
   }, [selectedMonth]);
 
-  const getDayInfo = (day: number) => {
+  const getDayInfo = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
     const dateStr = getLocalDateString(date);
-    
+
     const hasScan = scans.some(s => s.date.split('T')[0] === dateStr);
     const dayCheckIns = checkIns.filter(c => c.date === dateStr);
     const checkIn = dayCheckIns.length > 0
@@ -280,11 +280,11 @@ export default function CalendarScreen() {
       : null;
 
     const isDueDate = dueDateStr === dateStr;
-    
-    return { hasScan, hasCheckIn, phase, checkIn, date, dateStr, isDueDate };
-  };
 
-  const getPhaseInfoForDay = (day: number) => {
+    return { hasScan, hasCheckIn, phase, checkIn, date, dateStr, isDueDate };
+  }, [selectedMonth, scans, checkIns, isRegularCycle, effectiveCycleStart, userProfile.cycleLength, dueDateStr]);
+
+  const getPhaseInfoForDay = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
     const timeline = getTimelinePhaseForDate(date, userProfile.lifeStage, userProfile);
 
@@ -302,17 +302,17 @@ export default function CalendarScreen() {
       icon: info.icon,
       label: getLifeStageLabel(timeline.key, t),
     };
-  };
+  }, [selectedMonth, userProfile, t]);
 
-  const handleDayPress = (day: number) => {
+  const handleDayPress = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
     const dateStr = getLocalDateString(date);
     const today = getLocalDateString(new Date());
-    
+
     if (dateStr === today) {
       const hasScan = scans.some(s => s.date.split('T')[0] === dateStr);
       const hasCheckIn = checkIns.some(c => c.date === dateStr);
-      
+
       if (!hasScan || !hasCheckIn) {
         router.push('/scan' as any);
       } else {
@@ -321,31 +321,32 @@ export default function CalendarScreen() {
     } else {
       setSelectedDate(date);
     }
-  };
+  }, [selectedMonth, scans, checkIns]);
 
-  const isToday = (day: number) => {
+  const isToday = useCallback((day: number) => {
     const today = new Date();
-    return day === today.getDate() && 
-           selectedMonth.getMonth() === today.getMonth() && 
+    return day === today.getDate() &&
+           selectedMonth.getMonth() === today.getMonth() &&
            selectedMonth.getFullYear() === today.getFullYear();
-  };
+  }, [selectedMonth]);
 
-  const isSelected = (day: number) => {
+  const isSelected = useCallback((day: number) => {
     if (!selectedDate) return false;
-    return day === selectedDate.getDate() && 
-           selectedMonth.getMonth() === selectedDate.getMonth() && 
+    return day === selectedDate.getDate() &&
+           selectedMonth.getMonth() === selectedDate.getMonth() &&
            selectedMonth.getFullYear() === selectedDate.getFullYear();
-  };
+  }, [selectedDate, selectedMonth]);
 
-  const formatDate = (date: Date) => {
-    const monthNames = [
-      t.calendar.months.january, t.calendar.months.february, t.calendar.months.march,
-      t.calendar.months.april, t.calendar.months.may, t.calendar.months.june,
-      t.calendar.months.july, t.calendar.months.august, t.calendar.months.september,
-      t.calendar.months.october, t.calendar.months.november, t.calendar.months.december
-    ];
+  const monthNames = useMemo(() => [
+    t.calendar.months.january, t.calendar.months.february, t.calendar.months.march,
+    t.calendar.months.april, t.calendar.months.may, t.calendar.months.june,
+    t.calendar.months.july, t.calendar.months.august, t.calendar.months.september,
+    t.calendar.months.october, t.calendar.months.november, t.calendar.months.december
+  ], [t.calendar.months]);
+
+  const formatDate = useCallback((date: Date) => {
     return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-  };
+  }, [monthNames]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>

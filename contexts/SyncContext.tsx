@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -202,7 +202,7 @@ export const [SyncContext, useSync] = createContextHook(() => {
 
   const isSyncing = pushMutation.isPending || pullMutation.isPending;
 
-  return {
+  return useMemo(() => ({
     syncId,
     lastSyncedAt,
     isSyncing,
@@ -213,5 +213,16 @@ export const [SyncContext, useSync] = createContextHook(() => {
     setSyncId: setSyncIdMutation.mutateAsync,
     isPushError: pushMutation.isError,
     isPullError: pullMutation.isError,
-  };
+  }), [
+    syncId,
+    lastSyncedAt,
+    isSyncing,
+    push,
+    pull,
+    restoreFromId,
+    ensureSyncId,
+    setSyncIdMutation.mutateAsync,
+    pushMutation.isError,
+    pullMutation.isError,
+  ]);
 });
