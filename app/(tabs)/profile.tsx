@@ -44,6 +44,7 @@ import { getHealthKitAvailability } from "@/lib/healthKit";
 import { areNotificationsEnabled, enableNotifications, disableNotifications } from "@/lib/notifications";
 import { LANGUAGES } from "@/constants/translations";
 import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWeightInput, parseHeightInput } from "@/lib/unitConversion";
+import logger from "@/lib/logger";
 
 function getTranslatedMonths(t: any): string[] {
   const m = t.calendar.months;
@@ -473,7 +474,7 @@ export default function ProfileScreen() {
         await disableNotifications();
       }
     } catch (error) {
-      console.error('Failed to toggle notifications:', error);
+      logger.error('Failed to toggle notifications:', error);
       setNotificationsEnabled(!value);
       Alert.alert(
         t.settings.error,
@@ -1159,7 +1160,7 @@ export default function ProfileScreen() {
                         }
                       }
                     } catch (e) {
-                      console.error('[Profile] Export data error:', e);
+                      logger.error('[Profile] Export data error:', e);
                       Alert.alert(t.settings.error, t.settings.downloadMyDataError);
                     } finally {
                       setIsExporting(false);
@@ -1210,7 +1211,7 @@ export default function ProfileScreen() {
                               Alert.alert('', t.settings.accountDeleted);
                               router.replace('/onboarding');
                             } catch (e) {
-                              console.error('[Profile] Delete error:', e);
+                              logger.error('[Profile] Delete error:', e);
                               Alert.alert(t.settings.error, 'Failed to delete data. Please try again.');
                             }
                           }
@@ -1721,7 +1722,7 @@ export default function ProfileScreen() {
                           await connectHealth(selectedHealthTypes);
                           Alert.alert(t.health.connectionSuccess, t.health.connectionSuccessMessage);
                         } catch (e) {
-                          console.log('[Health] Connection error:', e);
+                          logger.log('[Health] Connection error:', e);
                           if (!availability.isAvailable) {
                             Alert.alert(t.health.notAvailableTitle, t.health.notAvailableIos);
                           }
@@ -1741,7 +1742,7 @@ export default function ProfileScreen() {
                             await syncHealthData();
                             Alert.alert(t.health.syncComplete, t.health.syncCompleteMessage);
                           } catch (e) {
-                            console.log('[Health] Sync error:', e);
+                            logger.log('[Health] Sync error:', e);
                           }
                         }}
                         disabled={isHealthSyncing}

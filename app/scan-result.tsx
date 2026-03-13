@@ -80,6 +80,9 @@ export default function ScanResultScreen() {
           <Animated.View style={{ opacity: fadeAnim, alignItems: "center" as const }}>
             <Text style={styles.title}>{t.scanResult.scanComplete}</Text>
             <Text style={styles.subtitle}>{t.scanResult.analyzingResults}</Text>
+            <Text style={styles.disclaimer}>
+              {(t.common as any)?.medicalDisclaimer ?? "This is a wellness tool only. Results are not medical advice, diagnosis, or treatment. Consult a healthcare professional for medical concerns."}
+            </Text>
           </Animated.View>
         </View>
 
@@ -141,6 +144,15 @@ function createScanResultStyles(colors: typeof Colors.light) { return StyleSheet
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: "center" as const,
+  },
+  disclaimer: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: "center" as const,
+    marginTop: 24,
+    paddingHorizontal: 32,
+    lineHeight: 16,
+    opacity: 0.7,
   },
   modalOverlay: {
     position: "absolute" as const,

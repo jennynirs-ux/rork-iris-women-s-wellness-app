@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { referralStore } from "@/backend/trpc/routes/referral/store";
+import logger from "@/lib/logger";
 
 export default publicProcedure
   .input(
@@ -18,7 +19,7 @@ export default publicProcedure
     }
 
     referralStore.register(userId, referralCode);
-    console.log("[Referral API] Registered code:", referralCode, "for user:", userId);
+    logger.log("[Referral API] Registered code:", referralCode, "for user:", userId);
 
     return { success: true as const, referralCode };
   });

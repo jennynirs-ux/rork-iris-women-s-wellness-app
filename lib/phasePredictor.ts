@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import {
   CyclePhase,
   PhaseProbabilities,
@@ -65,7 +66,7 @@ export function findEffectiveCycleStart(
   const storedStart = new Date(lastPeriodDate);
 
   if (bleedingStart.getTime() > storedStart.getTime()) {
-    console.log('[PhasePredictor] Using bleeding check-in as cycle start:', bleedingStartDate);
+    logger.log('[PhasePredictor] Using bleeding check-in as cycle start:', bleedingStartDate);
     return new Date(bleedingStartDate).toISOString();
   }
 
@@ -212,7 +213,7 @@ export function computeEnrichedPhaseInfo(
   const fertileWindowEnd = ovulationRange[1] + 1;
   const isFertile = !isOverdue && dayInCycle >= fertileWindowStart && dayInCycle <= fertileWindowEnd;
 
-  console.log(`[PhasePredictor] daysSinceStart=${daysSinceStart}, cycleLength=${cycleLength}, isOverdue=${isOverdue}, dayInCycle=${dayInCycle}, phase=${currentPhase}`);
+  logger.log(`[PhasePredictor] daysSinceStart=${daysSinceStart}, cycleLength=${cycleLength}, isOverdue=${isOverdue}, dayInCycle=${dayInCycle}, phase=${currentPhase}`);
 
   return {
     phaseName: t.phases[currentPhase],

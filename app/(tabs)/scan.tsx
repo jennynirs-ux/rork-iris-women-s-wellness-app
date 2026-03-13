@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import { incrementScanCount, shouldPromptReview, showReviewPrompt } from "@/lib/reviewPrompt";
 import { analyzeEyeImage, computeWellnessScores, cropEyeRegion, cropUnderEyeRegion, validateEyeImage, detectFacePresence } from "@/lib/eyeAnalysis";
 import type { ImageValidationResult } from "@/lib/eyeAnalysis";
+import logger from "@/lib/logger";
 
 type ScanStage = 'ready' | 'capturing' | 'analyzing' | 'failed' | 'invalid_image';
 
@@ -50,9 +51,9 @@ export default function ScanScreen() {
 
   useEffect(() => {
     isMountedRef.current = true;
-    console.log('[Scan] Screen mounted');
+    logger.log('[Scan] Screen mounted');
     return () => {
-      console.log('[Scan] Screen unmounting');
+      logger.log('[Scan] Screen unmounting');
       isMountedRef.current = false;
       pulseAnimation.stopAnimation();
       fadeAnimation.stopAnimation();
@@ -96,7 +97,7 @@ export default function ScanScreen() {
           }
         }
       } catch (e) {
-        console.log('[Scan] Face check error:', e);
+        logger.log('[Scan] Face check error:', e);
         if (isMountedRef.current) setFaceDetected(false);
       } finally {
         isCheckingFaceRef.current = false;
@@ -130,7 +131,7 @@ export default function ScanScreen() {
   }, [stage, pulseAnimation]);
 
   const handlePermission = useCallback(async () => {
-    console.log('[Scan] handlePermission called');
+    logger.log('[Scan] handlePermission called');
     try {
       if (Platform.OS === 'web') {
         const result = await requestPermission();
@@ -144,28 +145,28 @@ export default function ScanScreen() {
         }
       }
     } catch (error) {
-      console.error('[Scan] Error requesting permission:', error);
+      logger.error('[Scan] Error requesting permission:', error);
     }
   }, [requestPermission]);
 
   const handleCapture = useCallback(async () => {
     if (!faceDetected) {
-      console.log('[Scan] Capture blocked — no face detected');
+      logger.log('[Scan] Capture blocked — no face detected');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       return;
     }
     if (!cameraReady && Platform.OS !== 'web') {
-      console.log('[Scan] Camera not ready yet');
+      logger.log('[Scan] Camera not ready yet');
       return;
     }
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setStage('capturing');
 
-    console.log('[Scan] Capturing photo...');
+    logger.log('[Scan] Capturing photo...');
     try {
       if (!cameraRef.current) {
-        console.log('[Scan] No camera ref');
+        logger.log('[Scan] No camera ref');
         handleCaptureFailed();
         return;
       }
@@ -177,12 +178,12 @@ export default function ScanScreen() {
       });
 
       if (!photo || !photo.base64 || !photo.uri) {
-        console.log('[Scan] Photo capture returned no data');
+        logger.log('[Scan] Photo capture returned no data');
         handleCaptureFailed();
         return;
       }
 
-      console.log('[Scan] Photo captured:', { width: photo.width, height: photo.height, base64Length: photo.base64.length });
+      logger.log('[Scan] Photo captured:', { width: photo.width, height: photo.height, base64Length: photo.base64.length });
 
       if (!isMountedRef.current) return;
 
@@ -190,10 +191,10 @@ export default function ScanScreen() {
       const imageHeight = photo.height ?? 480;
 
       const validation: ImageValidationResult = await validateEyeImage(photo.base64, imageWidth, imageHeight);
-      console.log('[Scan] Image validation result:', validation);
+      logger.log('[Scan] Image validation result:', validation);
 
       if (!validation.isValid) {
-        console.log('[Scan] Image rejected:', validation.reason);
+        logger.log('[Scan] Image rejected:', validation.reason);
         if (!isMountedRef.current) return;
         fadeAnimation.stopAnimation();
         fadeAnimation.setValue(1);
@@ -219,22 +220,22 @@ export default function ScanScreen() {
         const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
         if (croppedBase64) {
           analysisBase64 = croppedBase64;
-          console.log('[Scan] Using cropped eye region for analysis');
+          logger.log('[Scan] Using cropped eye region for analysis');
         }
         const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
         if (underEyeCropped) {
           underEyeBase64 = underEyeCropped;
-          console.log('[Scan] Using cropped under-eye region for analysis');
+          logger.log('[Scan] Using cropped under-eye region for analysis');
         }
       }
 
       const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
-      console.log('[Scan] Eye analysis complete:', eyeAnalysis);
+      logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
 
       analysisBase64 = '';
 
       if (!eyeAnalysis) {
-        console.log('[Scan] Eye analysis returned null — image not analyzable');
+        logger.log('[Scan] Eye analysis returned null — image not analyzable');
         if (isMountedRef.current) handleCaptureFailed();
         return;
       }
@@ -252,7 +253,7 @@ export default function ScanScreen() {
       buildAndSaveScanResult(wellnessScores, eyeAnalysis);
 
     } catch (error) {
-      console.error('[Scan] Capture/analysis error:', error);
+      logger.error('[Scan] Capture/analysis error:', error);
       if (isMountedRef.current) {
         handleCaptureFailed();
       }
@@ -349,7 +350,7 @@ export default function ScanScreen() {
       },
     };
 
-    console.log('[Scan] Scan result built:', {
+    logger.log('[Scan] Scan result built:', {
       source: 'eye-analysis',
       scores: { stressScore, energyScore, recoveryScore, hydrationLevel, fatigueLevel, inflammation },
     });
@@ -445,7 +446,7 @@ export default function ScanScreen() {
           facing={facing}
           ref={cameraRef}
           onCameraReady={() => {
-            console.log('[Scan] Camera ready');
+            logger.log('[Scan] Camera ready');
             setCameraReady(true);
           }}
         >

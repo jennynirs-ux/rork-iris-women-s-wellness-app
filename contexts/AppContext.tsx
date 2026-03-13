@@ -9,6 +9,7 @@ import { Language, getTranslation } from "@/constants/translations";
 import { getHealthKitAvailability, requestHealthKitPermissions, fetchAllHealthData, saveHealthConnection, loadHealthConnection, saveHealthData, loadHealthData } from "@/lib/healthKit";
 import { trackEvent } from "@/lib/analytics";
 import { UnitSystem } from "@/lib/unitConversion";
+import logger from "@/lib/logger";
 
 function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -213,14 +214,14 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const updateUserMutation = useMutation({
     mutationFn: async (profile: UserProfile) => {
-      console.log('[AppContext] Saving user profile to AsyncStorage, hasCompletedOnboarding:', profile.hasCompletedOnboarding);
+      logger.log('[AppContext] Saving user profile to AsyncStorage, hasCompletedOnboarding:', profile.hasCompletedOnboarding);
       await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profile));
       const verification = await AsyncStorage.getItem(STORAGE_KEY_USER);
       if (!verification) {
-        console.error('[AppContext] CRITICAL: Profile save verification failed!');
+        logger.error('[AppContext] CRITICAL: Profile save verification failed!');
         throw new Error('Failed to persist user profile');
       }
-      console.log('[AppContext] Profile saved and verified successfully');
+      logger.log('[AppContext] Profile saved and verified successfully');
       return profile;
     },
     onSuccess: (data) => {
@@ -391,7 +392,7 @@ export const [AppContext, useApp] = createContextHook(() => {
       setPreviousPhase(null);
       
       scheduleMenstrualPhaseNotification(date.toISOString(), updated.cycleLength).catch(err => {
-        console.log('Failed to schedule notification:', err);
+        logger.log('Failed to schedule notification:', err);
       });
       
       return updated;
@@ -408,7 +409,7 @@ export const [AppContext, useApp] = createContextHook(() => {
       }
       return findEffectiveCycleStart(userProfile.lastPeriodDate, checkIns);
     } catch (err) {
-      console.error('[AppContext] Error computing effectiveCycleStart:', err);
+      logger.error('[AppContext] Error computing effectiveCycleStart:', err);
       return userProfile.lastPeriodDate;
     }
   }, [userProfile.lastPeriodDate, userProfile.lifeStage, checkIns]);
@@ -442,7 +443,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         previousPhase
       );
     } catch (err) {
-      console.error('[AppContext] Error computing phaseEstimate:', err);
+      logger.error('[AppContext] Error computing phaseEstimate:', err);
       return {
         mostLikely: 'follicular' as CyclePhase,
         probabilities: { menstrual: 0.25, follicular: 0.25, ovulation: 0.25, luteal: 0.25 },
@@ -469,7 +470,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         userProfile.lastPeriodDate,
         userProfile.cycleLength
       ).catch((err) => {
-        console.log('Failed to schedule notification on app load:', err);
+        logger.log('Failed to schedule notification on app load:', err);
       });
     }
   }, [userProfile.hasCompletedOnboarding, userProfile.lastPeriodDate, userProfile.cycleLength]);
@@ -487,14 +488,14 @@ export const [AppContext, useApp] = createContextHook(() => {
       const dueDate = new Date(profile.pregnancyDueDate);
       const now = new Date();
       if (now.getTime() > dueDate.getTime()) {
-        console.log('[AppContext] Due date passed, auto-transitioning to postpartum');
+        logger.log('[AppContext] Due date passed, auto-transitioning to postpartum');
         const updatedProfile = {
           ...profile,
           lifeStage: 'postpartum' as const,
           birthDate: profile.pregnancyDueDate,
         };
         updateUserMutation.mutateAsync(updatedProfile).catch((err) => {
-          console.log('[AppContext] Failed to auto-transition to postpartum:', err);
+          logger.log('[AppContext] Failed to auto-transition to postpartum:', err);
         });
       }
     }
@@ -581,7 +582,7 @@ export const [AppContext, useApp] = createContextHook(() => {
       })();
       if (hasVolatileEnergy) periScore += 1;
 
-      console.log('[LifeStage] Scan analysis:', {
+      logger.log('[LifeStage] Scan analysis:', {
         avgFatigue: avgFatigue.toFixed(1),
         avgStress: avgStress.toFixed(1),
         avgInflammation: avgInflammation.toFixed(1),
@@ -603,7 +604,7 @@ export const [AppContext, useApp] = createContextHook(() => {
     if (age >= 40) periScore += 2;
     if (userProfile.cycleRegularity === 'irregular') periScore += 2;
 
-    console.log('[LifeStage] Final scores:', { pregnancyScore, periScore, age, hasEnoughCheckIns, hasEnoughScans });
+    logger.log('[LifeStage] Final scores:', { pregnancyScore, periScore, age, hasEnoughCheckIns, hasEnoughScans });
 
     const pregnancyThreshold = 5;
     const periThreshold = 6;
@@ -624,7 +625,7 @@ export const [AppContext, useApp] = createContextHook(() => {
 
     return null;
     } catch (err) {
-      console.error('[AppContext] Error computing lifeStageSuggestion:', err);
+      logger.error('[AppContext] Error computing lifeStageSuggestion:', err);
       return null;
     }
   }, [userProfile, checkIns, scans, dismissedSuggestion]);
@@ -715,7 +716,7 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const updateLanguageMutation = useMutation({
     mutationFn: async (lang: Language) => {
-      console.log('[AppContext] Saving language preference:', lang);
+      logger.log('[AppContext] Saving language preference:', lang);
       await AsyncStorage.setItem(STORAGE_KEY_LANGUAGE, lang);
       return lang;
     },
@@ -728,7 +729,7 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const updateUnitsMutation = useMutation({
     mutationFn: async (newUnits: UnitSystem) => {
-      console.log('[AppContext] Saving unit preference:', newUnits);
+      logger.log('[AppContext] Saving unit preference:', newUnits);
       await AsyncStorage.setItem(STORAGE_KEY_UNITS, newUnits);
       return newUnits;
     },
@@ -754,7 +755,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         STORAGE_KEY_UNITS,
       ];
       await AsyncStorage.multiRemove(keys);
-      console.log('[AppContext] All user data deleted');
+      logger.log('[AppContext] All user data deleted');
       return true;
     },
     onSuccess: () => {
@@ -772,7 +773,7 @@ export const [AppContext, useApp] = createContextHook(() => {
       disconnectHealthMutation.mutate();
       queryClient.clear();
       trackEvent('account_deleted');
-      console.log('[AppContext] All data deleted and query cache cleared');
+      logger.log('[AppContext] All data deleted and query cache cleared');
     },
   });
 
@@ -785,7 +786,7 @@ export const [AppContext, useApp] = createContextHook(() => {
 
       return shouldAskAdaptiveQuestion(phaseEstimate, todayCheckIn, cycleDay);
     } catch (err) {
-      console.error('[AppContext] Error computing adaptiveQuestion:', err);
+      logger.error('[AppContext] Error computing adaptiveQuestion:', err);
       return { shouldAsk: false, questionType: null };
     }
   }, [phaseEstimate, checkIns, userProfile.lastPeriodDate]);
@@ -814,7 +815,7 @@ export const [AppContext, useApp] = createContextHook(() => {
     try {
       return computeEnrichedPhaseInfo(profileWithEffectiveStart, checkIns, phaseEstimate, t);
     } catch (err) {
-      console.error('[AppContext] Error computing enrichedPhaseInfo:', err);
+      logger.error('[AppContext] Error computing enrichedPhaseInfo:', err);
       return {
         phaseName: t?.phases?.[phaseEstimate.mostLikely] ?? 'Follicular',
         phaseDay: 1,
@@ -899,7 +900,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         habits: todayHabits,
       };
     } catch (err) {
-      console.error('[AppContext] Error computing todaySummary:', err);
+      logger.error('[AppContext] Error computing todaySummary:', err);
       return {
         date: getLocalDateString(),
         phase: currentPhase,

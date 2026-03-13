@@ -26,6 +26,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { trackEvent } from "@/lib/analytics";
 import { useApp } from "@/contexts/AppContext";
 import { getTranslation } from "@/constants/translations";
+import logger from "@/lib/logger";
 
 export default function PaywallScreen() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function PaywallScreen() {
       ]);
     } catch (e: any) {
       if (e?.userCancelled) return;
-      console.log("[Paywall] Purchase error:", e);
+      logger.log("[Paywall] Purchase error:", e);
       Alert.alert(t.paywall.purchaseFailedTitle, e?.message || t.paywall.purchaseFailedMessage);
     }
   };
@@ -95,7 +96,7 @@ export default function PaywallScreen() {
         Alert.alert(t.paywall.noPurchasesTitle, t.paywall.noPurchasesMessage);
       }
     } catch (e: any) {
-      console.log("[Paywall] Restore error:", e);
+      logger.log("[Paywall] Restore error:", e);
       Alert.alert(t.paywall.restoreFailedTitle, t.paywall.restoreFailedMessage);
     }
   };

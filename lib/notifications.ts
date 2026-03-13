@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getNextPeriodDate } from '@/lib/phasePredictor';
+import logger from "@/lib/logger";
 
 const NOTIFICATION_IDENTIFIER = 'menstrual_phase_reminder';
 const STORAGE_KEY_NOTIFICATION_ENABLED = 'iris_notifications_enabled';
@@ -17,7 +18,7 @@ try {
     }),
   });
 } catch (e) {
-  console.log('[Notifications] Failed to set notification handler:', e);
+  logger.log('[Notifications] Failed to set notification handler:', e);
 }
 
 export async function requestNotificationPermissions(): Promise<boolean> {
@@ -34,7 +35,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('Notification permission not granted');
+    logger.log('Notification permission not granted');
     return false;
   }
 
@@ -78,7 +79,7 @@ export async function scheduleMenstrualPhaseNotification(
   const now = new Date();
 
   if (nextPeriod.getTime() <= now.getTime()) {
-    console.log('[Notifications] Next period date is in the past (overdue), skipping notification');
+    logger.log('[Notifications] Next period date is in the past (overdue), skipping notification');
     return;
   }
 
@@ -89,7 +90,7 @@ export async function scheduleMenstrualPhaseNotification(
   const oneDayMs = 24 * 60 * 60 * 1000;
 
   if (msUntilNotification < oneDayMs) {
-    console.log('[Notifications] Notification would fire in less than 1 day, skipping stale notification');
+    logger.log('[Notifications] Notification would fire in less than 1 day, skipping stale notification');
     return;
   }
 
@@ -109,7 +110,7 @@ export async function scheduleMenstrualPhaseNotification(
     },
   });
 
-  console.log(`[Notifications] Scheduled menstrual notification for ${notificationDate.toLocaleDateString()}, ${daysUntilPeriod} days before period`);
+  logger.log(`[Notifications] Scheduled menstrual notification for ${notificationDate.toLocaleDateString()}, ${daysUntilPeriod} days before period`);
 }
 
 export async function cancelMenstrualPhaseNotification(): Promise<void> {

@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 export type EventName =
   | 'app_opened'
   | 'onboarding_started'
@@ -206,7 +207,7 @@ function trackEvent(event: TrackingEvent): void {
       break;
   }
 
-  console.log(`[Analytics] Event: ${event.event} | User: ${event.userId} | Props:`, event.properties || {});
+  logger.log(`[Analytics] Event: ${event.event} | User: ${event.userId} | Props:`, event.properties || {});
 }
 
 export interface FunnelStep {

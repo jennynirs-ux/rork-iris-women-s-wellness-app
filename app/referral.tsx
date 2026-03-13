@@ -34,6 +34,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { useReferral } from "@/contexts/ReferralContext";
 import { Referral } from "@/types";
+import logger from "@/lib/logger";
 
 function getStatusIcon(status: Referral["status"]) {
   switch (status) {
@@ -117,7 +118,7 @@ export default function ReferralScreen() {
         await Clipboard.setStringAsync(referralCode);
       }
     } catch (err) {
-      console.log("Copy failed:", err);
+      logger.log("Copy failed:", err);
     }
     setCopiedCode(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

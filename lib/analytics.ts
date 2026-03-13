@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { trpcClient } from '@/lib/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_USER_ID = 'iris_analytics_user_id';
 
@@ -25,7 +26,7 @@ async function getUserId(): Promise<string> {
       return stored;
     }
   } catch (e) {
-    console.log('[Analytics] Error reading userId:', e);
+    logger.log('[Analytics] Error reading userId:', e);
   }
 
   const newId = generateUserId();
@@ -33,7 +34,7 @@ async function getUserId(): Promise<string> {
   try {
     await AsyncStorage.setItem(STORAGE_KEY_USER_ID, newId);
   } catch (e) {
-    console.log('[Analytics] Error saving userId:', e);
+    logger.log('[Analytics] Error saving userId:', e);
   }
   return newId;
 }
@@ -84,9 +85,9 @@ async function processQueue(): Promise<void> {
           platform: Platform.OS,
         },
       });
-      console.log('[Analytics] Sent event:', item.event);
+      logger.log('[Analytics] Sent event:', item.event);
     } catch (e) {
-      console.log('[Analytics] Failed to send event:', item.event, e);
+      logger.log('[Analytics] Failed to send event:', item.event, e);
     }
   }
 
@@ -98,7 +99,7 @@ export function trackEvent(
   properties?: Record<string, string | number | boolean>,
 ): void {
   eventQueue.push({ event, properties });
-  processQueue().catch(e => console.log('[Analytics] Queue processing error:', e));
+  processQueue().catch(e => logger.log('[Analytics] Queue processing error:', e));
 }
 
 export async function getAnalyticsUserId(): Promise<string> {

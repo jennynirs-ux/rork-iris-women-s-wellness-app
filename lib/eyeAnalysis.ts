@@ -2,6 +2,7 @@
 
 import { Platform } from 'react-native';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import logger from "@/lib/logger";
 
 export interface EyeAnalysisResult {
   brightness: number;
@@ -61,7 +62,7 @@ function base64ToBytes(base64: string): Uint8Array {
 }
 
 function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAnalysisResult | null {
-  console.log('[EyeAnalysis] Analyzing from base64 bytes, length:', base64.length);
+  logger.log('[EyeAnalysis] Analyzing from base64 bytes, length:', base64.length);
   const bytes = base64ToBytes(base64);
 
   const startOffset = Math.floor(bytes.length * 0.1);
@@ -69,7 +70,7 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
   const sampleSize = endOffset - startOffset;
 
   if (sampleSize < 100) {
-    console.log('[EyeAnalysis] Sample too small, returning null');
+    logger.log('[EyeAnalysis] Sample too small, returning null');
     return null;
   }
 
@@ -113,10 +114,10 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
 
   const warmBias = clamp((mean - 100) / 100, 0, 1);
   const scleraYellowness = clamp(warmBias * 0.6 + (1 - normalizedEntropy) * 0.3 + (1 - brightness) * 0.1, 0, 1);
-  console.log('[EyeAnalysis] Sclera yellowness (base64):', scleraYellowness.toFixed(3));
+  logger.log('[EyeAnalysis] Sclera yellowness (base64):', scleraYellowness.toFixed(3));
 
   const eyeOpenness = clamp(highValueCount / sampleSize * 4, 0, 1);
-  console.log('[EyeAnalysis] Eye openness (base64):', eyeOpenness.toFixed(3));
+  logger.log('[EyeAnalysis] Eye openness (base64):', eyeOpenness.toFixed(3));
 
   let peakConcentration = 0;
   if (veryHighCount > 0) {
@@ -125,7 +126,7 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
   }
   const kurtosisProxy = sampleSize > 0 ? (veryHighCount / sampleSize) * 50 : 0;
   const tearFilmQuality = clamp(peakConcentration * 0.5 + clamp(kurtosisProxy, 0, 1) * 0.3 + brightness * 0.2, 0, 1);
-  console.log('[EyeAnalysis] Tear film quality (base64):', tearFilmQuality.toFixed(3));
+  logger.log('[EyeAnalysis] Tear film quality (base64):', tearFilmQuality.toFixed(3));
 
   let underEyeDarkness = 0.3;
   if (underEyeBase64) {
@@ -145,9 +146,9 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
   } else {
     underEyeDarkness = clamp((1 - brightness) * 0.6 + pupilDarkRatio * 0.2 + (1 - normalizedEntropy) * 0.2, 0, 1);
   }
-  console.log('[EyeAnalysis] Under-eye darkness (base64):', underEyeDarkness.toFixed(3));
+  logger.log('[EyeAnalysis] Under-eye darkness (base64):', underEyeDarkness.toFixed(3));
 
-  console.log('[EyeAnalysis] Base64 analysis result:', {
+  logger.log('[EyeAnalysis] Base64 analysis result:', {
     brightness: brightness.toFixed(3),
     redness: redness.toFixed(3),
     clarity: clarity.toFixed(3),
@@ -181,7 +182,7 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
           canvas.height = eyeRegionHeight;
           const ctx = canvas.getContext('2d');
           if (!ctx) {
-            console.log('[EyeAnalysis] Canvas context not available, returning null');
+            logger.log('[EyeAnalysis] Canvas context not available, returning null');
             resolve(null);
             return;
           }
@@ -245,10 +246,10 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
 
           const yellowness = ((avgR + avgG) / 2 - avgB) / 255;
           const scleraYellowness = clamp(yellowness * 2, 0, 1);
-          console.log('[EyeAnalysis] Sclera yellowness (canvas):', scleraYellowness.toFixed(3));
+          logger.log('[EyeAnalysis] Sclera yellowness (canvas):', scleraYellowness.toFixed(3));
 
           const eyeOpenness = clamp(brightPixels / pixelCount * 2, 0, 1);
-          console.log('[EyeAnalysis] Eye openness (canvas):', eyeOpenness.toFixed(3));
+          logger.log('[EyeAnalysis] Eye openness (canvas):', eyeOpenness.toFixed(3));
 
           let brightClusterSpread = 0;
           if (veryBrightPixels > 0) {
@@ -287,7 +288,7 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
             brightClusterSpread * 0.6 + (veryBrightPixels / Math.max(pixelCount, 1)) * 30 * 0.2 + brightness * 0.2,
             0, 1
           );
-          console.log('[EyeAnalysis] Tear film quality (canvas):', tearFilmQuality.toFixed(3));
+          logger.log('[EyeAnalysis] Tear film quality (canvas):', tearFilmQuality.toFixed(3));
 
           const underEyeY = Math.floor(height * 0.55);
           const underEyeHeight = Math.floor(height * 0.15);
@@ -309,9 +310,9 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
             const relativeDarkness = (avgLuminance - ueAvgLum) / Math.max(avgLuminance, 1);
             underEyeDarkness = clamp(relativeDarkness * 2 + (1 - ueAvgLum / 255) * 0.3, 0, 1);
           }
-          console.log('[EyeAnalysis] Under-eye darkness (canvas):', underEyeDarkness.toFixed(3));
+          logger.log('[EyeAnalysis] Under-eye darkness (canvas):', underEyeDarkness.toFixed(3));
 
-          console.log('[EyeAnalysis] Canvas analysis result:', {
+          logger.log('[EyeAnalysis] Canvas analysis result:', {
             brightness: brightness.toFixed(3),
             redness: redness.toFixed(3),
             clarity: clarity.toFixed(3),
@@ -328,17 +329,17 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
 
           resolve({ brightness, redness, clarity, pupilDarkRatio, symmetry, scleraYellowness, underEyeDarkness, eyeOpenness, tearFilmQuality });
         } catch (err) {
-          console.error('[EyeAnalysis] Canvas processing error:', err);
+          logger.error('[EyeAnalysis] Canvas processing error:', err);
           resolve(null);
         }
       };
       img.onerror = () => {
-        console.log('[EyeAnalysis] Image load failed, returning null');
+        logger.log('[EyeAnalysis] Image load failed, returning null');
         resolve(null);
       };
       img.src = `data:image/jpg;base64,${base64}`;
     } catch (err) {
-      console.error('[EyeAnalysis] Canvas setup error:', err);
+      logger.error('[EyeAnalysis] Canvas setup error:', err);
       resolve(null);
     }
   });
@@ -350,7 +351,7 @@ export interface ImageValidationResult {
 }
 
 function validateFromBase64Bytes(base64: string): ImageValidationResult {
-  console.log('[EyeAnalysis] Validating image from base64...');
+  logger.log('[EyeAnalysis] Validating image from base64...');
   const bytes = base64ToBytes(base64);
 
   const startOffset = Math.floor(bytes.length * 0.1);
@@ -393,7 +394,7 @@ function validateFromBase64Bytes(base64: string): ImageValidationResult {
   const lowRatio = lowCount / sampleSize;
   const highRatio = highCount / sampleSize;
 
-  console.log('[EyeAnalysis] Validation metrics (base64):', {
+  logger.log('[EyeAnalysis] Validation metrics (base64):', {
     mean: mean.toFixed(1),
     stdDev: stdDev.toFixed(1),
     entropy: entropy.toFixed(2),
@@ -492,7 +493,7 @@ function validateWithCanvas(base64: string, width: number, height: number): Prom
           lumVariance /= pixelCount;
           const lumStdDev = Math.sqrt(lumVariance);
 
-          console.log('[EyeAnalysis] Validation metrics (canvas):', {
+          logger.log('[EyeAnalysis] Validation metrics (canvas):', {
             avgLum: avgLum.toFixed(1),
             lumStdDev: lumStdDev.toFixed(1),
             darkRatio: darkRatio.toFixed(3),
@@ -534,7 +535,7 @@ function validateWithCanvas(base64: string, width: number, height: number): Prom
 
           resolve({ isValid: true, reason: 'ok' });
         } catch (err) {
-          console.error('[EyeAnalysis] Canvas validation error:', err);
+          logger.error('[EyeAnalysis] Canvas validation error:', err);
           resolve(validateFromBase64Bytes(base64));
         }
       };
@@ -543,7 +544,7 @@ function validateWithCanvas(base64: string, width: number, height: number): Prom
       };
       img.src = `data:image/jpg;base64,${base64}`;
     } catch (err) {
-      console.error('[EyeAnalysis] Canvas validation setup error:', err);
+      logger.error('[EyeAnalysis] Canvas validation setup error:', err);
       resolve(validateFromBase64Bytes(base64));
     }
   });
@@ -565,7 +566,7 @@ function detectFaceWithCanvas(base64: string, width: number, height: number): Pr
           canvas.height = regionH;
           const ctx = canvas.getContext('2d');
           if (!ctx) {
-            console.log('[FaceDetect] No canvas context');
+            logger.log('[FaceDetect] No canvas context');
             resolve(false);
             return;
           }
@@ -634,7 +635,7 @@ function detectFaceWithCanvas(base64: string, width: number, height: number): Pr
           const rightEyeRatio = eyeRegionPixels > 0 ? rightEyeDark / eyeRegionPixels : 0;
           const hasEyeLikeRegions = leftEyeRatio > 0.02 && rightEyeRatio > 0.02;
 
-          console.log('[FaceDetect] Canvas metrics:', {
+          logger.log('[FaceDetect] Canvas metrics:', {
             skinRatio: skinRatio.toFixed(3),
             darkRatio: darkRatio.toFixed(3),
             lumStdDev: lumStdDev.toFixed(1),
@@ -644,20 +645,20 @@ function detectFaceWithCanvas(base64: string, width: number, height: number): Pr
           });
 
           const isFace = skinRatio >= 0.15 && lumStdDev > 20 && darkRatio > 0.02 && darkRatio < 0.7 && hasEyeLikeRegions;
-          console.log('[FaceDetect] Canvas result:', isFace);
+          logger.log('[FaceDetect] Canvas result:', isFace);
           resolve(isFace);
         } catch (err) {
-          console.error('[FaceDetect] Canvas error:', err);
+          logger.error('[FaceDetect] Canvas error:', err);
           resolve(false);
         }
       };
       img.onerror = () => {
-        console.log('[FaceDetect] Image load failed');
+        logger.log('[FaceDetect] Image load failed');
         resolve(false);
       };
       img.src = `data:image/jpg;base64,${base64}`;
     } catch (err) {
-      console.error('[FaceDetect] Setup error:', err);
+      logger.error('[FaceDetect] Setup error:', err);
       resolve(false);
     }
   });
@@ -670,7 +671,7 @@ function detectFaceFromBytes(base64: string): boolean {
   const sampleSize = endOffset - startOffset;
 
   if (sampleSize < 200) {
-    console.log('[FaceDetect] Sample too small');
+    logger.log('[FaceDetect] Sample too small');
     return false;
   }
 
@@ -719,7 +720,7 @@ function detectFaceFromBytes(base64: string): boolean {
     }
   }
 
-  console.log('[FaceDetect] Bytes metrics:', {
+  logger.log('[FaceDetect] Bytes metrics:', {
     mean: mean.toFixed(1),
     stdDev: stdDev.toFixed(1),
     entropy: entropy.toFixed(2),
@@ -737,7 +738,7 @@ function detectFaceFromBytes(base64: string): boolean {
     mean > 40 && mean < 200 &&
     peakCount >= 2;
 
-  console.log('[FaceDetect] Bytes result:', isFace);
+  logger.log('[FaceDetect] Bytes result:', isFace);
   return isFace;
 }
 
@@ -757,7 +758,7 @@ export async function validateEyeImage(
   imageWidth: number,
   imageHeight: number,
 ): Promise<ImageValidationResult> {
-  console.log('[EyeAnalysis] Starting image validation, platform:', Platform.OS);
+  logger.log('[EyeAnalysis] Starting image validation, platform:', Platform.OS);
 
   if (Platform.OS === 'web') {
     return validateWithCanvas(base64Data, imageWidth, imageHeight);
@@ -777,7 +778,7 @@ export async function cropEyeRegion(
     const eyeRegionX = Math.floor(imageWidth * 0.1);
     const eyeRegionWidth = Math.floor(imageWidth * 0.8);
 
-    console.log('[EyeAnalysis] Cropping eye region:', { eyeRegionX, eyeRegionY, eyeRegionWidth, eyeRegionHeight });
+    logger.log('[EyeAnalysis] Cropping eye region:', { eyeRegionX, eyeRegionY, eyeRegionWidth, eyeRegionHeight });
 
     const cropped = await manipulateAsync(
       imageUri,
@@ -797,7 +798,7 @@ export async function cropEyeRegion(
 
     return cropped.base64 ?? null;
   } catch (err) {
-    console.error('[EyeAnalysis] Crop failed:', err);
+    logger.error('[EyeAnalysis] Crop failed:', err);
     return null;
   }
 }
@@ -813,7 +814,7 @@ export async function cropUnderEyeRegion(
     const underEyeX = Math.floor(imageWidth * 0.1);
     const underEyeWidth = Math.floor(imageWidth * 0.8);
 
-    console.log('[EyeAnalysis] Cropping under-eye region:', { underEyeX, underEyeY, underEyeWidth, underEyeHeight });
+    logger.log('[EyeAnalysis] Cropping under-eye region:', { underEyeX, underEyeY, underEyeWidth, underEyeHeight });
 
     const cropped = await manipulateAsync(
       imageUri,
@@ -833,7 +834,7 @@ export async function cropUnderEyeRegion(
 
     return cropped.base64 ?? null;
   } catch (err) {
-    console.error('[EyeAnalysis] Under-eye crop failed:', err);
+    logger.error('[EyeAnalysis] Under-eye crop failed:', err);
     return null;
   }
 }
@@ -844,7 +845,7 @@ export async function analyzeEyeImage(
   imageHeight: number,
   underEyeBase64?: string,
 ): Promise<EyeAnalysisResult | null> {
-  console.log('[EyeAnalysis] Starting analysis, platform:', Platform.OS, 'image:', imageWidth, 'x', imageHeight);
+  logger.log('[EyeAnalysis] Starting analysis, platform:', Platform.OS, 'image:', imageWidth, 'x', imageHeight);
 
   if (Platform.OS === 'web') {
     return analyzeWithCanvas(base64Data, imageWidth, imageHeight);
@@ -941,7 +942,7 @@ export function computeWellnessScores(
     1, 10,
   );
 
-  console.log('[EyeAnalysis] Wellness scores computed:', {
+  logger.log('[EyeAnalysis] Wellness scores computed:', {
     energyScore, fatigueLevel, hydrationLevel, inflammation, recoveryScore, stressScore,
     inputs: {
       eyeBrightness: eyeBrightness.toFixed(2),

@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { trpcClient } from "@/lib/trpc";
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_REFERRAL = "iris_referral_state";
 const REFERRAL_CODE_PATTERN = /^IRIS-[A-Z0-9]{6}$/;
@@ -103,10 +104,10 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
           userId: uid,
           referralCode: code,
         });
-        console.log("[Referral] Backend register result:", result);
+        logger.log("[Referral] Backend register result:", result);
         return result;
       } catch (err) {
-        console.log("[Referral] Backend register failed (offline mode):", err);
+        logger.log("[Referral] Backend register failed (offline mode):", err);
         return { success: true as const, referralCode: code };
       }
     },
@@ -142,12 +143,12 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
         const result = await trpcClient.referral.validate.query({
           referralCode: upperCode,
         });
-        console.log("[Referral] Validate result:", result);
+        logger.log("[Referral] Validate result:", result);
         return result;
       } catch (err) {
-        console.log("[Referral] Validate failed (offline), falling back to format check:", err);
+        logger.log("[Referral] Validate failed (offline), falling back to format check:", err);
         if (REFERRAL_CODE_PATTERN.test(upperCode)) {
-          console.log("[Referral] Code format valid (offline fallback):", upperCode);
+          logger.log("[Referral] Code format valid (offline fallback):", upperCode);
           return { valid: true as const, referrerUserId: "" };
         }
         return { valid: false as const, error: "network_error" as const };
@@ -165,14 +166,14 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
           referralCode: code,
           newUserId: userId,
         });
-        console.log("[Referral] Apply result:", result);
+        logger.log("[Referral] Apply result:", result);
         if (result.success) {
           await AsyncStorage.setItem(STORAGE_KEY_APPLIED_CODE, code);
           setAppliedCode(code);
         }
         return result;
       } catch (err) {
-        console.log("[Referral] Apply failed (offline):", err);
+        logger.log("[Referral] Apply failed (offline):", err);
         await AsyncStorage.setItem(STORAGE_KEY_APPLIED_CODE, code);
         setAppliedCode(code);
         return { success: true as const, referralCode: code, referrerUserId: "" };
@@ -188,10 +189,10 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
           userId,
           milestone,
         });
-        console.log("[Referral] Milestone tracked:", milestone, result);
+        logger.log("[Referral] Milestone tracked:", milestone, result);
         return result;
       } catch (err) {
-        console.log("[Referral] Milestone track failed (offline):", err);
+        logger.log("[Referral] Milestone track failed (offline):", err);
         return { success: false as const, error: "network_error" as const };
       }
     },
@@ -208,7 +209,7 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
     ).length;
 
     if (referralsThisMonth >= state.maxReferralsPerMonth) {
-      console.log("[Referral] Monthly limit reached:", referralsThisMonth);
+      logger.log("[Referral] Monthly limit reached:", referralsThisMonth);
       return { success: false, reason: "monthly_limit" as const };
     }
 
@@ -226,7 +227,7 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
     };
 
     saveMutate(updated);
-    console.log("[Referral] Sent via", platform, "total:", updated.referralsSent);
+    logger.log("[Referral] Sent via", platform, "total:", updated.referralsSent);
     return { success: true, referral: newReferral };
   }, [state, saveMutate]);
 
@@ -254,7 +255,7 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
     };
 
     saveMutate(updated);
-    console.log("[Referral] Status updated:", referralId, "->", newStatus);
+    logger.log("[Referral] Status updated:", referralId, "->", newStatus);
   }, [state, saveMutate]);
 
   const referralStats = useMemo(() => {

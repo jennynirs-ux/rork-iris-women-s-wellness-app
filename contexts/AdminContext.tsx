@@ -1,5 +1,6 @@
 import { AdminUser, AdminPermission } from '@/types/admin';
 import { ADMIN_CREDENTIALS, ROLE_PERMISSIONS } from '@/constants/adminData';
+import { sha256 } from '@/lib/crypto';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,7 +29,9 @@ export const [AdminContext, useAdmin] = createContextHook(() => {
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
       const cred = ADMIN_CREDENTIALS[username.toLowerCase()];
-      if (!cred || cred.password !== password) {
+      if (!cred) throw new Error('Invalid credentials');
+      const inputHash = await sha256(password);
+      if (inputHash !== cred.passwordHash) {
         throw new Error('Invalid credentials');
       }
       const user: AdminUser = {

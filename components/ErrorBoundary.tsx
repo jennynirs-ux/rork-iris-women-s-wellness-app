@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native
 import { RefreshCw, Home, ShieldAlert } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Language } from "@/constants/translations";
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_LANGUAGE = "iris_language";
 
@@ -40,9 +41,9 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("[ErrorBoundary] Caught error:", error.message);
-    console.error("[ErrorBoundary] Error stack:", error.stack);
-    console.error("[ErrorBoundary] Component stack:", errorInfo.componentStack);
+    logger.error("[ErrorBoundary] Caught error:", error.message);
+    logger.error("[ErrorBoundary] Error stack:", error.stack);
+    logger.error("[ErrorBoundary] Component stack:", errorInfo.componentStack);
     void this.loadLanguage();
   }
 
@@ -57,7 +58,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         this.setState({ language: stored as Language });
       }
     } catch {
-      console.log("[ErrorBoundary] Could not load language preference");
+      logger.log("[ErrorBoundary] Could not load language preference");
     }
   };
 
@@ -71,7 +72,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       const { router } = require("expo-router");
       router.replace("/");
     } catch {
-      console.log("[ErrorBoundary] Could not navigate home");
+      logger.log("[ErrorBoundary] Could not navigate home");
     }
   };
 

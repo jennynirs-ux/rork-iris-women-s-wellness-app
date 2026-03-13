@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { HealthData, HealthDataType, HealthConnectionState } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_HEALTH_CONNECTION = 'iris_health_connection';
 const STORAGE_KEY_HEALTH_DATA = 'iris_health_data';
@@ -9,18 +10,18 @@ let AppleHealthKit: any = null;
 
 function tryLoadHealthKit(): boolean {
   if (Platform.OS !== 'ios') {
-    console.log('[HealthKit] Not iOS, skipping');
+    logger.log('[HealthKit] Not iOS, skipping');
     return false;
   }
 
   try {
     AppleHealthKit = require('react-native-health')?.default;
     if (AppleHealthKit) {
-      console.log('[HealthKit] Module loaded successfully');
+      logger.log('[HealthKit] Module loaded successfully');
       return true;
     }
   } catch {
-    console.log('[HealthKit] Native module not available (expected in Expo Go)');
+    logger.log('[HealthKit] Native module not available (expected in Expo Go)');
   }
   return false;
 }
@@ -42,7 +43,7 @@ export function getHealthKitAvailability(): { isAvailable: boolean; reason: stri
 
 export async function requestHealthKitPermissions(): Promise<boolean> {
   if (!isHealthKitAvailable || !AppleHealthKit) {
-    console.log('[HealthKit] Cannot request permissions - module not available');
+    logger.log('[HealthKit] Cannot request permissions - module not available');
     return false;
   }
 
@@ -62,15 +63,15 @@ export async function requestHealthKitPermissions(): Promise<boolean> {
     try {
       AppleHealthKit.initHealthKit(permissions, (err: any) => {
         if (err) {
-          console.log('[HealthKit] Permission error:', err);
+          logger.log('[HealthKit] Permission error:', err);
           resolve(false);
         } else {
-          console.log('[HealthKit] Permissions granted');
+          logger.log('[HealthKit] Permissions granted');
           resolve(true);
         }
       });
     } catch (e) {
-      console.log('[HealthKit] Init error:', e);
+      logger.log('[HealthKit] Init error:', e);
       resolve(false);
     }
   });
@@ -96,7 +97,7 @@ export async function fetchSleepData(): Promise<{ sleepHours?: number; sleepStar
         },
         (err: any, results: any[]) => {
           if (err || !results || results.length === 0) {
-            console.log('[HealthKit] No sleep data:', err);
+            logger.log('[HealthKit] No sleep data:', err);
             resolve({});
             return;
           }
@@ -123,7 +124,7 @@ export async function fetchSleepData(): Promise<{ sleepHours?: number; sleepStar
 
           const sleepHours = Math.round((totalMs / (1000 * 60 * 60)) * 10) / 10;
 
-          console.log('[HealthKit] Sleep data:', { sleepHours });
+          logger.log('[HealthKit] Sleep data:', { sleepHours });
           resolve({
             sleepHours,
             sleepStartTime: earliest.startDate,
@@ -132,7 +133,7 @@ export async function fetchSleepData(): Promise<{ sleepHours?: number; sleepStar
         }
       );
     } catch {
-      console.log('[HealthKit] Sleep fetch error');
+      logger.log('[HealthKit] Sleep fetch error');
       resolve({});
     }
   });
@@ -156,7 +157,7 @@ export async function fetchMenstrualData(): Promise<{ menstrualFlowLevel?: 'none
         },
         (err: any, results: any[]) => {
           if (err || !results || results.length === 0) {
-            console.log('[HealthKit] No menstrual data:', err);
+            logger.log('[HealthKit] No menstrual data:', err);
             resolve({});
             return;
           }
@@ -192,7 +193,7 @@ export async function fetchMenstrualData(): Promise<{ menstrualFlowLevel?: 'none
             cycleStart = earliest.startDate;
           }
 
-          console.log('[HealthKit] Menstrual data:', { flow: latest?.value, cycleStart });
+          logger.log('[HealthKit] Menstrual data:', { flow: latest?.value, cycleStart });
           resolve({
             menstrualFlowLevel: flowMap[latest?.value] || undefined,
             menstrualCycleStart: cycleStart,
@@ -200,7 +201,7 @@ export async function fetchMenstrualData(): Promise<{ menstrualFlowLevel?: 'none
         }
       );
     } catch {
-      console.log('[HealthKit] Menstrual fetch error');
+      logger.log('[HealthKit] Menstrual fetch error');
       resolve({});
     }
   });
@@ -234,7 +235,7 @@ export async function fetchHeartRateData(): Promise<{ heartRate?: number; restin
             results.reduce((sum: number, r: any) => sum + r.value, 0) / results.length
           );
 
-          console.log('[HealthKit] Heart rate:', avgHR);
+          logger.log('[HealthKit] Heart rate:', avgHR);
           resolve({ heartRate: avgHR });
         }
       );
@@ -265,7 +266,7 @@ export async function fetchStepsData(): Promise<{ steps?: number }> {
             resolve({});
             return;
           }
-          console.log('[HealthKit] Steps:', results?.value);
+          logger.log('[HealthKit] Steps:', results?.value);
           resolve({ steps: Math.round(results?.value || 0) });
         }
       );
@@ -315,7 +316,7 @@ export async function fetchAllHealthData(enabledTypes: HealthDataType[]): Promis
   await Promise.all(promises);
   data.lastSyncDate = new Date().toISOString();
 
-  console.log('[HealthKit] All health data fetched:', data);
+  logger.log('[HealthKit] All health data fetched:', data);
   return data;
 }
 
@@ -330,7 +331,7 @@ export async function loadHealthConnection(): Promise<HealthConnectionState> {
       return JSON.parse(stored);
     }
   } catch {
-    console.log('[HealthKit] Error loading connection state');
+    logger.log('[HealthKit] Error loading connection state');
   }
   return {
     isConnected: false,
@@ -350,7 +351,7 @@ export async function loadHealthData(): Promise<HealthData | null> {
       return JSON.parse(stored);
     }
   } catch {
-    console.log('[HealthKit] Error loading health data');
+    logger.log('[HealthKit] Error loading health data');
   }
   return null;
 }

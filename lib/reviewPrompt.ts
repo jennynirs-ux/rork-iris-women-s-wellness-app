@@ -1,5 +1,6 @@
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import logger from "@/lib/logger";
 
 const REVIEW_STORAGE_KEY = "iris_review_state";
 const SCANS_BEFORE_PROMPT = 3;
@@ -17,7 +18,7 @@ async function getReviewState(): Promise<ReviewState> {
     const stored = await AsyncStorage.getItem(REVIEW_STORAGE_KEY);
     if (stored) return JSON.parse(stored);
   } catch (e) {
-    console.log("[Review] Error loading state:", e);
+    logger.log("[Review] Error loading state:", e);
   }
   return { lastPromptDate: null, hasRated: false, scanCount: 0, dismissCount: 0 };
 }
@@ -26,7 +27,7 @@ async function saveReviewState(state: ReviewState): Promise<void> {
   try {
     await AsyncStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    console.log("[Review] Error saving state:", e);
+    logger.log("[Review] Error saving state:", e);
   }
 }
 
@@ -34,7 +35,7 @@ export async function incrementScanCount(): Promise<void> {
   const state = await getReviewState();
   state.scanCount += 1;
   await saveReviewState(state);
-  console.log("[Review] Scan count:", state.scanCount);
+  logger.log("[Review] Scan count:", state.scanCount);
 }
 
 export async function shouldPromptReview(): Promise<boolean> {
@@ -69,7 +70,7 @@ export async function showReviewPrompt(t?: { title?: string; message?: string; r
         state.dismissCount += 1;
         state.lastPromptDate = new Date().toISOString();
         await saveReviewState(state);
-        console.log("[Review] Dismissed, count:", state.dismissCount);
+        logger.log("[Review] Dismissed, count:", state.dismissCount);
       },
     },
     {
@@ -78,9 +79,9 @@ export async function showReviewPrompt(t?: { title?: string; message?: string; r
         state.hasRated = true;
         state.lastPromptDate = new Date().toISOString();
         await saveReviewState(state);
-        console.log("[Review] User chose to rate");
+        logger.log("[Review] User chose to rate");
 
-        console.log("[Review] User chose to rate - thank you!");
+        logger.log("[Review] User chose to rate - thank you!");
       },
     },
   ]);

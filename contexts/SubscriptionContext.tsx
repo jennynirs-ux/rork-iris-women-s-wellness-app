@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import createContextHook from "@nkzw/create-context-hook";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import logger from "@/lib/logger";
 
 let Purchases: any = null;
 type PurchasesPackage = any;
@@ -26,14 +27,14 @@ if (Platform.OS !== "web" && !isExpoGo()) {
     Purchases = require("react-native-purchases").default;
     const rcToken = getRCToken();
     if (rcToken && Purchases) {
-      console.log("[RC] Configuring RevenueCat");
+      logger.log("[RC] Configuring RevenueCat");
       Purchases.configure({ apiKey: rcToken });
     }
   } catch (e) {
-    console.log("[RC] RevenueCat not available:", e);
+    logger.log("[RC] RevenueCat not available:", e);
   }
 } else {
-  console.log("[RC] Skipping RevenueCat init (web or Expo Go)");
+  logger.log("[RC] Skipping RevenueCat init (web or Expo Go)");
 }
 
 export const [SubscriptionContext, useSubscription] = createContextHook(() => {
@@ -46,10 +47,10 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
       if (!Purchases) return null;
       try {
         const info = await Purchases.getCustomerInfo();
-        console.log("[RC] Customer info fetched", info.entitlements.active);
+        logger.log("[RC] Customer info fetched", info.entitlements.active);
         return info;
       } catch (e) {
-        console.log("[RC] Error fetching customer info:", e);
+        logger.log("[RC] Error fetching customer info:", e);
         return null;
       }
     },
@@ -62,10 +63,10 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
       if (!Purchases) return null;
       try {
         const offerings = await Purchases.getOfferings();
-        console.log("[RC] Offerings fetched", offerings.current?.identifier);
+        logger.log("[RC] Offerings fetched", offerings.current?.identifier);
         return offerings.current;
       } catch (e) {
-        console.log("[RC] Error fetching offerings:", e);
+        logger.log("[RC] Error fetching offerings:", e);
         return null;
       }
     },
@@ -84,9 +85,9 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
   const purchaseMutation = useMutation({
     mutationFn: async (pkg: PurchasesPackage) => {
       if (!Purchases) throw new Error("Purchases not available on web");
-      console.log("[RC] Purchasing package:", pkg.identifier);
+      logger.log("[RC] Purchasing package:", pkg.identifier);
       const result = await Purchases.purchasePackage(pkg);
-      console.log("[RC] Purchase result:", result.customerInfo.entitlements.active);
+      logger.log("[RC] Purchase result:", result.customerInfo.entitlements.active);
       return result.customerInfo;
     },
     onSuccess: (info) => {
@@ -100,9 +101,9 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
   const restoreMutation = useMutation({
     mutationFn: async () => {
       if (!Purchases) throw new Error("Purchases not available on web");
-      console.log("[RC] Restoring purchases");
+      logger.log("[RC] Restoring purchases");
       const info = await Purchases.restorePurchases();
-      console.log("[RC] Restore result:", info.entitlements.active);
+      logger.log("[RC] Restore result:", info.entitlements.active);
       return info;
     },
     onSuccess: (info) => {

@@ -123,6 +123,15 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, authLoading]);
 
+  // Block rendering until auth check completes — prevents content flash
+  if (authLoading || !isAuthenticated) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#0F1117', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#8B5CF6" />
+      </View>
+    );
+  }
+
   const analyticsQuery = trpc.analytics.stats.useQuery(undefined, {
     refetchInterval: 10000,
   });
@@ -188,8 +197,6 @@ export default function AdminDashboard() {
       </View>
     );
   }
-
-  if (!isAuthenticated) return null;
 
   const canExport = hasPermission('export_data');
 

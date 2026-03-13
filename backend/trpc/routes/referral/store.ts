@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 interface ReferralCodeEntry {
   userId: string;
   referralCode: string;
@@ -42,7 +43,7 @@ function register(userId: string, referralCode: string): void {
   };
   referralCodes.set(userId, entry);
   codeToEntry.set(referralCode.toUpperCase(), entry);
-  console.log("[ReferralStore] Registered code:", referralCode.toUpperCase(), "for user:", userId, "total codes:", codeToEntry.size);
+  logger.log("[ReferralStore] Registered code:", referralCode.toUpperCase(), "for user:", userId, "total codes:", codeToEntry.size);
 }
 
 function getByCode(code: string): ReferralCodeEntry | undefined {

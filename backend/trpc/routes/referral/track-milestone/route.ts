@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { referralStore } from "@/backend/trpc/routes/referral/store";
+import logger from "@/lib/logger";
 
 export default publicProcedure
   .input(
@@ -14,7 +15,7 @@ export default publicProcedure
 
     const referral = referralStore.getReferredUser(userId);
     if (!referral) {
-      console.log("[Referral API] No referral found for user:", userId);
+      logger.log("[Referral API] No referral found for user:", userId);
       return { success: false as const, error: "no_referral" as const };
     }
 
@@ -23,14 +24,14 @@ export default publicProcedure
     const newOrder = milestoneOrder[milestone];
 
     if (newOrder <= currentOrder) {
-      console.log("[Referral API] Milestone already reached:", milestone, "for user:", userId);
+      logger.log("[Referral API] Milestone already reached:", milestone, "for user:", userId);
       return { success: true as const, alreadyReached: true };
     }
 
     referralStore.updateMilestone(userId, milestone);
 
     const referrerStats = referralStore.getReferrerStats(referral.referrerUserId);
-    console.log("[Referral API] Milestone tracked:", milestone, "for user:", userId, "referrer:", referral.referrerUserId);
+    logger.log("[Referral API] Milestone tracked:", milestone, "for user:", userId, "referrer:", referral.referrerUserId);
 
     return {
       success: true as const,

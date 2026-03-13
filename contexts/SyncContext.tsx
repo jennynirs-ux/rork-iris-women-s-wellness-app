@@ -6,6 +6,7 @@ import { trpcClient } from "@/lib/trpc";
 import { useApp } from "@/contexts/AppContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Alert } from "react-native";
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_SYNC_ID = "iris_sync_id";
 const STORAGE_KEY_LAST_SYNC = "iris_last_sync_at";
@@ -57,7 +58,7 @@ export const [SyncContext, useSync] = createContextHook(() => {
     },
     onSuccess: (id) => {
       setSyncId(id);
-      console.log("[Sync] Created sync ID:", id);
+      logger.log("[Sync] Created sync ID:", id);
     },
   });
 
@@ -68,7 +69,7 @@ export const [SyncContext, useSync] = createContextHook(() => {
     },
     onSuccess: (id) => {
       setSyncId(id);
-      console.log("[Sync] Set sync ID:", id);
+      logger.log("[Sync] Set sync ID:", id);
     },
   });
 
@@ -100,10 +101,10 @@ export const [SyncContext, useSync] = createContextHook(() => {
     },
     onSuccess: (result) => {
       setLastSyncedAt(result.lastSyncedAt);
-      console.log("[Sync] Push complete, version:", result.version);
+      logger.log("[Sync] Push complete, version:", result.version);
     },
     onError: (error) => {
-      console.error("[Sync] Push failed:", error);
+      logger.error("[Sync] Push failed:", error);
     },
   });
 
@@ -145,10 +146,10 @@ export const [SyncContext, useSync] = createContextHook(() => {
     },
     onSuccess: (data) => {
       setLastSyncedAt(data.lastSyncedAt);
-      console.log("[Sync] Pull complete, version:", data.version);
+      logger.log("[Sync] Pull complete, version:", data.version);
     },
     onError: (error) => {
-      console.error("[Sync] Pull failed:", error);
+      logger.error("[Sync] Pull failed:", error);
     },
   });
 

@@ -24,6 +24,7 @@ import { LifeStage, MainFocus } from "@/types";
 import { Language, LANGUAGES } from "@/constants/translations";
 import { getPendingReferralCode, clearPendingReferralCode } from "@/hooks/useDeepLinkReferral";
 import { trackEvent } from "@/lib/analytics";
+import logger from "@/lib/logger";
 
 const LIFE_STAGE_OPTIONS: { value: LifeStage; label: string }[] = [
   { value: "regular", label: "Menstrual cycle" },
@@ -193,7 +194,7 @@ export default function OnboardingScreen() {
   useEffect(() => {
     getPendingReferralCode().then((code) => {
       if (code && !appliedCode) {
-        console.log("[Onboarding] Found pending referral code from deep link:", code);
+        logger.log("[Onboarding] Found pending referral code from deep link:", code);
         setReferralCodeInput(code);
         setShowReferralInput(true);
         Animated.timing(referralExpandAnim, {
@@ -227,13 +228,13 @@ export default function OnboardingScreen() {
     if (!rawInput) return;
     const code = extractCodeFromText(rawInput);
     if (!code) return;
-    console.log("[Onboarding] Validating referral code:", code, "from input:", rawInput);
+    logger.log("[Onboarding] Validating referral code:", code, "from input:", rawInput);
 
     setReferralError("");
     setReferralStatus("idle");
 
     if (ownReferralCode && code === ownReferralCode.toUpperCase()) {
-      console.log("[Onboarding] Self-referral blocked client-side:", code);
+      logger.log("[Onboarding] Self-referral blocked client-side:", code);
       setReferralError(t.onboarding.selfReferralError);
       setReferralStatus("invalid");
       return;
@@ -241,14 +242,14 @@ export default function OnboardingScreen() {
 
     try {
       const result = await validateCode(code);
-      console.log("[Onboarding] Validate result:", result);
+      logger.log("[Onboarding] Validate result:", result);
       if (result.valid) {
         const applyResult = await applyCode(code);
-        console.log("[Onboarding] Apply result:", applyResult);
+        logger.log("[Onboarding] Apply result:", applyResult);
         if (applyResult.success) {
           setReferralStatus("applied");
           setReferralCodeInput(code);
-          console.log("[Onboarding] Referral code applied:", code);
+          logger.log("[Onboarding] Referral code applied:", code);
         } else {
           const errorMsg = applyResult.error === "self_referral" ? t.onboarding.selfReferralError
             : applyResult.error === "already_referred" ? t.onboarding.alreadyReferredError
@@ -262,7 +263,7 @@ export default function OnboardingScreen() {
         setReferralStatus("invalid");
       }
     } catch (err) {
-      console.log("[Onboarding] Referral validation error:", err);
+      logger.log("[Onboarding] Referral validation error:", err);
       setReferralError(t.onboarding.somethingWentWrongError);
       setReferralStatus("invalid");
     }
@@ -337,7 +338,7 @@ export default function OnboardingScreen() {
       const periodDate = new Date(parseInt(periodYear), parseInt(periodMonth) - 1, parseInt(periodDay));
       if (periodDate > new Date()) {
         periodDate.setTime(new Date().getTime());
-        console.log('[Onboarding] Period date was in the future, clamped to today');
+        logger.log('[Onboarding] Period date was in the future, clamped to today');
       }
       lastPeriodISO = periodDate.toISOString();
     }
@@ -367,7 +368,7 @@ export default function OnboardingScreen() {
     });
 
     trackMilestone("onboarded").catch((err) => {
-      console.log("[Onboarding] Failed to track onboarded milestone:", err);
+      logger.log("[Onboarding] Failed to track onboarded milestone:", err);
     });
 
     trackEvent('onboarding_completed', { lifeStage: selectedLifeStage });

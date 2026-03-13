@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import logger from "@/lib/logger";
 
 const STORAGE_KEY_PENDING_REFERRAL = "iris_pending_referral_code";
 
@@ -16,14 +17,14 @@ function extractReferralCode(url: string): string | null {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match && match[1]) {
-        console.log("[DeepLink] Extracted referral code:", match[1]);
+        logger.log("[DeepLink] Extracted referral code:", match[1]);
         return match[1].toUpperCase();
       }
     }
 
     return null;
   } catch (err) {
-    console.log("[DeepLink] Error extracting referral code:", err);
+    logger.log("[DeepLink] Error extracting referral code:", err);
     return null;
   }
 }
@@ -41,7 +42,7 @@ export async function clearPendingReferralCode(): Promise<void> {
   try {
     await AsyncStorage.removeItem(STORAGE_KEY_PENDING_REFERRAL);
   } catch {
-    console.log("[DeepLink] Failed to clear pending referral code");
+    logger.log("[DeepLink] Failed to clear pending referral code");
   }
 }
 
@@ -55,7 +56,7 @@ export function useDeepLinkReferral(onCodeReceived: (code: string) => void) {
 
       const code = extractReferralCode(url);
       if (code) {
-        console.log("[DeepLink] Referral code from URL:", code);
+        logger.log("[DeepLink] Referral code from URL:", code);
         await AsyncStorage.setItem(STORAGE_KEY_PENDING_REFERRAL, code);
         onCodeReceived(code);
       }
@@ -70,7 +71,7 @@ export function useDeepLinkReferral(onCodeReceived: (code: string) => void) {
         handleUrl(url);
       }
     }).catch((err) => {
-      console.log("[DeepLink] Error getting initial URL:", err);
+      logger.log("[DeepLink] Error getting initial URL:", err);
     });
 
     const subscription = Linking.addEventListener("url", handleLinkingUrl);

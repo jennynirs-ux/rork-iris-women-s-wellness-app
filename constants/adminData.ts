@@ -829,10 +829,12 @@ function getEmptyDashboard(days: number): AdminDashboardData {
   };
 }
 
-export const ADMIN_CREDENTIALS: Record<string, { password: string; role: 'super_admin' | 'analyst' | 'viewer' }> = {
-  admin: { password: 'iris2026!', role: 'super_admin' },
-  analyst: { password: 'analyst2026', role: 'analyst' },
-  viewer: { password: 'viewer2026', role: 'viewer' },
+// Passwords are stored as SHA-256 hashes — never ship plaintext credentials in the client bundle.
+// To generate a hash: echo -n "yourpassword" | shasum -a 256
+export const ADMIN_CREDENTIALS: Record<string, { passwordHash: string; role: 'super_admin' | 'analyst' | 'viewer' }> = {
+  admin: { passwordHash: 'b5856a3a214c0ae59a3f401ad96135cca50642eeeda1b9e93b48fed988f95505', role: 'super_admin' },
+  analyst: { passwordHash: 'a87bd5c0f0c1d62b73129c386dcee04df4bd865ae6259311f01f148a72bf98f1', role: 'analyst' },
+  viewer: { passwordHash: '35cbe0aaf4e558ac53847cf7b057f4a3a86a427e08935bffdf81d7b4ed7cd9f3', role: 'viewer' },
 };
 
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
