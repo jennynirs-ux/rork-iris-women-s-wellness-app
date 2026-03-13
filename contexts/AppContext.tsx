@@ -1,0 +1,969 @@
+import { UserProfile, DailyCheckIn, ScanResult, Habit, DaySummary, PhaseEstimate, PersonalBaseline, CycleHistory, PhaseBaseline, CyclePhase, HealthData, HealthConnectionState, HealthDataType, EnrichedPhaseInfo } from "@/types";
+import createContextHook from "@nkzw/create-context-hook";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { predictPhase, updatePersonalBaseline, updatePhaseBaselines, shouldAskAdaptiveQuestion, findEffectiveCycleStart, computeEnrichedPhaseInfo } from "@/lib/phasePredictor";
+import { scheduleMenstrualPhaseNotification } from "@/lib/notifications";
+import { Language, getTranslation } from "@/constants/translations";
+import { getHealthKitAvailability, requestHealthKitPermissions, fetchAllHealthData, saveHealthConnection, loadHealthConnection, saveHealthData, loadHealthData } from "@/lib/healthKit";
+import { trackEvent } from "@/lib/analytics";
+import { UnitSystem } from "@/lib/unitConversion";
+
+function getLocalDateString(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const STORAGE_KEY_USER = "iris_user_profile";
+const STORAGE_KEY_CHECKINS = "iris_checkins";
+const STORAGE_KEY_SCANS = "iris_scans";
+const STORAGE_KEY_BASELINE = "iris_baseline";
+const STORAGE_KEY_PHASE_BASELINES = "iris_phase_baselines";
+const STORAGE_KEY_CYCLE_HISTORY = "iris_cycle_history";
+const STORAGE_KEY_PREVIOUS_PHASE = "iris_previous_phase";
+const STORAGE_KEY_DISMISSED_SUGGESTION = "iris_dismissed_life_stage_suggestion";
+const STORAGE_KEY_LANGUAGE = "iris_language";
+const STORAGE_KEY_UNITS = "iris_units";
+
+
+function getInitialUserProfile(): UserProfile {
+  return {
+    name: "",
+    birthday: "",
+    weight: 0,
+    height: 0,
+    goals: [],
+    mainFocus: [],
+    cycleLength: 28,
+    cycleLengthMin: 26,
+    cycleLengthMax: 32,
+    lastPeriodDate: new Date().toISOString(),
+    lifeStage: "regular",
+    cycleRegularity: "regular",
+    birthControl: "none",
+    isPremium: false,
+    hasCompletedOnboarding: false,
+  };
+}
+
+export const [AppContext, useApp] = createContextHook(() => {
+  const queryClient = useQueryClient();
+  const [userProfile, setUserProfile] = useState<UserProfile>(getInitialUserProfile());
+  const [checkIns, setCheckIns] = useState<DailyCheckIn[]>([]);
+  const [scans, setScans] = useState<ScanResult[]>([]);
+  const [todayHabits, setTodayHabits] = useState<Habit[]>([]);
+  const [baseline, setBaseline] = useState<PersonalBaseline | null>(null);
+  const [phaseBaselines, setPhaseBaselines] = useState<PhaseBaseline | null>(null);
+  const [cycleHistory, setCycleHistory] = useState<CycleHistory[]>([]);
+  const [previousPhase, setPreviousPhase] = useState<CyclePhase | null>(null);
+  const [dismissedSuggestion, setDismissedSuggestion] = useState<string | null>(null);
+  const [language, setLanguage] = useState<Language>('en');
+  const [units, setUnits] = useState<UnitSystem>('metric');
+  const [healthConnection, setHealthConnection] = useState<HealthConnectionState>({
+    isConnected: false,
+    isAvailable: false,
+    enabledDataTypes: [],
+  });
+  const [healthData, setHealthData] = useState<HealthData | null>(null);
+
+  const userQuery = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_USER);
+      return stored ? JSON.parse(stored) : getInitialUserProfile();
+    },
+  });
+
+  const checkInsQuery = useQuery({
+    queryKey: ["checkIns"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_CHECKINS);
+      return stored ? JSON.parse(stored) : [];
+    },
+  });
+
+  const scansQuery = useQuery({
+    queryKey: ["scans"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_SCANS);
+      return stored ? JSON.parse(stored) : [];
+    },
+  });
+
+  const baselineQuery = useQuery({
+    queryKey: ["baseline"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_BASELINE);
+      return stored ? JSON.parse(stored) : null;
+    },
+  });
+
+  const phaseBaselinesQuery = useQuery({
+    queryKey: ["phaseBaselines"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_BASELINES);
+      return stored ? JSON.parse(stored) : null;
+    },
+  });
+
+  const dismissedSuggestionQuery = useQuery({
+    queryKey: ["dismissedSuggestion"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED_SUGGESTION);
+      return stored || null;
+    },
+  });
+
+  const healthConnectionQuery = useQuery({
+    queryKey: ["healthConnection"],
+    queryFn: async () => {
+      return await loadHealthConnection();
+    },
+  });
+
+  const healthDataQuery = useQuery({
+    queryKey: ["healthData"],
+    queryFn: async () => {
+      return await loadHealthData();
+    },
+  });
+
+  const languageQuery = useQuery({
+    queryKey: ["language"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_LANGUAGE);
+      return (stored as Language) || 'en';
+    },
+  });
+
+  const unitsQuery = useQuery({
+    queryKey: ["units"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_UNITS);
+      return (stored as UnitSystem) || 'metric';
+    },
+  });
+
+  const previousPhaseQuery = useQuery({
+    queryKey: ["previousPhase"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_PREVIOUS_PHASE);
+      return stored ? JSON.parse(stored) : null;
+    },
+  });
+
+  const cycleHistoryQuery = useQuery({
+    queryKey: ["cycleHistory"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_CYCLE_HISTORY);
+      return stored ? JSON.parse(stored) : [];
+    },
+  });
+
+  useEffect(() => {
+    if (userQuery.data) setUserProfile(userQuery.data);
+  }, [userQuery.data]);
+
+  useEffect(() => {
+    if (checkInsQuery.data) setCheckIns(checkInsQuery.data);
+  }, [checkInsQuery.data]);
+
+  useEffect(() => {
+    if (scansQuery.data) setScans(scansQuery.data);
+  }, [scansQuery.data]);
+
+  useEffect(() => {
+    if (baselineQuery.data !== undefined) setBaseline(baselineQuery.data);
+  }, [baselineQuery.data]);
+
+  useEffect(() => {
+    if (phaseBaselinesQuery.data !== undefined) setPhaseBaselines(phaseBaselinesQuery.data);
+  }, [phaseBaselinesQuery.data]);
+
+  useEffect(() => {
+    if (cycleHistoryQuery.data) setCycleHistory(cycleHistoryQuery.data);
+  }, [cycleHistoryQuery.data]);
+
+  useEffect(() => {
+    if (previousPhaseQuery.data !== undefined) setPreviousPhase(previousPhaseQuery.data);
+  }, [previousPhaseQuery.data]);
+
+  useEffect(() => {
+    if (dismissedSuggestionQuery.data !== undefined) setDismissedSuggestion(dismissedSuggestionQuery.data);
+  }, [dismissedSuggestionQuery.data]);
+
+  useEffect(() => {
+    if (languageQuery.data) setLanguage(languageQuery.data);
+  }, [languageQuery.data]);
+
+  useEffect(() => {
+    if (unitsQuery.data) setUnits(unitsQuery.data);
+  }, [unitsQuery.data]);
+
+  useEffect(() => {
+    if (healthConnectionQuery.data) setHealthConnection(healthConnectionQuery.data);
+  }, [healthConnectionQuery.data]);
+
+  useEffect(() => {
+    if (healthDataQuery.data !== undefined) setHealthData(healthDataQuery.data);
+  }, [healthDataQuery.data]);
+
+  const updateUserMutation = useMutation({
+    mutationFn: async (profile: UserProfile) => {
+      console.log('[AppContext] Saving user profile to AsyncStorage, hasCompletedOnboarding:', profile.hasCompletedOnboarding);
+      await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(profile));
+      const verification = await AsyncStorage.getItem(STORAGE_KEY_USER);
+      if (!verification) {
+        console.error('[AppContext] CRITICAL: Profile save verification failed!');
+        throw new Error('Failed to persist user profile');
+      }
+      console.log('[AppContext] Profile saved and verified successfully');
+      return profile;
+    },
+    onSuccess: (data) => {
+      setUserProfile(data);
+      queryClient.setQueryData(["userProfile"], data);
+      trackEvent('profile_updated', { lifeStage: data.lifeStage });
+    },
+  });
+
+  const addCheckInMutation = useMutation({
+    mutationFn: async (checkIn: DailyCheckIn) => {
+      const checkInWithTimestamp = {
+        ...checkIn,
+        timestamp: Date.now(),
+      };
+      const updated = [...checkIns, checkInWithTimestamp];
+      await AsyncStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(updated));
+      return updated;
+    },
+    onSuccess: (data) => {
+      setCheckIns(data);
+      queryClient.setQueryData(["checkIns"], data);
+      const latest = data[data.length - 1];
+      const checkInProps = latest ? {
+        energy: latest.energy,
+        sleep: latest.sleep,
+        stressLevel: latest.stressLevel ?? 5,
+        mood: latest.mood,
+        symptoms: (latest.symptoms || []).join(','),
+        cyclePhase: previousPhase || 'unknown',
+      } : undefined;
+      if (checkIns.length === 0) {
+        trackEvent('first_checkin', checkInProps);
+      } else {
+        trackEvent('checkin_submitted', checkInProps);
+      }
+    },
+  });
+
+  const updateCheckInMutation = useMutation({
+    mutationFn: async (checkIn: DailyCheckIn) => {
+      const updated = checkIns.map((c) => c.date === checkIn.date ? checkIn : c);
+      await AsyncStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(updated));
+      return updated;
+    },
+    onSuccess: (data) => {
+      setCheckIns(data);
+      queryClient.setQueryData(["checkIns"], data);
+    },
+  });
+
+  const addScanMutation = useMutation({
+    mutationFn: async (scan: ScanResult) => {
+      const today = getLocalDateString();
+      const todayCheckIns = checkIns.filter((c) => c.date === today);
+      
+      const avgTodayCheckIn = todayCheckIns.length > 0
+        ? {
+            sleep: Math.round(todayCheckIns.reduce((sum, c) => sum + c.sleep, 0) / todayCheckIns.length),
+            stressLevel: todayCheckIns[0].stressLevel !== undefined
+              ? Math.round(todayCheckIns.reduce((sum, c) => sum + (c.stressLevel || 5), 0) / todayCheckIns.length)
+              : undefined,
+            hadCaffeine: todayCheckIns.some(c => c.hadCaffeine),
+            isIll: todayCheckIns.some(c => c.isIll),
+          }
+        : null;
+      
+      const isConfounded = avgTodayCheckIn
+        ? (avgTodayCheckIn.sleep || 7) < 5 || 
+          (avgTodayCheckIn.stressLevel || 5) > 7 || 
+          avgTodayCheckIn.hadCaffeine === true ||
+          avgTodayCheckIn.isIll === true
+        : false;
+
+      const newBaseline = updatePersonalBaseline(baseline, scan, isConfounded);
+      await AsyncStorage.setItem(STORAGE_KEY_BASELINE, JSON.stringify(newBaseline));
+      setBaseline(newBaseline);
+
+      const currentPhaseEstimate = previousPhase || "follicular";
+      const newPhaseBaselines = updatePhaseBaselines(
+        phaseBaselines,
+        scan,
+        currentPhaseEstimate,
+        isConfounded
+      );
+      await AsyncStorage.setItem(STORAGE_KEY_PHASE_BASELINES, JSON.stringify(newPhaseBaselines));
+      setPhaseBaselines(newPhaseBaselines);
+
+      const updated = [scan, ...scans];
+      await AsyncStorage.setItem(STORAGE_KEY_SCANS, JSON.stringify(updated));
+      return updated;
+    },
+    onSuccess: (data) => {
+      setScans(data);
+      const latestScan = data[0];
+      const scanMetrics = latestScan ? {
+        stressScore: latestScan.stressScore,
+        energyScore: latestScan.energyScore,
+        recoveryScore: latestScan.recoveryScore,
+        hydrationLevel: latestScan.hydrationLevel,
+        fatigueLevel: latestScan.fatigueLevel,
+        inflammation: latestScan.inflammation,
+        scleraYellowness: Math.round((1 - (latestScan.rawOpticalSignals.scleraBrightness / 255)) * 100) / 100,
+        underEyeDarkness: latestScan.physiologicalStates.sleepDebtLikelihood,
+        eyeOpenness: latestScan.physiologicalStates.calmVsAlert,
+        tearFilmQuality: latestScan.rawOpticalSignals.tearFilmReflectivity,
+      } : undefined;
+      if (scans.length === 0) {
+        trackEvent('first_scan', scanMetrics);
+      } else {
+        trackEvent('scan_completed', scanMetrics);
+      }
+    },
+  });
+
+  const updateHabitMutation = useMutation({
+    mutationFn: async ({ habitId, completed }: { habitId: string; completed: boolean }) => {
+      const updated = todayHabits.map((h) =>
+        h.id === habitId ? { ...h, completed } : h
+      );
+      return updated;
+    },
+    onSuccess: (data) => {
+      setTodayHabits(data);
+    },
+  });
+
+  useEffect(() => {
+    trackEvent('app_opened');
+  }, []);
+
+  const updateLastPeriodDateMutation = useMutation({
+    mutationFn: async (date: Date) => {
+      const newHistory: CycleHistory = {
+        startDate: date.toISOString(),
+      };
+
+      let updatedHistory: CycleHistory[];
+      if (cycleHistory.length > 0) {
+        const lastCycle = cycleHistory[cycleHistory.length - 1];
+        if (!lastCycle.endDate) {
+          const updatedLastCycle = {
+            ...lastCycle,
+            endDate: date.toISOString(),
+            lengthDays: Math.floor(
+              (date.getTime() - new Date(lastCycle.startDate).getTime()) / (1000 * 60 * 60 * 24)
+            ),
+          };
+          updatedHistory = [...cycleHistory.slice(0, -1), updatedLastCycle, newHistory];
+        } else {
+          updatedHistory = [...cycleHistory, newHistory];
+        }
+      } else {
+        updatedHistory = [newHistory];
+      }
+
+      const updated = {
+        ...userProfile,
+        lastPeriodDate: date.toISOString(),
+      };
+      
+      await AsyncStorage.setItem(STORAGE_KEY_CYCLE_HISTORY, JSON.stringify(updatedHistory));
+      await AsyncStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updated));
+      await AsyncStorage.removeItem(STORAGE_KEY_PREVIOUS_PHASE);
+      
+      setCycleHistory(updatedHistory);
+      setUserProfile(updated);
+      setPreviousPhase(null);
+      
+      scheduleMenstrualPhaseNotification(date.toISOString(), updated.cycleLength).catch(err => {
+        console.log('Failed to schedule notification:', err);
+      });
+      
+      return updated;
+    },
+    onSuccess: () => {
+      trackEvent('period_logged');
+    },
+  });
+
+  const effectiveCycleStart = useMemo(() => {
+    try {
+      if (userProfile.lifeStage === 'pregnancy' || userProfile.lifeStage === 'postpartum') {
+        return userProfile.lastPeriodDate;
+      }
+      return findEffectiveCycleStart(userProfile.lastPeriodDate, checkIns);
+    } catch (err) {
+      console.error('[AppContext] Error computing effectiveCycleStart:', err);
+      return userProfile.lastPeriodDate;
+    }
+  }, [userProfile.lastPeriodDate, userProfile.lifeStage, checkIns]);
+
+  const profileWithEffectiveStart = useMemo((): UserProfile => {
+    return {
+      ...userProfile,
+      lastPeriodDate: effectiveCycleStart,
+    };
+  }, [userProfile, effectiveCycleStart]);
+
+  const phaseEstimate = useMemo((): PhaseEstimate => {
+    try {
+      const today = getLocalDateString();
+      const todayCheckIns = checkIns.filter((c) => c.date === today);
+      const latestTodayCheckIn = todayCheckIns.length > 0 
+        ? todayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
+        : null;
+      const todayScans = scans.filter((s) => s.date?.split('T')[0] === today);
+      const latestTodayScan = todayScans.length > 0
+        ? todayScans.sort((a, b) => b.timestamp - a.timestamp)[0]
+        : scans[0] || null;
+
+      return predictPhase(
+        profileWithEffectiveStart,
+        latestTodayCheckIn,
+        latestTodayScan,
+        cycleHistory,
+        baseline,
+        phaseBaselines,
+        previousPhase
+      );
+    } catch (err) {
+      console.error('[AppContext] Error computing phaseEstimate:', err);
+      return {
+        mostLikely: 'follicular' as CyclePhase,
+        probabilities: { menstrual: 0.25, follicular: 0.25, ovulation: 0.25, luteal: 0.25 },
+        confidence: 'low' as const,
+        reasoning: 'Error computing phase estimate',
+      };
+    }
+  }, [profileWithEffectiveStart, checkIns, scans, cycleHistory, baseline, phaseBaselines, previousPhase]);
+
+  const currentPhase = useMemo(() => {
+    return phaseEstimate.mostLikely;
+  }, [phaseEstimate]);
+
+  useEffect(() => {
+    if (currentPhase !== previousPhase) {
+      void AsyncStorage.setItem(STORAGE_KEY_PREVIOUS_PHASE, JSON.stringify(currentPhase));
+      setPreviousPhase(currentPhase);
+    }
+  }, [currentPhase, previousPhase]);
+
+  useEffect(() => {
+    if (userProfile.hasCompletedOnboarding && userProfile.lastPeriodDate) {
+      scheduleMenstrualPhaseNotification(
+        userProfile.lastPeriodDate,
+        userProfile.cycleLength
+      ).catch((err) => {
+        console.log('Failed to schedule notification on app load:', err);
+      });
+    }
+  }, [userProfile.hasCompletedOnboarding, userProfile.lastPeriodDate, userProfile.cycleLength]);
+
+  const userProfileRef = useRef(userProfile);
+  userProfileRef.current = userProfile;
+
+  const autoTransitionToPostpartum = useCallback(() => {
+    const profile = userProfileRef.current;
+    if (
+      profile.lifeStage === 'pregnancy' &&
+      profile.pregnancyDueDate &&
+      profile.hasCompletedOnboarding
+    ) {
+      const dueDate = new Date(profile.pregnancyDueDate);
+      const now = new Date();
+      if (now.getTime() > dueDate.getTime()) {
+        console.log('[AppContext] Due date passed, auto-transitioning to postpartum');
+        const updatedProfile = {
+          ...profile,
+          lifeStage: 'postpartum' as const,
+          birthDate: profile.pregnancyDueDate,
+        };
+        updateUserMutation.mutateAsync(updatedProfile).catch((err) => {
+          console.log('[AppContext] Failed to auto-transition to postpartum:', err);
+        });
+      }
+    }
+  }, [updateUserMutation]);
+
+  useEffect(() => {
+    autoTransitionToPostpartum();
+  }, [userProfile.lifeStage, userProfile.pregnancyDueDate, userProfile.hasCompletedOnboarding, autoTransitionToPostpartum]);
+
+  const lifeStageSuggestion = useMemo((): { type: 'pregnancy' | 'perimenopause'; message: string } | null => {
+    try {
+    if (userProfile.lifeStage !== 'regular') return null;
+    if (!userProfile.hasCompletedOnboarding) return null;
+
+    const recentCheckIns = checkIns.slice(-14);
+    const hasEnoughCheckIns = recentCheckIns.length >= 3;
+
+    const now = Date.now();
+    const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
+    const recentScans = scans.filter(s => new Date(s.date).getTime() >= fourteenDaysAgo);
+    const hasEnoughScans = recentScans.length >= 2;
+
+    if (!hasEnoughCheckIns && !hasEnoughScans) return null;
+
+    let pregnancyScore = 0;
+    let periScore = 0;
+
+    if (hasEnoughCheckIns) {
+      const pregnancySymptoms = ['Nausea', 'Breast Tenderness', 'Fatigue', 'Mood Swings', 'Bloating'];
+      recentCheckIns.forEach(ci => {
+        pregnancySymptoms.forEach(s => {
+          if (ci.symptoms.includes(s)) pregnancyScore++;
+        });
+      });
+
+      const periSymptoms = ['Hot Flashes', 'Night Sweats', 'Insomnia', 'Brain Fog', 'Mood Swings'];
+      recentCheckIns.forEach(ci => {
+        periSymptoms.forEach(s => {
+          if (ci.symptoms.includes(s)) periScore++;
+        });
+      });
+    }
+
+    const lastPeriod = new Date(userProfile.lastPeriodDate);
+    const daysSincePeriod = Math.floor((now - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
+    const missedPeriod = daysSincePeriod > (userProfile.cycleLength || 28) + 7;
+    if (missedPeriod) pregnancyScore += 3;
+
+    if (hasEnoughScans) {
+      const avgFatigue = recentScans.reduce((sum, s) => sum + s.fatigueLevel, 0) / recentScans.length;
+      const avgStress = recentScans.reduce((sum, s) => sum + s.stressScore, 0) / recentScans.length;
+      const avgInflammation = recentScans.reduce((sum, s) => sum + s.inflammation, 0) / recentScans.length;
+      const avgRecovery = recentScans.reduce((sum, s) => sum + s.recoveryScore, 0) / recentScans.length;
+      const avgEnergy = recentScans.reduce((sum, s) => sum + s.energyScore, 0) / recentScans.length;
+
+      const highFatigueScans = recentScans.filter(s => s.fatigueLevel > 7).length;
+      const highInflammationScans = recentScans.filter(s => s.inflammation > 6).length;
+      const lowEnergyScans = recentScans.filter(s => s.energyScore < 4).length;
+
+      if (avgFatigue > 7) pregnancyScore += 2;
+      else if (avgFatigue > 5.5) pregnancyScore += 1;
+
+      if (highFatigueScans >= recentScans.length * 0.6) pregnancyScore += 1;
+
+      if (avgInflammation > 5) pregnancyScore += 1;
+
+      if (lowEnergyScans >= recentScans.length * 0.5) pregnancyScore += 1;
+
+      if (avgStress > 7) periScore += 2;
+      else if (avgStress > 5.5) periScore += 1;
+
+      if (avgRecovery < 4) periScore += 2;
+      else if (avgRecovery < 5.5) periScore += 1;
+
+      if (highInflammationScans >= recentScans.length * 0.5) periScore += 1;
+
+      if (avgFatigue > 6 && avgStress > 6) periScore += 1;
+
+      const hasVolatileEnergy = recentScans.length >= 3 && (() => {
+        const energies = recentScans.map(s => s.energyScore);
+        const mean = energies.reduce((a, b) => a + b, 0) / energies.length;
+        const variance = energies.reduce((sum, e) => sum + Math.pow(e - mean, 2), 0) / energies.length;
+        return Math.sqrt(variance) > 2.5;
+      })();
+      if (hasVolatileEnergy) periScore += 1;
+
+      console.log('[LifeStage] Scan analysis:', {
+        avgFatigue: avgFatigue.toFixed(1),
+        avgStress: avgStress.toFixed(1),
+        avgInflammation: avgInflammation.toFixed(1),
+        avgRecovery: avgRecovery.toFixed(1),
+        avgEnergy: avgEnergy.toFixed(1),
+        highFatigueScans,
+        highInflammationScans,
+        lowEnergyScans,
+        hasVolatileEnergy,
+        scanCount: recentScans.length,
+      });
+    }
+
+    let age = 0;
+    if (userProfile.birthday) {
+      const birth = new Date(userProfile.birthday);
+      age = Math.floor((now - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    }
+    if (age >= 40) periScore += 2;
+    if (userProfile.cycleRegularity === 'irregular') periScore += 2;
+
+    console.log('[LifeStage] Final scores:', { pregnancyScore, periScore, age, hasEnoughCheckIns, hasEnoughScans });
+
+    const pregnancyThreshold = 5;
+    const periThreshold = 6;
+
+    if (pregnancyScore >= pregnancyThreshold && dismissedSuggestion !== 'pregnancy') {
+      return {
+        type: 'pregnancy',
+        message: 'Based on your recent check-ins and scan patterns, could it be that you are pregnant? You can update your life stage in your profile.',
+      };
+    }
+
+    if (periScore >= periThreshold && dismissedSuggestion !== 'perimenopause') {
+      return {
+        type: 'perimenopause',
+        message: 'Your recent symptoms and scan data may suggest perimenopause. Would you like to update your life stage for more tailored insights?',
+      };
+    }
+
+    return null;
+    } catch (err) {
+      console.error('[AppContext] Error computing lifeStageSuggestion:', err);
+      return null;
+    }
+  }, [userProfile, checkIns, scans, dismissedSuggestion]);
+
+  const dismissLifeStageSuggestionMutation = useMutation({
+    mutationFn: async (type: string) => {
+      await AsyncStorage.setItem(STORAGE_KEY_DISMISSED_SUGGESTION, type);
+      return type;
+    },
+    onSuccess: (type) => {
+      setDismissedSuggestion(type);
+      trackEvent('life_stage_dismissed', { dismissedType: type });
+    },
+  });
+
+  const connectHealthMutation = useMutation({
+    mutationFn: async (dataTypes: HealthDataType[]): Promise<HealthConnectionState> => {
+      const availability = getHealthKitAvailability();
+      let granted = false;
+
+      if (availability.isAvailable) {
+        granted = await requestHealthKitPermissions();
+      }
+
+      const newState: HealthConnectionState = {
+        isConnected: granted || !availability.isAvailable,
+        isAvailable: availability.isAvailable,
+        enabledDataTypes: dataTypes,
+        lastSyncDate: new Date().toISOString(),
+      };
+
+      await saveHealthConnection(newState);
+
+      if (granted && dataTypes.length > 0) {
+        const data = await fetchAllHealthData(dataTypes);
+        await saveHealthData(data);
+        setHealthData(data);
+      }
+
+      return newState;
+    },
+    onSuccess: (state) => {
+      setHealthConnection(state);
+      if (state.isConnected) {
+        trackEvent('health_connected', { dataTypes: state.enabledDataTypes.join(',') });
+      }
+    },
+  });
+
+  const disconnectHealthMutation = useMutation({
+    mutationFn: async () => {
+      const newState: HealthConnectionState = {
+        isConnected: false,
+        isAvailable: getHealthKitAvailability().isAvailable,
+        enabledDataTypes: [],
+      };
+      await saveHealthConnection(newState);
+      await saveHealthData({});
+      setHealthData(null);
+      return newState;
+    },
+    onSuccess: (state) => {
+      setHealthConnection(state);
+    },
+  });
+
+  const syncHealthDataMutation = useMutation({
+    mutationFn: async () => {
+      if (!healthConnection.isConnected || healthConnection.enabledDataTypes.length === 0) {
+        return null;
+      }
+      const data = await fetchAllHealthData(healthConnection.enabledDataTypes);
+      await saveHealthData(data);
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data) {
+        setHealthData(data);
+        const updatedConnection = {
+          ...healthConnection,
+          lastSyncDate: new Date().toISOString(),
+        };
+        setHealthConnection(updatedConnection);
+        void saveHealthConnection(updatedConnection);
+      }
+    },
+  });
+
+  const updateLanguageMutation = useMutation({
+    mutationFn: async (lang: Language) => {
+      console.log('[AppContext] Saving language preference:', lang);
+      await AsyncStorage.setItem(STORAGE_KEY_LANGUAGE, lang);
+      return lang;
+    },
+    onSuccess: (lang) => {
+      setLanguage(lang);
+      queryClient.setQueryData(["language"], lang);
+      trackEvent('language_changed', { language: lang });
+    },
+  });
+
+  const updateUnitsMutation = useMutation({
+    mutationFn: async (newUnits: UnitSystem) => {
+      console.log('[AppContext] Saving unit preference:', newUnits);
+      await AsyncStorage.setItem(STORAGE_KEY_UNITS, newUnits);
+      return newUnits;
+    },
+    onSuccess: (newUnits) => {
+      setUnits(newUnits);
+      queryClient.setQueryData(["units"], newUnits);
+      trackEvent('units_changed', { units: newUnits });
+    },
+  });
+
+  const deleteAllDataMutation = useMutation({
+    mutationFn: async () => {
+      const keys = [
+        STORAGE_KEY_USER,
+        STORAGE_KEY_CHECKINS,
+        STORAGE_KEY_SCANS,
+        STORAGE_KEY_BASELINE,
+        STORAGE_KEY_PHASE_BASELINES,
+        STORAGE_KEY_CYCLE_HISTORY,
+        STORAGE_KEY_PREVIOUS_PHASE,
+        STORAGE_KEY_DISMISSED_SUGGESTION,
+        STORAGE_KEY_LANGUAGE,
+        STORAGE_KEY_UNITS,
+      ];
+      await AsyncStorage.multiRemove(keys);
+      console.log('[AppContext] All user data deleted');
+      return true;
+    },
+    onSuccess: () => {
+      setUserProfile(getInitialUserProfile());
+      setCheckIns([]);
+      setScans([]);
+      setBaseline(null);
+      setPhaseBaselines(null);
+      setCycleHistory([]);
+      setPreviousPhase(null);
+      setDismissedSuggestion(null);
+      setTodayHabits([]);
+      setLanguage('en');
+      setUnits('metric');
+      disconnectHealthMutation.mutate();
+      queryClient.clear();
+      trackEvent('account_deleted');
+      console.log('[AppContext] All data deleted and query cache cleared');
+    },
+  });
+
+  const adaptiveQuestion = useMemo(() => {
+    try {
+      const today = getLocalDateString();
+      const todayCheckIn = checkIns.find((c) => c.date === today) || null;
+      const lastPeriod = new Date(userProfile.lastPeriodDate);
+      const cycleDay = Math.floor((new Date().getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
+
+      return shouldAskAdaptiveQuestion(phaseEstimate, todayCheckIn, cycleDay);
+    } catch (err) {
+      console.error('[AppContext] Error computing adaptiveQuestion:', err);
+      return { shouldAsk: false, questionType: null };
+    }
+  }, [phaseEstimate, checkIns, userProfile.lastPeriodDate]);
+
+  const latestScan = useMemo(() => {
+    const today = getLocalDateString();
+    const todayScans = scans.filter((s) => s.date.split('T')[0] === today);
+    if (todayScans.length > 0) {
+      return todayScans.sort((a, b) => b.timestamp - a.timestamp)[0];
+    }
+    return scans[0] || null;
+  }, [scans]);
+
+  const todayCheckIn = useMemo(() => {
+    const today = getLocalDateString();
+    const todayCheckIns = checkIns.filter((c) => c.date === today);
+    if (todayCheckIns.length > 0) {
+      return todayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0];
+    }
+    return null;
+  }, [checkIns]);
+
+  const t = useMemo(() => getTranslation(language), [language]);
+
+  const enrichedPhaseInfo = useMemo((): EnrichedPhaseInfo => {
+    try {
+      return computeEnrichedPhaseInfo(profileWithEffectiveStart, checkIns, phaseEstimate, t);
+    } catch (err) {
+      console.error('[AppContext] Error computing enrichedPhaseInfo:', err);
+      return {
+        phaseName: t?.phases?.[phaseEstimate.mostLikely] ?? 'Follicular',
+        phaseDay: 1,
+        cycleDay: 1,
+        totalCycleDays: profileWithEffectiveStart.cycleLength || 28,
+        phaseColor: '#8BC9A3',
+        phaseDescription: 'Unable to compute phase details',
+        phase: phaseEstimate.mostLikely,
+        effectiveCycleStart: profileWithEffectiveStart.lastPeriodDate,
+      };
+    }
+  }, [profileWithEffectiveStart, checkIns, phaseEstimate, t]);
+
+  const todaySummary = useMemo((): DaySummary => {
+    try {
+      const today = getLocalDateString();
+      const scan = latestScan;
+      const checkIn = todayCheckIn;
+
+      let recommendedFocus = "Balance & Harmony";
+      
+      const checkInEnergy = checkIn?.energy || 5;
+      const combinedEnergy = checkIn && scan 
+        ? (checkIn.energy + scan.energyScore) / 2 
+        : checkInEnergy;
+      
+      const stressScore = scan?.stressScore || 5;
+      const recoveryScore = scan?.recoveryScore || 7;
+      const fatigueLevel = scan?.fatigueLevel || 5;
+      const isIll = checkIn?.isIll;
+      const poorSleep = checkIn && checkIn.sleep < 5;
+      const hasCramps = checkIn?.symptoms?.includes("Cramps");
+      const hasFatigue = checkIn?.symptoms?.includes("Fatigue");
+
+      const veryHighStress = stressScore > 8.5;
+      const highStress = stressScore > 7;
+      const lowRecovery = recoveryScore < 5;
+      const goodRecovery = recoveryScore >= 7;
+      const highFatigue = fatigueLevel > 7;
+
+      const shouldRest = isIll || veryHighStress || (highStress && lowRecovery) || (highFatigue && poorSleep);
+      const shouldDoGentle = shouldRest || hasCramps || (hasFatigue && combinedEnergy < 4) || (poorSleep && lowRecovery);
+      const canDoIntense = !shouldRest && !shouldDoGentle && combinedEnergy > 7 && (!highStress || goodRecovery) && !highFatigue;
+
+      if (shouldRest) {
+        recommendedFocus = isIll ? t.recommendedFocus?.restAndRecoveryHealing ?? "Rest & Recovery" : t.recommendedFocus?.urgentRestRecovery ?? "Urgent Rest";
+      } else if (shouldDoGentle) {
+        recommendedFocus = hasCramps ? t.recommendedFocus?.gentleMovementEaseDiscomfort ?? "Gentle Movement" : t.recommendedFocus?.lightActivitySelfCare ?? "Light Activity";
+      } else if (canDoIntense) {
+        if (currentPhase === "ovulation") {
+          recommendedFocus = t.recommendedFocus?.peakEnergyStrengthHIIT ?? "Peak Energy";
+        } else if (currentPhase === "follicular") {
+          recommendedFocus = t.recommendedFocus?.risingEnergyChallengingWorkouts ?? "Rising Energy";
+        } else if (currentPhase === "menstrual") {
+          recommendedFocus = t.recommendedFocus?.energyUpStrengthTraining ?? "Strength Training";
+        } else {
+          recommendedFocus = t.recommendedFocus?.goodEnergyModerateIntense ?? "Moderate Activity";
+        }
+      } else if (highStress) {
+        recommendedFocus = t.recommendedFocus?.stressManagementRecovery ?? "Stress Management";
+      } else if (lowRecovery) {
+        recommendedFocus = t.recommendedFocus?.gentleMovementHydration ?? "Gentle Movement";
+      } else if (combinedEnergy > 5) {
+        if (currentPhase === "menstrual") {
+          recommendedFocus = t.recommendedFocus?.decentEnergyModerateMovement ?? "Moderate Movement";
+        } else if (currentPhase === "luteal") {
+          recommendedFocus = t.recommendedFocus?.steadyEnergyModerateSelfCare ?? "Self Care";
+        } else {
+          recommendedFocus = t.recommendedFocus?.moderateActivityBalancedNutrition ?? "Balanced Activity";
+        }
+      } else {
+        recommendedFocus = t.recommendedFocus?.restAndNourishment ?? "Rest & Nourishment";
+      }
+
+      return {
+        date: today,
+        phase: currentPhase,
+        stressScore: scan?.stressScore || 5,
+        energyScore: scan?.energyScore || 6,
+        recoveryScore: scan?.recoveryScore || 7,
+        recommendedFocus,
+        habits: todayHabits,
+      };
+    } catch (err) {
+      console.error('[AppContext] Error computing todaySummary:', err);
+      return {
+        date: getLocalDateString(),
+        phase: currentPhase,
+        stressScore: 5,
+        energyScore: 6,
+        recoveryScore: 7,
+        recommendedFocus: 'Balance & Harmony',
+        habits: todayHabits,
+      };
+    }
+  }, [currentPhase, latestScan, todayHabits, todayCheckIn, t]);
+
+  const isLoading = userQuery.isLoading || checkInsQuery.isLoading || scansQuery.isLoading || baselineQuery.isLoading || phaseBaselinesQuery.isLoading || cycleHistoryQuery.isLoading || previousPhaseQuery.isLoading || languageQuery.isLoading || unitsQuery.isLoading;
+  const isHealthSyncing = syncHealthDataMutation.isPending;
+
+  return useMemo(() => ({
+    userProfile,
+    updateUserProfile: updateUserMutation.mutateAsync,
+    checkIns,
+    addCheckIn: addCheckInMutation.mutate,
+    updateCheckIn: updateCheckInMutation.mutate,
+    scans,
+    addScan: addScanMutation.mutate,
+    currentPhase,
+    latestScan,
+    todayCheckIn,
+    todaySummary,
+    todayHabits,
+    setTodayHabits,
+    updateHabit: updateHabitMutation.mutate,
+    updateLastPeriodDate: updateLastPeriodDateMutation.mutateAsync,
+    phaseEstimate,
+    enrichedPhaseInfo,
+    effectiveCycleStart,
+    baseline,
+    cycleHistory,
+    adaptiveQuestion,
+    lifeStageSuggestion,
+    dismissLifeStageSuggestion: dismissLifeStageSuggestionMutation.mutate,
+    language,
+    updateLanguage: updateLanguageMutation.mutateAsync,
+    t,
+    units,
+    updateUnits: updateUnitsMutation.mutateAsync,
+    healthConnection,
+    healthData,
+    connectHealth: connectHealthMutation.mutateAsync,
+    disconnectHealth: disconnectHealthMutation.mutateAsync,
+    syncHealthData: syncHealthDataMutation.mutateAsync,
+    isHealthSyncing,
+    deleteAllData: deleteAllDataMutation.mutateAsync,
+    isLoading,
+  }), [
+    userProfile, checkIns, scans, currentPhase, latestScan, todayCheckIn,
+    todaySummary, todayHabits, phaseEstimate, enrichedPhaseInfo,
+    effectiveCycleStart, baseline, cycleHistory, adaptiveQuestion,
+    lifeStageSuggestion, language, t, units, healthConnection, healthData,
+    isHealthSyncing, isLoading,
+    updateUserMutation.mutateAsync, addCheckInMutation.mutate,
+    updateCheckInMutation.mutate, addScanMutation.mutate,
+    updateHabitMutation.mutate, updateLastPeriodDateMutation.mutateAsync,
+    dismissLifeStageSuggestionMutation.mutate, updateLanguageMutation.mutateAsync,
+    updateUnitsMutation.mutateAsync, connectHealthMutation.mutateAsync,
+    disconnectHealthMutation.mutateAsync, syncHealthDataMutation.mutateAsync,
+    deleteAllDataMutation.mutateAsync, setTodayHabits,
+  ]);
+});
