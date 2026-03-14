@@ -741,6 +741,8 @@ type Translations = {
     pastDue: string;
     weekOf: string;
     daysLeft: string;
+    changePhase: string;
+    resetPhase: string;
   };
   calendar: {
     months: {
@@ -1644,6 +1646,8 @@ const en: Translations = {
     pastDue: 'Past Due',
     weekOf: 'Week',
     daysLeft: 'days left',
+    changePhase: 'Change phase',
+    resetPhase: 'Reset',
   },
   calendar: {
     months: {
@@ -2657,6 +2661,8 @@ const sv: Translations = {
     pastDue: 'Försenad',
     weekOf: 'Vecka',
     daysLeft: 'dagar kvar',
+    changePhase: 'Ändra fas',
+    resetPhase: 'Återställ',
   },
   calendar: {
     months: {
@@ -3670,6 +3676,8 @@ const de: Translations = {
     pastDue: 'Überfällig',
     weekOf: 'Woche',
     daysLeft: 'Tage übrig',
+    changePhase: 'Phase ändern',
+    resetPhase: 'Zurücksetzen',
   },
   calendar: {
     months: {
@@ -4683,6 +4691,8 @@ const fr: Translations = {
     pastDue: 'En retard',
     weekOf: 'Semaine',
     daysLeft: 'jours restants',
+    changePhase: 'Changer la phase',
+    resetPhase: 'Réinitialiser',
   },
   calendar: {
     months: {
@@ -5696,6 +5706,8 @@ const es: Translations = {
     pastDue: 'Atrasado',
     weekOf: 'Semana',
     daysLeft: 'días restantes',
+    changePhase: 'Cambiar fase',
+    resetPhase: 'Restablecer',
   },
   calendar: {
     months: {
@@ -6709,6 +6721,8 @@ const it: Translations = {
     pastDue: 'In ritardo',
     weekOf: 'Settimana',
     daysLeft: 'giorni rimasti',
+    changePhase: 'Cambia fase',
+    resetPhase: 'Ripristina',
   },
   calendar: {
     months: {
@@ -7722,6 +7736,8 @@ const nl: Translations = {
     pastDue: 'Verlaat',
     weekOf: 'Week',
     daysLeft: 'dagen over',
+    changePhase: 'Fase wijzigen',
+    resetPhase: 'Herstellen',
   },
   calendar: {
     months: {
@@ -8735,6 +8751,8 @@ const pl: Translations = {
     pastDue: 'Po terminie',
     weekOf: 'Tydzień',
     daysLeft: 'dni pozostało',
+    changePhase: 'Zmień fazę',
+    resetPhase: 'Resetuj',
   },
   calendar: {
     months: {
@@ -9748,6 +9766,8 @@ const pt: Translations = {
     pastDue: 'Atrasado',
     weekOf: 'Semana',
     daysLeft: 'dias restantes',
+    changePhase: 'Alterar fase',
+    resetPhase: 'Redefinir',
   },
   calendar: {
     months: {

@@ -62,7 +62,8 @@ type EventName =
   | 'profile_updated'
   | 'language_changed'
   | 'units_changed'
-  | 'account_deleted';
+  | 'account_deleted'
+  | 'phase_override';
 
 const eventQueue: { event: EventName; properties?: Record<string, string | number | boolean> }[] = [];
 let isProcessing = false;

@@ -30,6 +30,8 @@ import {
   Sun,
   Calendar,
   Clock,
+  Edit3,
+  RotateCcw,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -210,7 +212,7 @@ function getLifeStageLegendKeys(lifeStage: LifeStage): LifeStagePhaseKey[] {
 }
 
 export default function CalendarScreen() {
-  const { scans, checkIns, userProfile, t, effectiveCycleStart } = useApp();
+  const { scans, checkIns, userProfile, t, effectiveCycleStart, phaseOverrides, setPhaseOverride } = useApp();
   const { colors } = useTheme();
   const isRegularCycle = userProfile.lifeStage === "regular";
   const isPregnancy = userProfile.lifeStage === "pregnancy";
@@ -276,17 +278,35 @@ export default function CalendarScreen() {
       ? dayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
       : null;
     const hasCheckIn = !!checkIn;
-    const phase = isRegularCycle
-      ? calculateCyclePhase(effectiveCycleStart, userProfile.cycleLength, date)
-      : null;
+
+    // Check for user override first, then fall back to calculated phase
+    const override = phaseOverrides[dateStr];
+    const phase = override
+      ? override
+      : isRegularCycle
+        ? calculateCyclePhase(effectiveCycleStart, userProfile.cycleLength, date)
+        : null;
 
     const isDueDate = dueDateStr === dateStr;
+    const hasOverride = !!override;
 
-    return { hasScan, hasCheckIn, phase, checkIn, date, dateStr, isDueDate };
-  }, [selectedMonth, scans, checkIns, isRegularCycle, effectiveCycleStart, userProfile.cycleLength, dueDateStr]);
+    return { hasScan, hasCheckIn, phase, checkIn, date, dateStr, isDueDate, hasOverride };
+  }, [selectedMonth, scans, checkIns, isRegularCycle, effectiveCycleStart, userProfile.cycleLength, dueDateStr, phaseOverrides]);
 
   const getPhaseInfoForDay = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
+    const dateStr = getLocalDateString(date);
+
+    // Check for user override first
+    const override = phaseOverrides[dateStr];
+    if (override) {
+      return {
+        color: PHASE_INFO[override].color,
+        icon: PHASE_INFO[override].icon,
+        label: t.phases[override],
+      };
+    }
+
     const timeline = getTimelinePhaseForDate(date, userProfile.lifeStage, userProfile);
 
     if (timeline.type === 'menstrual') {
@@ -303,7 +323,7 @@ export default function CalendarScreen() {
       icon: info.icon,
       label: getLifeStageLabel(timeline.key, t),
     };
-  }, [selectedMonth, userProfile, t]);
+  }, [selectedMonth, userProfile, t, phaseOverrides]);
 
   const handleDayPress = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
@@ -461,7 +481,7 @@ export default function CalendarScreen() {
                   return <View key={`empty-${index}`} style={styles.emptyDay} />;
                 }
 
-                const { hasScan, hasCheckIn, isDueDate } = getDayInfo(day);
+                const { hasScan, hasCheckIn, isDueDate, hasOverride } = getDayInfo(day);
                 const today = isToday(day);
                 const selected = isSelected(day);
                 const phaseInfo = getPhaseInfoForDay(day);
@@ -499,8 +519,11 @@ export default function CalendarScreen() {
                           <PhaseIconComp size={8} color={phaseInfo.color} />
                         </View>
                       )}
-                      {(hasScan || hasCheckIn) && (
+                      {(hasScan || hasCheckIn || hasOverride) && (
                         <View style={styles.indicators}>
+                          {hasOverride && (
+                            <View style={[styles.indicator, { backgroundColor: '#FF9500' }]} />
+                          )}
                           {hasScan && (
                             <View style={[styles.indicator, { backgroundColor: colors.primary }]} />
                           )}
@@ -532,7 +555,15 @@ export default function CalendarScreen() {
             let selectedPhaseLabel: string;
 
             const timeline = getTimelinePhaseForDate(selectedDate, userProfile.lifeStage, userProfile);
-            if (timeline.type === 'menstrual') {
+            const override = phaseOverrides[dateStr];
+
+            // If there's a user override, show that phase instead
+            if (override) {
+              const pi = PHASE_INFO[override];
+              selectedPhaseColor = pi.color;
+              SelectedPhaseIcon = pi.icon;
+              selectedPhaseLabel = `${t.phases[override]} ${t.home.phase}`;
+            } else if (timeline.type === 'menstrual') {
               const pi = PHASE_INFO[timeline.phase];
               selectedPhaseColor = pi.color;
               SelectedPhaseIcon = pi.icon;
@@ -566,7 +597,60 @@ export default function CalendarScreen() {
                   <Text style={[styles.phaseIndicatorText, { color: selectedPhaseColor }]}>
                     {selectedPhaseLabel}
                   </Text>
+                  {phaseOverrides[dateStr] && (
+                    <View style={styles.overrideBadge}>
+                      <Edit3 size={10} color="#FF9500" />
+                    </View>
+                  )}
                 </View>
+
+                {isRegularCycle && (
+                  <View style={styles.phasePickerSection}>
+                    <View style={styles.phasePickerHeader}>
+                      <Text style={styles.phasePickerTitle}>{t.programs?.changePhase || 'Change phase'}</Text>
+                      {phaseOverrides[dateStr] && (
+                        <TouchableOpacity
+                          style={styles.resetButton}
+                          onPress={() => setPhaseOverride({ date: dateStr, phase: null })}
+                          accessibilityLabel={t.programs?.resetPhase || 'Reset to calculated'}
+                        >
+                          <RotateCcw size={12} color={colors.textSecondary} />
+                          <Text style={styles.resetButtonText}>{t.programs?.resetPhase || 'Reset'}</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    <View style={styles.phasePickerRow}>
+                      {(Object.keys(PHASE_INFO) as CyclePhase[]).map((phaseKey) => {
+                        const info = PHASE_INFO[phaseKey];
+                        const PhaseIcon = info.icon;
+                        const isCurrentOverride = phaseOverrides[dateStr] === phaseKey;
+                        const isCalculatedPhase = !phaseOverrides[dateStr] && timeline.type === 'menstrual' && timeline.phase === phaseKey;
+                        const isActive = isCurrentOverride || isCalculatedPhase;
+
+                        return (
+                          <TouchableOpacity
+                            key={phaseKey}
+                            style={[
+                              styles.phasePickerButton,
+                              { borderColor: info.color + '60' },
+                              isActive && { backgroundColor: info.color + '30', borderColor: info.color },
+                            ]}
+                            onPress={() => {
+                              if (isCalculatedPhase) return; // Already the calculated phase
+                              setPhaseOverride({ date: dateStr, phase: phaseKey });
+                            }}
+                            accessibilityLabel={`${t.phases[phaseKey]}${isActive ? ' (current)' : ''}`}
+                          >
+                            <PhaseIcon size={16} color={info.color} />
+                            <Text style={[styles.phasePickerLabel, { color: isActive ? info.color : colors.textSecondary }]}>
+                              {t.phases[phaseKey]}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
 
                 {checkIn && (
                   <View style={styles.selectedCheckInSummary}>
@@ -1338,5 +1422,58 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     borderRadius: 5,
     borderWidth: 2,
     borderStyle: "dashed" as const,
+  },
+  overrideBadge: {
+    marginLeft: "auto" as const,
+    backgroundColor: "#FF9500" + "20",
+    borderRadius: 8,
+    padding: 4,
+  },
+  phasePickerSection: {
+    marginBottom: 16,
+  },
+  phasePickerHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    marginBottom: 10,
+  },
+  phasePickerTitle: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: colors.textSecondary,
+    textTransform: "uppercase" as const,
+    letterSpacing: 0.5,
+  },
+  resetButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+  },
+  resetButtonText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  phasePickerRow: {
+    flexDirection: "row" as const,
+    gap: 8,
+  },
+  phasePickerButton: {
+    flex: 1,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    gap: 4,
+  },
+  phasePickerLabel: {
+    fontSize: 10,
+    fontWeight: "600" as const,
+    textAlign: "center" as const,
   },
 }); }

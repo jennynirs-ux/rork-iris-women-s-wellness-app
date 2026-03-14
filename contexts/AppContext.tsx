@@ -28,6 +28,7 @@ const STORAGE_KEY_PREVIOUS_PHASE = "iris_previous_phase";
 const STORAGE_KEY_DISMISSED_SUGGESTION = "iris_dismissed_life_stage_suggestion";
 const STORAGE_KEY_LANGUAGE = "iris_language";
 const STORAGE_KEY_UNITS = "iris_units";
+const STORAGE_KEY_PHASE_OVERRIDES = "iris_phase_overrides";
 
 // Memoized helper functions for lifeStageSuggestion calculation
 const calculatePregnancySymptomScore = (recentCheckIns: DailyCheckIn[]): number => {
@@ -121,6 +122,7 @@ export const [AppContext, useApp] = createContextHook(() => {
     enabledDataTypes: [],
   });
   const [healthData, setHealthData] = useState<HealthData | null>(null);
+  const [phaseOverrides, setPhaseOverrides] = useState<Record<string, CyclePhase>>({});
 
   const userQuery = useQuery({
     queryKey: ["userProfile"],
@@ -216,6 +218,14 @@ export const [AppContext, useApp] = createContextHook(() => {
     },
   });
 
+  const phaseOverridesQuery = useQuery({
+    queryKey: ["phaseOverrides"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_OVERRIDES);
+      return stored ? JSON.parse(stored) : {};
+    },
+  });
+
   useEffect(() => {
     if (userQuery.data) setUserProfile(userQuery.data);
   }, [userQuery.data]);
@@ -263,6 +273,10 @@ export const [AppContext, useApp] = createContextHook(() => {
   useEffect(() => {
     if (healthDataQuery.data !== undefined) setHealthData(healthDataQuery.data);
   }, [healthDataQuery.data]);
+
+  useEffect(() => {
+    if (phaseOverridesQuery.data) setPhaseOverrides(phaseOverridesQuery.data);
+  }, [phaseOverridesQuery.data]);
 
   const updateUserMutation = useMutation({
     mutationFn: async (profile: UserProfile) => {
@@ -768,6 +782,24 @@ export const [AppContext, useApp] = createContextHook(() => {
     },
   });
 
+  const setPhaseOverrideMutation = useMutation({
+    mutationFn: async ({ date, phase }: { date: string; phase: CyclePhase | null }) => {
+      const updated = { ...phaseOverrides };
+      if (phase === null) {
+        delete updated[date];
+      } else {
+        updated[date] = phase;
+      }
+      await AsyncStorage.setItem(STORAGE_KEY_PHASE_OVERRIDES, JSON.stringify(updated));
+      return updated;
+    },
+    onSuccess: (updated) => {
+      setPhaseOverrides(updated);
+      queryClient.invalidateQueries({ queryKey: ["phaseOverrides"] });
+      trackEvent('phase_override', { date: Object.keys(updated).length.toString() });
+    },
+  });
+
   const deleteAllDataMutation = useMutation({
     mutationFn: async () => {
       const keys = [
@@ -781,6 +813,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         STORAGE_KEY_DISMISSED_SUGGESTION,
         STORAGE_KEY_LANGUAGE,
         STORAGE_KEY_UNITS,
+        STORAGE_KEY_PHASE_OVERRIDES,
       ];
       await AsyncStorage.multiRemove(keys);
       logger.log('[AppContext] All user data deleted');
@@ -796,6 +829,7 @@ export const [AppContext, useApp] = createContextHook(() => {
       setPreviousPhase(null);
       setDismissedSuggestion(null);
       setTodayHabits([]);
+      setPhaseOverrides({});
       setLanguage('en');
       setUnits('metric');
       disconnectHealthMutation.mutate();
@@ -941,7 +975,7 @@ export const [AppContext, useApp] = createContextHook(() => {
     }
   }, [currentPhase, latestScan, todayHabits, todayCheckIn, t]);
 
-  const isLoading = userQuery.isLoading || checkInsQuery.isLoading || scansQuery.isLoading || baselineQuery.isLoading || phaseBaselinesQuery.isLoading || cycleHistoryQuery.isLoading || previousPhaseQuery.isLoading || languageQuery.isLoading || unitsQuery.isLoading;
+  const isLoading = userQuery.isLoading || checkInsQuery.isLoading || scansQuery.isLoading || baselineQuery.isLoading || phaseBaselinesQuery.isLoading || cycleHistoryQuery.isLoading || previousPhaseQuery.isLoading || languageQuery.isLoading || unitsQuery.isLoading || phaseOverridesQuery.isLoading;
   const isHealthSyncing = syncHealthDataMutation.isPending;
 
   return useMemo(() => ({
@@ -980,19 +1014,22 @@ export const [AppContext, useApp] = createContextHook(() => {
     syncHealthData: syncHealthDataMutation.mutateAsync,
     isHealthSyncing,
     deleteAllData: deleteAllDataMutation.mutateAsync,
+    phaseOverrides,
+    setPhaseOverride: setPhaseOverrideMutation.mutateAsync,
     isLoading,
   }), [
     userProfile, checkIns, scans, currentPhase, latestScan, todayCheckIn,
     todaySummary, todayHabits, phaseEstimate, enrichedPhaseInfo,
     effectiveCycleStart, baseline, cycleHistory, adaptiveQuestion,
     lifeStageSuggestion, language, t, units, healthConnection, healthData,
-    isHealthSyncing, isLoading,
+    isHealthSyncing, isLoading, phaseOverrides,
     updateUserMutation.mutateAsync, addCheckInMutation.mutate,
     updateCheckInMutation.mutate, addScanMutation.mutate,
     updateHabitMutation.mutate, updateLastPeriodDateMutation.mutateAsync,
     dismissLifeStageSuggestionMutation.mutate, updateLanguageMutation.mutateAsync,
     updateUnitsMutation.mutateAsync, connectHealthMutation.mutateAsync,
     disconnectHealthMutation.mutateAsync, syncHealthDataMutation.mutateAsync,
-    deleteAllDataMutation.mutateAsync, setTodayHabits,
+    deleteAllDataMutation.mutateAsync, setPhaseOverrideMutation.mutateAsync,
+    setTodayHabits,
   ]);
 });
