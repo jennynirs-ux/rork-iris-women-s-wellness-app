@@ -106,8 +106,10 @@ export function getPhaseRanges(cycleLength: number): {
   ovulation: [number, number];
   luteal: [number, number];
 } {
+  // Guard against invalid cycle lengths — default to 28
+  const safeCycleLength = cycleLength >= 18 ? cycleLength : 28;
   const menstrualEnd = 5;
-  const ovulationCenter = Math.floor(cycleLength / 2);
+  const ovulationCenter = Math.floor(safeCycleLength / 2);
   const ovulationStart = ovulationCenter - 1;
   const ovulationEnd = ovulationCenter + 1;
   const follicularEnd = ovulationStart - 1;
@@ -117,7 +119,7 @@ export function getPhaseRanges(cycleLength: number): {
     menstrual: [1, menstrualEnd],
     follicular: [menstrualEnd + 1, follicularEnd],
     ovulation: [ovulationStart, ovulationEnd],
-    luteal: [lutealStart, cycleLength],
+    luteal: [lutealStart, safeCycleLength],
   };
 }
 
@@ -563,6 +565,11 @@ function multiplyProbabilities(
 
   const sum =
     result.menstrual + result.follicular + result.ovulation + result.luteal;
+
+  // Guard against division by zero — return uniform distribution
+  if (sum === 0) {
+    return { menstrual: 0.25, follicular: 0.25, ovulation: 0.25, luteal: 0.25 };
+  }
 
   return {
     menstrual: result.menstrual / sum,

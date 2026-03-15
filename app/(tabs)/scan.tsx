@@ -158,7 +158,13 @@ function ScanScreenInner() {
     }
   }, [requestPermission]);
 
+  const isProcessingRef = useRef<boolean>(false);
+
   const handleCapture = useCallback(async () => {
+    if (isProcessingRef.current) {
+      logger.log('[Scan] Capture blocked — already processing');
+      return;
+    }
     if (!faceDetected) {
       logger.log('[Scan] Capture blocked — no face detected');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -168,6 +174,8 @@ function ScanScreenInner() {
       logger.log('[Scan] Camera not ready yet');
       return;
     }
+
+    isProcessingRef.current = true;
 
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setStage('capturing');
@@ -225,42 +233,51 @@ function ScanScreenInner() {
       let analysisBase64 = photo.base64;
 
       try {
-        let underEyeBase64: string | undefined;
-        if (Platform.OS !== 'web') {
-          const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
-          if (croppedBase64) {
-            analysisBase64 = croppedBase64;
-            logger.log('[Scan] Using cropped eye region for analysis');
+        const ANALYSIS_TIMEOUT_MS = 20000;
+        const analysisPromise = (async () => {
+          let underEyeBase64: string | undefined;
+          if (Platform.OS !== 'web') {
+            const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
+            if (croppedBase64) {
+              analysisBase64 = croppedBase64;
+              logger.log('[Scan] Using cropped eye region for analysis');
+            }
+            const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
+            if (underEyeCropped) {
+              underEyeBase64 = underEyeCropped;
+              logger.log('[Scan] Using cropped under-eye region for analysis');
+            }
           }
-          const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
-          if (underEyeCropped) {
-            underEyeBase64 = underEyeCropped;
-            logger.log('[Scan] Using cropped under-eye region for analysis');
+
+          const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
+          logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
+
+          analysisBase64 = '';
+
+          if (!eyeAnalysis) {
+            logger.log('[Scan] Eye analysis returned null — image not analyzable');
+            if (isMountedRef.current) handleCaptureFailed();
+            return;
           }
-        }
 
-        const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
-        logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
+          const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
+          const checkInContext = todayCheckIn ? {
+            energy: todayCheckIn.energy,
+            sleep: todayCheckIn.sleep,
+            stressLevel: todayCheckIn.stressLevel,
+          } : null;
 
-        analysisBase64 = '';
+          const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
 
-        if (!eyeAnalysis) {
-          logger.log('[Scan] Eye analysis returned null — image not analyzable');
-          if (isMountedRef.current) handleCaptureFailed();
-          return;
-        }
+          if (!isMountedRef.current) return;
+          buildAndSaveScanResult(wellnessScores, eyeAnalysis);
+        })();
 
-        const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
-        const checkInContext = todayCheckIn ? {
-          energy: todayCheckIn.energy,
-          sleep: todayCheckIn.sleep,
-          stressLevel: todayCheckIn.stressLevel,
-        } : null;
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Analysis timed out')), ANALYSIS_TIMEOUT_MS)
+        );
 
-        const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
-
-        if (!isMountedRef.current) return;
-        buildAndSaveScanResult(wellnessScores, eyeAnalysis);
+        await Promise.race([analysisPromise, timeoutPromise]);
       } catch (analysisError) {
         logger.error('[Scan] Analysis pipeline error:', analysisError);
         if (isMountedRef.current) handleCaptureFailed();
@@ -272,6 +289,8 @@ function ScanScreenInner() {
       if (isMountedRef.current) {
         handleCaptureFailed();
       }
+    } finally {
+      isProcessingRef.current = false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [faceDetected, cameraReady, currentPhase, todayCheckIn]);
@@ -300,11 +319,27 @@ function ScanScreenInner() {
 
   const buildAndSaveScanResult = (
     scores: { energyScore: number; fatigueLevel: number; hydrationLevel: number; inflammation: number; recoveryScore: number; stressScore: number },
-    eyeAnalysis: { brightness: number; redness: number; clarity: number; pupilDarkRatio: number; symmetry: number; scleraYellowness: number; underEyeDarkness: number; eyeOpenness: number; tearFilmQuality: number },
+    rawEyeAnalysis: { brightness: number; redness: number; clarity: number; pupilDarkRatio: number; symmetry: number; scleraYellowness: number; underEyeDarkness: number; eyeOpenness: number; tearFilmQuality: number },
   ) => {
     const clamp = (val: number, min: number = 0, max: number = 10) => {
       const v = Number.isFinite(val) ? val : 5;
       return Math.max(min, Math.min(max, v));
+    };
+    const clamp01 = (val: number) => {
+      const v = Number.isFinite(val) ? val : 0.5;
+      return Math.max(0, Math.min(1, v));
+    };
+    // Sanitise eye analysis values to prevent NaN/Infinity in raw signals
+    const eyeAnalysis = {
+      brightness: clamp01(rawEyeAnalysis.brightness),
+      redness: clamp01(rawEyeAnalysis.redness),
+      clarity: clamp01(rawEyeAnalysis.clarity),
+      pupilDarkRatio: clamp01(rawEyeAnalysis.pupilDarkRatio),
+      symmetry: clamp01(rawEyeAnalysis.symmetry),
+      scleraYellowness: clamp01(rawEyeAnalysis.scleraYellowness),
+      underEyeDarkness: clamp01(rawEyeAnalysis.underEyeDarkness),
+      eyeOpenness: clamp01(rawEyeAnalysis.eyeOpenness),
+      tearFilmQuality: clamp01(rawEyeAnalysis.tearFilmQuality),
     };
     const stressScore = clamp(scores.stressScore, 1, 10);
     const energyScore = clamp(scores.energyScore, 1, 10);
@@ -314,10 +349,8 @@ function ScanScreenInner() {
     const inflammation = clamp(scores.inflammation, 1, 10);
     const detectedPhase = currentPhase;
 
-    const _wellnessScore = clamp((energyScore + (10 - stressScore) + recoveryScore) / 3);
-    const bodyBalance = clamp((recoveryScore + hydrationLevel + (10 - fatigueLevel)) / 3);
-    const focusLevel = clamp((energyScore + (10 - fatigueLevel) + recoveryScore) / 3, 0, 1);
-    const _consistencyScore = clamp(1 - (Math.abs(stressScore - 5) + Math.abs(energyScore - 5)) / 20, 0, 1);
+    const bodyBalance = clamp((recoveryScore + hydrationLevel + (10 - fatigueLevel)) / 3, 1, 10);
+    const focusLevel = clamp((energyScore + (10 - fatigueLevel) + recoveryScore) / 3, 1, 10);
 
     const scanResult: ScanResult = {
       id: Date.now().toString(),
@@ -504,7 +537,7 @@ function ScanScreenInner() {
               <View style={styles.failedContainer}>
                 <Eye size={48} color="rgba(255,255,255,0.8)" />
                 <Text style={styles.failedTitle}>{t.scan.noPupilsDetected}</Text>
-                <Text style={styles.failedText}>Could not analyze. Try again with better lighting.</Text>
+                <Text style={styles.failedText}>{t.scan.pleaseRetry}</Text>
                 <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8} accessibilityLabel={t.scan.tryAgain} accessibilityRole="button">
                   <RefreshCw size={20} color={colors.card} />
                   <Text style={styles.retryButtonText}>{t.scan.tryAgain}</Text>
