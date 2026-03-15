@@ -11,8 +11,17 @@ let cachedUserId: string | null = null;
 function generateUserId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let id = 'usr_';
+  // Use crypto random when available, fall back to Math.random
+  const randomValues = new Uint8Array(16);
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    globalThis.crypto.getRandomValues(randomValues);
+  } else {
+    for (let i = 0; i < 16; i++) {
+      randomValues[i] = Math.floor(Math.random() * 256);
+    }
+  }
   for (let i = 0; i < 16; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
+    id += chars.charAt(randomValues[i] % chars.length);
   }
   return id;
 }

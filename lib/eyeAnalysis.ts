@@ -34,6 +34,68 @@ interface CheckInContext {
 const clamp = (val: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, val));
 
+// ── Image validation thresholds ──────────────────────────────────────
+const VALIDATION_MIN_BRIGHTNESS = 15;       // Mean below this → "too dark"
+const VALIDATION_MAX_BRIGHTNESS = 235;      // Mean above this → "too bright"
+const VALIDATION_MIN_STD_DEV = 8;           // StdDev below this → "too uniform" (base64)
+const VALIDATION_MIN_STD_DEV_CANVAS = 10;   // StdDev below this → "too uniform" (canvas)
+const VALIDATION_MIN_ENTROPY = 2.5;         // Entropy below this → "too uniform"
+const VALIDATION_MAX_DARK_RATIO = 0.85;     // Dark pixel ratio above this → "too dark"
+const VALIDATION_MAX_BRIGHT_RATIO = 0.85;   // Bright pixel ratio above this → "too bright"
+const VALIDATION_MIN_CONTRAST_RATIO = 0.02; // Both dark & bright below this → "no contrast"
+const VALIDATION_MIN_SKIN_RATIO_BASE64 = 0.25;  // Skin-range bytes below this → "no face"
+const VALIDATION_MIN_SKIN_RATIO_CANVAS = 0.05;  // Skin-tone pixels below this → "no face"
+
+// ── Byte-level thresholds (base64 analysis) ──────────────────────────
+const BYTE_DARK_THRESHOLD = 40;             // Pixel value below this = dark
+const BYTE_BRIGHT_THRESHOLD = 180;          // Pixel value above this = bright
+const BYTE_VERY_BRIGHT_THRESHOLD = 240;     // Pixel value above this = very bright
+const BYTE_SKIN_RANGE_LOW = 80;             // Skin tone lower bound
+const BYTE_SKIN_RANGE_HIGH = 180;           // Skin tone upper bound
+
+// ── Canvas luminance thresholds ──────────────────────────────────────
+const LUMINANCE_DARK_THRESHOLD = 50;        // Luminance below this = dark pixel
+const LUMINANCE_BRIGHT_THRESHOLD = 153;     // Luminance above this = bright pixel
+const LUMINANCE_VERY_BRIGHT_THRESHOLD = 240; // Luminance above this = very bright
+
+// ── Normalisation divisors ───────────────────────────────────────────
+const BRIGHTNESS_NORMALISER = 180;          // Divide mean by this to get 0-1 brightness
+const CLARITY_DIVISOR_BASE64 = 70;          // Divide stdDev by this for base64 clarity
+const CLARITY_DIVISOR_CANVAS = 80;          // Divide stdDev by this for canvas clarity
+const MAX_ENTROPY_BITS = 8;                 // Max possible entropy for 8-bit values
+const REDNESS_DIVISOR = 100;                // Normalise redness difference
+
+// ── Crop region fractions ────────────────────────────────────────────
+const EYE_REGION_TOP = 0.25;                // Eye region starts at 25% from top
+const EYE_REGION_HEIGHT = 0.3;              // Eye region is 30% of image height
+const EYE_REGION_LEFT = 0.1;               // Eye region starts at 10% from left
+const EYE_REGION_WIDTH = 0.8;              // Eye region is 80% of image width
+const UNDER_EYE_TOP = 0.55;                // Under-eye region starts at 55% from top
+const UNDER_EYE_HEIGHT = 0.15;             // Under-eye region is 15% of image height
+
+// ── Face detection thresholds ────────────────────────────────────────
+const FACE_MIN_SKIN_RATIO = 0.15;          // Canvas: minimum skin pixel ratio for face
+const FACE_MIN_LUM_STD_DEV = 20;           // Canvas: minimum luminance std dev
+const FACE_MIN_DARK_RATIO = 0.02;          // Canvas: minimum dark ratio (eyes exist)
+const FACE_MAX_DARK_RATIO = 0.7;           // Canvas: maximum dark ratio (not a dark scene)
+const FACE_MIN_EYE_DARK_RATIO = 0.02;      // Canvas: minimum dark ratio per eye region
+
+// ── Native face detection thresholds ─────────────────────────────────
+const NATIVE_MIN_SKIN_RANGE_RATIO = 0.35;  // At least 35% bytes in skin-tone range
+const NATIVE_MIN_DARK_RATIO = 0.03;        // Some dark pixels (eyes, hair)
+const NATIVE_MAX_DARK_RATIO = 0.4;         // Not a dark scene
+const NATIVE_MAX_BRIGHT_RATIO = 0.4;       // Not an overexposed scene
+const NATIVE_MIN_MEAN = 70;                // Mean brightness lower bound
+const NATIVE_MAX_MEAN = 180;               // Mean brightness upper bound
+const NATIVE_MIN_STD_DEV = 25;             // Sufficient contrast
+const NATIVE_MIN_ENTROPY = 5.0;            // Sufficient complexity
+const NATIVE_EYE_MIN_DARK_RATIO = 0.03;    // Dark spots where eyes should be
+const NATIVE_EYE_MAX_DARK_RATIO = 0.5;     // Not entirely dark
+
+// ── Resize targets ───────────────────────────────────────────────────
+const CROP_RESIZE_WIDTH = 128;              // Resize cropped regions to this width
+const FACE_DETECT_RESIZE_WIDTH = 100;       // Resize for face detection
+
 function base64ToBytes(base64: string): Uint8Array {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   const lookup = new Uint8Array(256);
@@ -87,18 +149,18 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
     sum += b;
     sumSquared += b * b;
     histogram[b]++;
-    if (b < 40) lowValueCount++;
-    if (b > 180) highValueCount++;
-    if (b > 240) veryHighCount++;
+    if (b < BYTE_DARK_THRESHOLD) lowValueCount++;
+    if (b > BYTE_BRIGHT_THRESHOLD) highValueCount++;
+    if (b > BYTE_VERY_BRIGHT_THRESHOLD) veryHighCount++;
   }
 
   const mean = sum / sampleSize;
   const variance = (sumSquared / sampleSize) - (mean * mean);
   const stdDev = Math.sqrt(Math.max(0, variance));
 
-  const brightness = clamp(mean / 180, 0, 1);
+  const brightness = clamp(mean / BRIGHTNESS_NORMALISER, 0, 1);
   const pupilDarkRatio = clamp(lowValueCount / sampleSize * 3, 0, 1);
-  const clarity = clamp(stdDev / 70, 0, 1);
+  const clarity = clamp(stdDev / CLARITY_DIVISOR_BASE64, 0, 1);
 
   let entropy = 0;
   for (let i = 0; i < 256; i++) {
@@ -107,7 +169,7 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
       entropy -= p * Math.log2(p);
     }
   }
-  const normalizedEntropy = clamp(entropy / 8, 0, 1);
+  const normalizedEntropy = clamp(entropy / MAX_ENTROPY_BITS, 0, 1);
 
   const redness = clamp((1 - brightness) * 0.5 + (1 - normalizedEntropy) * 0.3 + pupilDarkRatio * 0.2, 0, 1);
   const symmetry = clamp(0.7 + normalizedEntropy * 0.25 + (1 - Math.abs(0.5 - brightness)) * 0.1, 0, 1);
@@ -140,7 +202,7 @@ function analyzeFromBase64Bytes(base64: string, underEyeBase64?: string): EyeAna
         ueSum += ueBytes[i];
       }
       const ueMean = ueSum / ueSize;
-      const ueBrightness = clamp(ueMean / 180, 0, 1);
+      const ueBrightness = clamp(ueMean / BRIGHTNESS_NORMALISER, 0, 1);
       underEyeDarkness = clamp(1 - ueBrightness, 0, 1);
     }
   } else {
@@ -173,10 +235,10 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
       img.onload = () => {
         try {
           const canvas = document.createElement('canvas');
-          const eyeRegionY = Math.floor(height * 0.25);
-          const eyeRegionHeight = Math.floor(height * 0.3);
-          const eyeRegionX = Math.floor(width * 0.1);
-          const eyeRegionWidth = Math.floor(width * 0.8);
+          const eyeRegionY = Math.floor(height * EYE_REGION_TOP);
+          const eyeRegionHeight = Math.floor(height * EYE_REGION_HEIGHT);
+          const eyeRegionX = Math.floor(width * EYE_REGION_LEFT);
+          const eyeRegionWidth = Math.floor(width * EYE_REGION_WIDTH);
 
           canvas.width = eyeRegionWidth;
           canvas.height = eyeRegionHeight;
@@ -207,9 +269,9 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
             totalB += b;
             const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
             totalLuminance += luminance;
-            if (luminance < 50) darkPixels++;
-            if (luminance > 153) brightPixels++;
-            if (luminance > 240) veryBrightPixels++;
+            if (luminance < LUMINANCE_DARK_THRESHOLD) darkPixels++;
+            if (luminance > LUMINANCE_BRIGHT_THRESHOLD) brightPixels++;
+            if (luminance > LUMINANCE_VERY_BRIGHT_THRESHOLD) veryBrightPixels++;
           }
 
           const avgR = totalR / pixelCount;
@@ -218,7 +280,7 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
           const avgLuminance = totalLuminance / pixelCount;
 
           const brightness = clamp(avgLuminance / 255, 0, 1);
-          const redness = clamp(Math.max(0, (avgR - (avgG + avgB) / 2)) / 100, 0, 1);
+          const redness = clamp(Math.max(0, (avgR - (avgG + avgB) / 2)) / REDNESS_DIVISOR, 0, 1);
           const pupilDarkRatio = clamp(darkPixels / pixelCount, 0, 1);
 
           let lumVariance = 0;
@@ -230,7 +292,7 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
             lumVariance += (lum - avgLuminance) ** 2;
           }
           lumVariance /= pixelCount;
-          const clarity = clamp(Math.sqrt(lumVariance) / 80, 0, 1);
+          const clarity = clamp(Math.sqrt(lumVariance) / CLARITY_DIVISOR_CANVAS, 0, 1);
 
           const halfWidth = Math.floor(eyeRegionWidth / 2);
           let leftSum = 0, rightSum = 0;
@@ -290,8 +352,8 @@ function analyzeWithCanvas(base64: string, width: number, height: number): Promi
           );
           logger.log('[EyeAnalysis] Tear film quality (canvas):', tearFilmQuality.toFixed(3));
 
-          const underEyeY = Math.floor(height * 0.55);
-          const underEyeHeight = Math.floor(height * 0.15);
+          const underEyeY = Math.floor(height * UNDER_EYE_TOP);
+          const underEyeHeight = Math.floor(height * UNDER_EYE_HEIGHT);
           const ueCanvas = document.createElement('canvas');
           ueCanvas.width = eyeRegionWidth;
           ueCanvas.height = underEyeHeight;
@@ -388,7 +450,7 @@ function validateFromBase64Bytes(base64: string): ImageValidationResult {
   let lowCount = 0;
   let highCount = 0;
   for (let i = startOffset; i < endOffset; i++) {
-    if (bytes[i] < 40) lowCount++;
+    if (bytes[i] < BYTE_DARK_THRESHOLD) lowCount++;
     if (bytes[i] > 200) highCount++;
   }
   const lowRatio = lowCount / sampleSize;
@@ -402,35 +464,35 @@ function validateFromBase64Bytes(base64: string): ImageValidationResult {
     highRatio: highRatio.toFixed(3),
   });
 
-  if (mean < 15) {
+  if (mean < VALIDATION_MIN_BRIGHTNESS) {
     return { isValid: false, reason: 'too_dark' };
   }
-  if (mean > 235) {
+  if (mean > VALIDATION_MAX_BRIGHTNESS) {
     return { isValid: false, reason: 'too_bright' };
   }
-  if (stdDev < 8) {
+  if (stdDev < VALIDATION_MIN_STD_DEV) {
     return { isValid: false, reason: 'too_uniform' };
   }
-  if (entropy < 2.5) {
+  if (entropy < VALIDATION_MIN_ENTROPY) {
     return { isValid: false, reason: 'too_uniform' };
   }
-  if (lowRatio > 0.85) {
+  if (lowRatio > VALIDATION_MAX_DARK_RATIO) {
     return { isValid: false, reason: 'too_dark' };
   }
-  if (highRatio > 0.85) {
+  if (highRatio > VALIDATION_MAX_BRIGHT_RATIO) {
     return { isValid: false, reason: 'too_bright' };
   }
-  if (lowRatio < 0.02 && highRatio < 0.02) {
+  if (lowRatio < VALIDATION_MIN_CONTRAST_RATIO && highRatio < VALIDATION_MIN_CONTRAST_RATIO) {
     return { isValid: false, reason: 'no_contrast' };
   }
 
   // Check that byte distribution looks face-like (mid-range dominance)
   let skinRangeCount = 0;
   for (let i = startOffset; i < endOffset; i++) {
-    if (bytes[i] >= 80 && bytes[i] <= 180) skinRangeCount++;
+    if (bytes[i] >= BYTE_SKIN_RANGE_LOW && bytes[i] <= BYTE_SKIN_RANGE_HIGH) skinRangeCount++;
   }
   const skinRangeRatio = skinRangeCount / sampleSize;
-  if (skinRangeRatio < 0.25) {
+  if (skinRangeRatio < VALIDATION_MIN_SKIN_RATIO_BASE64) {
     logger.log('[EyeAnalysis] Validation: insufficient skin-range bytes:', skinRangeRatio.toFixed(3));
     return { isValid: false, reason: 'no_face_detected' };
   }
@@ -477,7 +539,7 @@ function validateWithCanvas(base64: string, width: number, height: number): Prom
             totalB += b;
 
             const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-            if (luminance < 40) darkPixels++;
+            if (luminance < BYTE_DARK_THRESHOLD) darkPixels++;
             if (luminance > 200) brightPixels++;
 
             if (r > 80 && g > 50 && b > 30 &&
@@ -515,27 +577,27 @@ function validateWithCanvas(base64: string, width: number, height: number): Prom
             avgB: avgB.toFixed(1),
           });
 
-          if (avgLum < 15) {
+          if (avgLum < VALIDATION_MIN_BRIGHTNESS) {
             resolve({ isValid: false, reason: 'too_dark' });
             return;
           }
-          if (avgLum > 240) {
+          if (avgLum > LUMINANCE_VERY_BRIGHT_THRESHOLD) {
             resolve({ isValid: false, reason: 'too_bright' });
             return;
           }
-          if (lumStdDev < 10) {
+          if (lumStdDev < VALIDATION_MIN_STD_DEV_CANVAS) {
             resolve({ isValid: false, reason: 'too_uniform' });
             return;
           }
-          if (darkRatio > 0.85) {
+          if (darkRatio > VALIDATION_MAX_DARK_RATIO) {
             resolve({ isValid: false, reason: 'too_dark' });
             return;
           }
-          if (brightRatio > 0.85) {
+          if (brightRatio > VALIDATION_MAX_BRIGHT_RATIO) {
             resolve({ isValid: false, reason: 'too_bright' });
             return;
           }
-          if (skinRatio < 0.05) {
+          if (skinRatio < VALIDATION_MIN_SKIN_RATIO_CANVAS) {
             resolve({ isValid: false, reason: 'no_face_detected' });
             return;
           }
@@ -644,7 +706,7 @@ function detectFaceWithCanvas(base64: string, width: number, height: number): Pr
 
           const leftEyeRatio = eyeRegionPixels > 0 ? leftEyeDark / eyeRegionPixels : 0;
           const rightEyeRatio = eyeRegionPixels > 0 ? rightEyeDark / eyeRegionPixels : 0;
-          const hasEyeLikeRegions = leftEyeRatio > 0.02 && rightEyeRatio > 0.02;
+          const hasEyeLikeRegions = leftEyeRatio > FACE_MIN_EYE_DARK_RATIO && rightEyeRatio > FACE_MIN_EYE_DARK_RATIO;
 
           logger.log('[FaceDetect] Canvas metrics:', {
             skinRatio: skinRatio.toFixed(3),
@@ -655,7 +717,7 @@ function detectFaceWithCanvas(base64: string, width: number, height: number): Pr
             hasEyeLikeRegions,
           });
 
-          const isFace = skinRatio >= 0.15 && lumStdDev > 20 && darkRatio > 0.02 && darkRatio < 0.7 && hasEyeLikeRegions;
+          const isFace = skinRatio >= FACE_MIN_SKIN_RATIO && lumStdDev > FACE_MIN_LUM_STD_DEV && darkRatio > FACE_MIN_DARK_RATIO && darkRatio < FACE_MAX_DARK_RATIO && hasEyeLikeRegions;
           logger.log('[FaceDetect] Canvas result:', isFace);
           resolve(isFace);
         } catch (err) {
@@ -729,7 +791,7 @@ async function detectFaceFromImage(base64: string, width: number, height: number
     const uri = `data:image/jpeg;base64,${base64}`;
     const resized = await manipulateAsync(
       uri,
-      [{ resize: { width: 100 } }],
+      [{ resize: { width: FACE_DETECT_RESIZE_WIDTH } }],
       { base64: true, format: SaveFormat.JPEG, compress: 0.9 },
     );
 
@@ -770,7 +832,7 @@ async function detectFaceFromImage(base64: string, width: number, height: number
       if (b < 50) lowCount++;
       else if (b < 180) midCount++;
       else highCount++;
-      if (b >= 80 && b <= 180) skinRangeCount++;
+      if (b >= BYTE_SKIN_RANGE_LOW && b <= BYTE_SKIN_RANGE_HIGH) skinRangeCount++;
     }
 
     const mean = sum / sampleSize;
@@ -802,7 +864,7 @@ async function detectFaceFromImage(base64: string, width: number, height: number
     const topDarkRatio = topTotal > 0 ? topDarkCount / topTotal : 0;
 
     // Look for at least some dark regions in the upper portion (where eyes would be)
-    const hasEyeLikeDarkRegions = topDarkRatio > 0.03 && topDarkRatio < 0.5;
+    const hasEyeLikeDarkRegions = topDarkRatio > NATIVE_EYE_MIN_DARK_RATIO && topDarkRatio < NATIVE_EYE_MAX_DARK_RATIO;
 
     logger.log('[FaceDetect] Native metrics:', {
       mean: mean.toFixed(1),
@@ -823,14 +885,14 @@ async function detectFaceFromImage(base64: string, width: number, height: number
     // 4. Mean brightness should be in skin-tone range
     // 5. Must have eye-like dark regions in upper portion
     const isFace =
-      skinRangeRatio > 0.35 &&        // at least 35% of bytes in skin tone range
-      lowRatio > 0.03 &&              // some dark pixels (eyes, hair)
-      lowRatio < 0.4 &&               // but not too many (not a dark scene)
-      highRatio < 0.4 &&              // not an overexposed/white scene
-      mean > 70 && mean < 180 &&      // average brightness in face range
-      stdDev > 25 &&                  // sufficient contrast
-      entropy > 5.0 &&                // sufficient complexity
-      hasEyeLikeDarkRegions;          // dark spots where eyes should be
+      skinRangeRatio > NATIVE_MIN_SKIN_RANGE_RATIO &&
+      lowRatio > NATIVE_MIN_DARK_RATIO &&
+      lowRatio < NATIVE_MAX_DARK_RATIO &&
+      highRatio < NATIVE_MAX_BRIGHT_RATIO &&
+      mean > NATIVE_MIN_MEAN && mean < NATIVE_MAX_MEAN &&
+      stdDev > NATIVE_MIN_STD_DEV &&
+      entropy > NATIVE_MIN_ENTROPY &&
+      hasEyeLikeDarkRegions;
 
     logger.log('[FaceDetect] Native result:', isFace);
     return isFace;
@@ -871,10 +933,10 @@ export async function cropEyeRegion(
   imageHeight: number,
 ): Promise<string | null> {
   try {
-    const eyeRegionY = Math.floor(imageHeight * 0.25);
-    const eyeRegionHeight = Math.floor(imageHeight * 0.3);
-    const eyeRegionX = Math.floor(imageWidth * 0.1);
-    const eyeRegionWidth = Math.floor(imageWidth * 0.8);
+    const eyeRegionY = Math.floor(imageHeight * EYE_REGION_TOP);
+    const eyeRegionHeight = Math.floor(imageHeight * EYE_REGION_HEIGHT);
+    const eyeRegionX = Math.floor(imageWidth * EYE_REGION_LEFT);
+    const eyeRegionWidth = Math.floor(imageWidth * EYE_REGION_WIDTH);
 
     logger.log('[EyeAnalysis] Cropping eye region:', { eyeRegionX, eyeRegionY, eyeRegionWidth, eyeRegionHeight });
 
@@ -889,7 +951,7 @@ export async function cropEyeRegion(
             height: eyeRegionHeight,
           },
         },
-        { resize: { width: 128 } },
+        { resize: { width: CROP_RESIZE_WIDTH } },
       ],
       { base64: true, format: SaveFormat.JPEG, compress: 0.9 },
     );
@@ -907,10 +969,10 @@ export async function cropUnderEyeRegion(
   imageHeight: number,
 ): Promise<string | null> {
   try {
-    const underEyeY = Math.floor(imageHeight * 0.55);
-    const underEyeHeight = Math.floor(imageHeight * 0.15);
-    const underEyeX = Math.floor(imageWidth * 0.1);
-    const underEyeWidth = Math.floor(imageWidth * 0.8);
+    const underEyeY = Math.floor(imageHeight * UNDER_EYE_TOP);
+    const underEyeHeight = Math.floor(imageHeight * UNDER_EYE_HEIGHT);
+    const underEyeX = Math.floor(imageWidth * EYE_REGION_LEFT);
+    const underEyeWidth = Math.floor(imageWidth * EYE_REGION_WIDTH);
 
     logger.log('[EyeAnalysis] Cropping under-eye region:', { underEyeX, underEyeY, underEyeWidth, underEyeHeight });
 
@@ -925,7 +987,7 @@ export async function cropUnderEyeRegion(
             height: underEyeHeight,
           },
         },
-        { resize: { width: 128 } },
+        { resize: { width: CROP_RESIZE_WIDTH } },
       ],
       { base64: true, format: SaveFormat.JPEG, compress: 0.9 },
     );
