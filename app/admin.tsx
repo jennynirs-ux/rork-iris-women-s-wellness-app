@@ -115,6 +115,7 @@ export default function AdminDashboard() {
   const { adminUser, logout, hasPermission, isAuthenticated, isLoading: authLoading } = useAdmin();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [eyeMetricsExpanded, setEyeMetricsExpanded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -123,17 +124,9 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, authLoading]);
 
-  // Block rendering until auth check completes — prevents content flash
-  if (authLoading || !isAuthenticated) {
-    return (
-      <View style={styles.authLoadingContainer}>
-        <ActivityIndicator size="large" color="#8B5CF6" />
-      </View>
-    );
-  }
-
   const analyticsQuery = trpc.analytics.stats.useQuery(undefined, {
     refetchInterval: 10000,
+    enabled: isAuthenticated,
   });
 
   const stats = analyticsQuery.data;
@@ -190,7 +183,8 @@ export default function AdminDashboard() {
     { key: 'events', label: 'Events', icon: <Activity color={activeTab === 'events' ? '#60A5FA' : '#6B7280'} size={14} /> },
   ];
 
-  if (authLoading) {
+  // Block rendering until auth check completes — prevents content flash
+  if (authLoading || !isAuthenticated) {
     return (
       <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
         <ActivityIndicator color="#60A5FA" size="large" />
@@ -604,8 +598,6 @@ export default function AdminDashboard() {
       </Animated.View>
     );
   };
-
-  const [eyeMetricsExpanded, setEyeMetricsExpanded] = useState(false);
 
   const renderWellness = () => {
     if (isLoading) return <ActivityIndicator color="#60A5FA" style={styles.loadingIndicator} />;

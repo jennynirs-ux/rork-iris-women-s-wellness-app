@@ -357,6 +357,8 @@ type Translations = {
     validationTooDark: string;
     validationTooBright: string;
     validationNoFace: string;
+    faceDetected: string;
+    noFaceDetected: string;
   };
   scanResult: {
     scanComplete: string;
@@ -1402,6 +1404,8 @@ const en: Translations = {
     validationTooDark: 'The image is too dark. Move to a well-lit area and try again.',
     validationTooBright: 'The image is too bright or washed out. Avoid direct light and try again.',
     validationNoFace: 'No face detected. Position your face clearly in the oval guide and try again.',
+    faceDetected: 'Face detected',
+    noFaceDetected: 'No face detected — position your face in the oval',
   },
   scanResult: {
     scanComplete: 'Check Complete',
@@ -2417,6 +2421,8 @@ const sv: Translations = {
     validationTooDark: 'Bilden är för mörk. Flytta till ett välbelyst område och försök igen.',
     validationTooBright: 'Bilden är för ljus eller urtvättad. Undvik direkt ljus och försök igen.',
     validationNoFace: 'Inget ansikte upptäcktes. Placera ditt ansikte tydligt i ovalguiden och försök igen.',
+    faceDetected: 'Ansikte upptäckt',
+    noFaceDetected: 'Inget ansikte upptäckt — placera ditt ansikte i ovalen',
   },
   scanResult: {
     scanComplete: 'Kontroll klar',
@@ -3432,6 +3438,8 @@ const de: Translations = {
     validationTooDark: 'Das Bild ist zu dunkel. Geh in einen gut beleuchteten Bereich und versuche es erneut.',
     validationTooBright: 'Das Bild ist zu hell oder ausgewaschen. Vermeide direktes Licht und versuche es erneut.',
     validationNoFace: 'Kein Gesicht erkannt. Positioniere dein Gesicht deutlich in der ovalen Führung und versuche es erneut.',
+    faceDetected: 'Gesicht erkannt',
+    noFaceDetected: 'Kein Gesicht erkannt — positioniere dein Gesicht im Oval',
   },
   scanResult: {
     scanComplete: 'Check abgeschlossen',
@@ -4447,6 +4455,8 @@ const fr: Translations = {
     validationTooDark: 'L\'image est trop sombre. Déplacez-vous vers un endroit bien éclairé et réessayez.',
     validationTooBright: 'L\'image est trop claire ou surexposée. Évitez la lumière directe et réessayez.',
     validationNoFace: 'Aucun visage détecté. Positionnez votre visage clairement dans le guide ovale et réessayez.',
+    faceDetected: 'Visage détecté',
+    noFaceDetected: "Aucun visage détecté — positionnez votre visage dans l'ovale",
   },
   scanResult: {
     scanComplete: 'Bilan terminé',
@@ -5462,6 +5472,8 @@ const es: Translations = {
     validationTooDark: 'La imagen está demasiado oscura. Ve a un área bien iluminada e inténtalo de nuevo.',
     validationTooBright: 'La imagen está demasiado clara o sobreexpuesta. Evita la luz directa e inténtalo de nuevo.',
     validationNoFace: 'No se detectó ningún rostro. Posiciona tu cara claramente en la guía ovalada e inténtalo de nuevo.',
+    faceDetected: 'Rostro detectado',
+    noFaceDetected: 'No se detectó rostro — posiciona tu cara en el óvalo',
   },
   scanResult: {
     scanComplete: 'Chequeo completo',
@@ -6477,6 +6489,8 @@ const it: Translations = {
     validationTooDark: 'L\'immagine è troppo scura. Spostati in un\'area ben illuminata e riprova.',
     validationTooBright: 'L\'immagine è troppo chiara o sovraesposta. Evita la luce diretta e riprova.',
     validationNoFace: 'Nessun volto rilevato. Posiziona il viso chiaramente nella guida ovale e riprova.',
+    faceDetected: 'Volto rilevato',
+    noFaceDetected: "Nessun volto rilevato — posiziona il viso nell'ovale",
   },
   scanResult: {
     scanComplete: 'Check completato',
@@ -7492,6 +7506,8 @@ const nl: Translations = {
     validationTooDark: 'De afbeelding is te donker. Ga naar een goed verlichte ruimte en probeer het opnieuw.',
     validationTooBright: 'De afbeelding is te helder of overbelicht. Vermijd direct licht en probeer het opnieuw.',
     validationNoFace: 'Geen gezicht gedetecteerd. Positioneer je gezicht duidelijk in de ovale gids en probeer het opnieuw.',
+    faceDetected: 'Gezicht gedetecteerd',
+    noFaceDetected: 'Geen gezicht gedetecteerd — positioneer je gezicht in het ovaal',
   },
   scanResult: {
     scanComplete: 'Check voltooid',
@@ -8507,6 +8523,8 @@ const pl: Translations = {
     validationTooDark: 'Obraz jest zbyt ciemny. Przejdź do dobrze oświetlonego miejsca i spróbuj ponownie.',
     validationTooBright: 'Obraz jest zbyt jasny lub prześwietlony. Unikaj bezpośredniego światła i spróbuj ponownie.',
     validationNoFace: 'Nie wykryto twarzy. Umieść twarz wyraźnie w owalnym przewodniku i spróbuj ponownie.',
+    faceDetected: 'Wykryto twarz',
+    noFaceDetected: 'Nie wykryto twarzy — umieść twarz w owalu',
   },
   scanResult: {
     scanComplete: 'Kontrola zakończona',
@@ -9522,6 +9540,8 @@ const pt: Translations = {
     validationTooDark: 'A imagem está muito escura. Vá para uma área bem iluminada e tente novamente.',
     validationTooBright: 'A imagem está muito clara ou superexposta. Evite luz direta e tente novamente.',
     validationNoFace: 'Nenhum rosto detectado. Posicione seu rosto claramente no guia oval e tente novamente.',
+    faceDetected: 'Rosto detectado',
+    noFaceDetected: 'Nenhum rosto detectado — posicione seu rosto no oval',
   },
   scanResult: {
     scanComplete: 'Check concluído',

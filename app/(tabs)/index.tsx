@@ -481,17 +481,6 @@ export default function HomeScreen() {
     updateHabit({ habitId, completed: !completed });
   }, [updateHabit]);
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container} edges={["top"]}>
-        <View style={styles.loadingContainer}>
-          <Eye size={48} color={colors.primary} />
-          <Text style={styles.loadingText}>IRIS</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const renderHeaderComponent = useCallback(() => (
     <View>
       <View style={styles.header}>
@@ -644,6 +633,17 @@ export default function HomeScreen() {
       </View>
     </View>
   ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <View style={styles.loadingContainer}>
+          <Eye size={48} color={colors.primary} />
+          <Text style={styles.loadingText}>IRIS</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>

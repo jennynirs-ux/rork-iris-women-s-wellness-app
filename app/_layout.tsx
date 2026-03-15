@@ -114,6 +114,11 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, userProfile?.hasCompletedOnboarding, segments, isAdminAuthenticated]);
 
+  // Show nothing while data loads — prevents onboarding flash
+  if (isLoading) {
+    return <View style={{ flex: 1 }} />;
+  }
+
   return <>{children}</>;
 }
 

@@ -430,7 +430,8 @@ function ScanScreenInner() {
   const generateRecommendations = (
     stress: number, energy: number, recovery: number, hydration: number, inflammationVal: number
   ): string[] => {
-    const r = t.scanRecommendations;
+    const r = t?.scanRecommendations;
+    if (!r) return [];
     const recs: string[] = [];
     if (stress > 7) {
       recs.push(r.stressHighRest);
@@ -454,7 +455,7 @@ function ScanScreenInner() {
       recs.push(r.inflammationHighFoods);
       recs.push(r.inflammationHighIngredients);
     }
-    return recs;
+    return recs.filter(Boolean);
   };
 
   if (!permission) {
@@ -572,13 +573,13 @@ function ScanScreenInner() {
                   {faceDetected ? (
                     <View style={styles.faceDetectedContainer}>
                       <CheckCircle size={20} color="#34C759" />
-                      <Text style={styles.faceDetectedText}>Face detected</Text>
+                      <Text style={styles.faceDetectedText}>{t.scan.faceDetected}</Text>
                     </View>
                   ) : (
                     <View style={styles.faceHintContainer}>
                       <User size={20} color="#FF9500" />
                       <Text style={styles.faceHintText}>
-                        {cameraReady ? "No face detected — position your face in the oval" : t.scan.positionEyes}
+                        {cameraReady ? t.scan.noFaceDetected : t.scan.positionEyes}
                       </Text>
                     </View>
                   )}

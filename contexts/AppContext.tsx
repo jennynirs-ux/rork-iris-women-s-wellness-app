@@ -350,11 +350,22 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const addCheckInMutation = useMutation({
     mutationFn: async (checkIn: DailyCheckIn) => {
-      const checkInWithTimestamp = {
+      // Validate required fields before persisting
+      const clampScore = (val: number | undefined, fallback: number) => {
+        if (val === undefined || val === null || !Number.isFinite(val)) return fallback;
+        return Math.max(1, Math.min(10, Math.round(val)));
+      };
+      const validated: DailyCheckIn = {
         ...checkIn,
+        date: /^\d{4}-\d{2}-\d{2}$/.test(checkIn.date) ? checkIn.date : getLocalDateString(),
+        mood: clampScore(checkIn.mood, 5),
+        energy: clampScore(checkIn.energy, 5),
+        sleep: clampScore(checkIn.sleep, 5),
+        stressLevel: clampScore(checkIn.stressLevel, 5),
+        symptoms: Array.isArray(checkIn.symptoms) ? checkIn.symptoms : [],
         timestamp: Date.now(),
       };
-      const updated = [...checkIns, checkInWithTimestamp];
+      const updated = [...checkIns, validated];
       await AsyncStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(updated));
       return updated;
     },
@@ -937,7 +948,7 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const latestScan = useMemo(() => {
     const today = getLocalDateString();
-    const todayScans = scans.filter((s) => s.date.split('T')[0] === today);
+    const todayScans = scans.filter((s) => s.date?.split('T')[0] === today);
     if (todayScans.length > 0) {
       return todayScans.sort((a, b) => b.timestamp - a.timestamp)[0];
     }

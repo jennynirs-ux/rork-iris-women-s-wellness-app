@@ -108,20 +108,24 @@ export async function scheduleMenstrualPhaseNotification(
   const secondsUntilNotification = Math.floor(msUntilNotification / 1000);
   const daysUntilPeriod = Math.round((nextPeriod.getTime() - notificationDate.getTime()) / oneDayMs);
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: NOTIFICATION_IDENTIFIER,
-    content: {
-      title: '🩸 Period Reminder',
-      body: `Your period is expected to start in about ${daysUntilPeriod} day${daysUntilPeriod !== 1 ? 's' : ''}. Prepare essentials and track any early symptoms.`,
-      data: { type: 'menstrual_reminder' },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: secondsUntilNotification,
-    },
-  });
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: NOTIFICATION_IDENTIFIER,
+      content: {
+        title: '🩸 Period Reminder',
+        body: `Your period is expected to start in about ${daysUntilPeriod} day${daysUntilPeriod !== 1 ? 's' : ''}. Prepare essentials and track any early symptoms.`,
+        data: { type: 'menstrual_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: secondsUntilNotification,
+      },
+    });
 
-  logger.log(`[Notifications] Scheduled menstrual notification for ${notificationDate.toLocaleDateString()}, ${daysUntilPeriod} days before period`);
+    logger.log(`[Notifications] Scheduled menstrual notification for ${notificationDate.toLocaleDateString()}, ${daysUntilPeriod} days before period`);
+  } catch (err) {
+    logger.error('[Notifications] Failed to schedule menstrual notification:', err);
+  }
 }
 
 export async function cancelMenstrualPhaseNotification(): Promise<void> {
@@ -268,21 +272,25 @@ export async function scheduleCheckInReminder(): Promise<void> {
     reminderTime.setDate(reminderTime.getDate() + 1);
   }
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: NOTIFICATION_CHECKIN_REMINDER,
-    content: {
-      title: '📝 Daily Check-in',
-      body: 'How are you feeling today? Log your symptoms and mood.',
-      data: { type: 'checkin_reminder' },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour,
-      minute: 0,
-    },
-  });
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: NOTIFICATION_CHECKIN_REMINDER,
+      content: {
+        title: '📝 Daily Check-in',
+        body: 'How are you feeling today? Log your symptoms and mood.',
+        data: { type: 'checkin_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute: 0,
+      },
+    });
 
-  logger.log(`[Notifications] Scheduled daily check-in reminder for ${hour}:00`);
+    logger.log(`[Notifications] Scheduled daily check-in reminder for ${hour}:00`);
+  } catch (err) {
+    logger.error('[Notifications] Failed to schedule check-in reminder:', err);
+  }
 }
 
 // Schedule Scan Reminder
@@ -314,22 +322,26 @@ export async function scheduleScanReminder(): Promise<void> {
   const day = await getScanReminderDay();
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: NOTIFICATION_SCAN_REMINDER,
-    content: {
-      title: '👁️ Weekly Iris Scan',
-      body: 'Take your weekly iris scan to track your eye wellness.',
-      data: { type: 'scan_reminder' },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-      weekday: day === 0 ? 7 : day, // expo-notifications uses 1-7 (Sunday=7)
-      hour: 8,
-      minute: 0,
-    },
-  });
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: NOTIFICATION_SCAN_REMINDER,
+      content: {
+        title: '👁️ Weekly Iris Scan',
+        body: 'Take your weekly iris scan to track your eye wellness.',
+        data: { type: 'scan_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday: day === 0 ? 7 : day, // expo-notifications uses 1-7 (Sunday=7)
+        hour: 8,
+        minute: 0,
+      },
+    });
 
-  logger.log(`[Notifications] Scheduled weekly scan reminder for ${dayNames[day]} at 8:00 AM`);
+    logger.log(`[Notifications] Scheduled weekly scan reminder for ${dayNames[day]} at 8:00 AM`);
+  } catch (err) {
+    logger.error('[Notifications] Failed to schedule scan reminder:', err);
+  }
 }
 
 // Schedule Hydration Reminders
@@ -361,25 +373,29 @@ export async function scheduleHydrationReminders(): Promise<void> {
   // Schedule reminders every 2 hours from 8am to 10pm (8, 10, 12, 2, 4, 6, 8, 10)
   const reminderHours = [8, 10, 12, 14, 16, 18, 20, 22];
 
-  for (const hour of reminderHours) {
-    const identifier = `${NOTIFICATION_HYDRATION_REMINDER}_${hour}`;
+  try {
+    for (const hour of reminderHours) {
+      const identifier = `${NOTIFICATION_HYDRATION_REMINDER}_${hour}`;
 
-    await Notifications.scheduleNotificationAsync({
-      identifier,
-      content: {
-        title: '💧 Hydration Reminder',
-        body: 'Stay hydrated! Drink some water.',
-        data: { type: 'hydration_reminder' },
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DAILY,
-        hour,
-        minute: 0,
-      },
-    });
+      await Notifications.scheduleNotificationAsync({
+        identifier,
+        content: {
+          title: '💧 Hydration Reminder',
+          body: 'Stay hydrated! Drink some water.',
+          data: { type: 'hydration_reminder' },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DAILY,
+          hour,
+          minute: 0,
+        },
+      });
+    }
+
+    logger.log('[Notifications] Scheduled hydration reminders for every 2 hours (8am-10pm)');
+  } catch (err) {
+    logger.error('[Notifications] Failed to schedule hydration reminders:', err);
   }
-
-  logger.log('[Notifications] Scheduled hydration reminders for every 2 hours (8am-10pm)');
 }
 
 // Cancel all hydration reminders

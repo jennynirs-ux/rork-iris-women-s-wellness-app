@@ -31,7 +31,8 @@ function getCycleDayFromDate(lastPeriodDate: string): number {
   const daysSinceLastPeriod = Math.floor(
     (today.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24)
   );
-  return daysSinceLastPeriod;
+  // Guard against negative days (future date) — treat as cycle day 1
+  return daysSinceLastPeriod < 0 ? 1 : daysSinceLastPeriod;
 }
 
 export function getNextPeriodDate(lastPeriodDate: string, cycleLength: number): Date {
