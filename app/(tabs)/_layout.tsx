@@ -1,16 +1,18 @@
 import { Tabs } from "expo-router";
-import { Home, Calendar, Scan, BarChart3, User } from "lucide-react-native";
+import { Home, Calendar, Scan, BarChart3, User, Wifi } from "lucide-react-native";
 import React, { useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
-import { StyleSheet, View, Platform } from "react-native";
+import { StyleSheet, View, Platform, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const { t } = useApp();
   const insets = useSafeAreaInsets();
   const bottomPadding = Platform.OS === 'web' ? 8 : Math.max(insets.bottom, 8);
+  const { isOffline } = useNetworkStatus();
 
   const dynamicStyles = useMemo(() => StyleSheet.create({
     tabBar: {
@@ -43,18 +45,39 @@ export default function TabLayout() {
       shadowRadius: 8,
       elevation: 8,
     },
+    offlineBanner: {
+      backgroundColor: colors.textSecondary,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 8,
+    },
+    offlineBannerText: {
+      color: "#FFFFFF",
+      fontSize: 13,
+      fontWeight: "500" as const,
+      flex: 1,
+    },
   }), [colors, bottomPadding]);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.tabIconDefault,
-        headerShown: false,
-        tabBarStyle: dynamicStyles.tabBar,
-        tabBarLabelStyle: dynamicStyles.tabLabel,
-      }}
-    >
+    <View style={{ flex: 1 }}>
+      {isOffline && (
+        <View style={dynamicStyles.offlineBanner}>
+          <Wifi size={18} color="#FFFFFF" />
+          <Text style={dynamicStyles.offlineBannerText}>You are offline</Text>
+        </View>
+      )}
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.tabIconDefault,
+          headerShown: false,
+          tabBarStyle: dynamicStyles.tabBar,
+          tabBarLabelStyle: dynamicStyles.tabLabel,
+        }}
+      >
       <Tabs.Screen
         name="index"
         options={{
@@ -103,5 +126,6 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </View>
   );
 }

@@ -447,7 +447,12 @@ export default function CalendarScreen() {
           )}
 
           <View style={styles.monthSelector}>
-            <TouchableOpacity onPress={goToPreviousMonth} style={styles.monthButton}>
+            <TouchableOpacity
+              onPress={goToPreviousMonth}
+              style={styles.monthButton}
+              accessibilityLabel="Previous month"
+              accessibilityRole="button"
+            >
               <ChevronLeft size={24} color={colors.text} />
             </TouchableOpacity>
             <Text style={styles.monthText}>
@@ -461,7 +466,12 @@ export default function CalendarScreen() {
                 return `${monthNames[selectedMonth.getMonth()]} ${selectedMonth.getFullYear()}`;
               })()}
             </Text>
-            <TouchableOpacity onPress={goToNextMonth} style={styles.monthButton}>
+            <TouchableOpacity
+              onPress={goToNextMonth}
+              style={styles.monthButton}
+              accessibilityLabel="Next month"
+              accessibilityRole="button"
+            >
               <ChevronRight size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -499,6 +509,7 @@ export default function CalendarScreen() {
                         selected && styles.selectedContent,
                       ]}
                       accessibilityLabel={`${day}, ${phaseInfo.label}${isDueDate ? `, ${t.programs.dueDate}` : ''}`}
+                      accessibilityRole="button"
                     >
                       <Text
                         style={[
@@ -612,7 +623,8 @@ export default function CalendarScreen() {
                         <TouchableOpacity
                           style={styles.resetButton}
                           onPress={() => setPhaseOverride({ date: dateStr, phase: null })}
-                          accessibilityLabel={t.programs?.resetPhase || 'Reset to calculated'}
+                          accessibilityLabel="Reset phase override"
+                          accessibilityRole="button"
                         >
                           <RotateCcw size={12} color={colors.textSecondary} />
                           <Text style={styles.resetButtonText}>{t.programs?.resetPhase || 'Reset'}</Text>
@@ -640,6 +652,7 @@ export default function CalendarScreen() {
                               setPhaseOverride({ date: dateStr, phase: phaseKey });
                             }}
                             accessibilityLabel={`${t.phases[phaseKey]}${isActive ? ' (current)' : ''}`}
+                            accessibilityRole="button"
                           >
                             <PhaseIcon size={16} color={info.color} />
                             <Text style={[styles.phasePickerLabel, { color: isActive ? info.color : colors.textSecondary }]}>

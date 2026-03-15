@@ -18,6 +18,12 @@ function getLocalDateString(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+function isValidDateString(dateStr: string | null | undefined): boolean {
+  if (!dateStr || typeof dateStr !== 'string') return false;
+  const d = new Date(dateStr);
+  return !isNaN(d.getTime());
+}
+
 const STORAGE_KEY_USER = "iris_user_profile";
 const STORAGE_KEY_CHECKINS = "iris_checkins";
 const STORAGE_KEY_SCANS = "iris_scans";
@@ -596,6 +602,11 @@ export const [AppContext, useApp] = createContextHook(() => {
       profile.pregnancyDueDate &&
       profile.hasCompletedOnboarding
     ) {
+      // Validate pregnancy due date before parsing
+      if (!isValidDateString(profile.pregnancyDueDate)) {
+        logger.error('[AppContext] Invalid pregnancyDueDate:', profile.pregnancyDueDate);
+        return;
+      }
       const dueDate = new Date(profile.pregnancyDueDate);
       const now = new Date();
       if (now.getTime() > dueDate.getTime()) {
@@ -626,7 +637,14 @@ export const [AppContext, useApp] = createContextHook(() => {
 
     const now = Date.now();
     const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000;
-    const recentScans = scans.filter(s => new Date(s.date).getTime() >= fourteenDaysAgo);
+    // Validate scan dates before parsing
+    const recentScans = scans.filter(s => {
+      if (!isValidDateString(s.date)) {
+        logger.warn('[AppContext] Invalid scan date encountered:', s.date);
+        return false;
+      }
+      return new Date(s.date).getTime() >= fourteenDaysAgo;
+    });
     const hasEnoughScans = recentScans.length >= 2;
 
     if (!hasEnoughCheckIns && !hasEnoughScans) return null;
@@ -639,6 +657,11 @@ export const [AppContext, useApp] = createContextHook(() => {
       periScore = calculatePeriSymptomScore(recentCheckIns);
     }
 
+    // Validate lastPeriodDate before parsing
+    if (!isValidDateString(userProfile.lastPeriodDate)) {
+      logger.error('[AppContext] Invalid lastPeriodDate in lifeStageSuggestion:', userProfile.lastPeriodDate);
+      return null;
+    }
     const lastPeriod = new Date(userProfile.lastPeriodDate);
     const daysSincePeriod = Math.floor((now - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
     const missedPeriod = daysSincePeriod > (userProfile.cycleLength || 28) + 7;
@@ -685,8 +708,13 @@ export const [AppContext, useApp] = createContextHook(() => {
 
     let age = 0;
     if (userProfile.birthday) {
-      const birth = new Date(userProfile.birthday);
-      age = Math.floor((now - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+      // Validate birthday before parsing
+      if (!isValidDateString(userProfile.birthday)) {
+        logger.warn('[AppContext] Invalid birthday encountered:', userProfile.birthday);
+      } else {
+        const birth = new Date(userProfile.birthday);
+        age = Math.floor((now - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+      }
     }
     if (age >= 40) periScore += 2;
     if (userProfile.cycleRegularity === 'irregular') periScore += 2;
@@ -842,6 +870,9 @@ export const [AppContext, useApp] = createContextHook(() => {
     onSuccess: (updated) => {
       setPhaseOverrides(updated);
       queryClient.invalidateQueries({ queryKey: ["phaseOverrides"] });
+      // Invalidate userProfile to trigger re-computation of derived caches
+      // that depend on phase information (e.g., enrichedPhaseInfo if override is for today)
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       trackEvent('phase_override', { date: Object.keys(updated).length.toString() });
     },
   });
@@ -889,6 +920,11 @@ export const [AppContext, useApp] = createContextHook(() => {
     try {
       const today = getLocalDateString();
       const todayCheckIn = checkIns.find((c) => c.date === today) || null;
+      // Validate lastPeriodDate before parsing
+      if (!isValidDateString(userProfile.lastPeriodDate)) {
+        logger.error('[AppContext] Invalid lastPeriodDate in adaptiveQuestion:', userProfile.lastPeriodDate);
+        return { shouldAsk: false, questionType: null };
+      }
       const lastPeriod = new Date(userProfile.lastPeriodDate);
       const cycleDay = Math.floor((new Date().getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
 

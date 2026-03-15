@@ -56,7 +56,7 @@ export function findEffectiveCycleStart(
     return new Date().toISOString();
   }
   const bleedingCheckIns = checkIns.filter(
-    (c) => c.bleedingLevel && c.bleedingLevel !== 'none'
+    (c) => c.bleedingLevel && c.bleedingLevel !== 'none' && isValidDateString(c.date)
   );
 
   if (bleedingCheckIns.length === 0) {

@@ -87,6 +87,9 @@ const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps
     <TouchableOpacity
       style={styles.habitCard}
       onPress={() => onPress(habit.id, habit.completed)}
+      accessibilityLabel={`${habit.title}, ${habit.completed ? 'completed' : 'not completed'}`}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: habit.completed }}
     >
       <View style={[styles.habitIcon, { backgroundColor: habitColor + "20" }]}>
         <IconComponent size={20} color={habitColor} />
@@ -257,7 +260,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, t } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, t } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
@@ -503,6 +506,16 @@ export default function HomeScreen() {
           <View style={styles.phaseInfo}>
             <Text style={styles.phaseLabel}>{t.home.phase}</Text>
             <Text style={styles.phaseName}>{lifeStagePhase.label}</Text>
+            {phaseEstimate.confidence === 'low' && (
+              <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
+                Estimated — log more data for accuracy
+              </Text>
+            )}
+            {phaseEstimate.confidence === 'medium' && (
+              <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
+                Approximate — based on limited data
+              </Text>
+            )}
           </View>
           {userProfile.lifeStage === 'regular' && (
             <TouchableOpacity
@@ -511,6 +524,8 @@ export default function HomeScreen() {
                 setTempDate(new Date(userProfile.lastPeriodDate));
                 setShowEditPeriodModal(true);
               }}
+              accessibilityLabel="Edit cycle start date"
+              accessibilityRole="button"
             >
               <Edit2 size={20} color={colors.primary} />
             </TouchableOpacity>
@@ -518,7 +533,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.scoresContainer}>
-          <View style={styles.scoreItem}>
+          <View style={styles.scoreItem} accessibilityLabel={`Stress score: ${todaySummary.stressScore} out of 10`}>
             <CircularProgress
               size={56}
               strokeWidth={3}
@@ -531,7 +546,7 @@ export default function HomeScreen() {
             </CircularProgress>
             <Text style={styles.scoreLabel}>{t.home.stress}</Text>
           </View>
-          <View style={styles.scoreItem}>
+          <View style={styles.scoreItem} accessibilityLabel={`Energy score: ${todaySummary.energyScore} out of 10`}>
             <CircularProgress
               size={56}
               strokeWidth={3}
@@ -544,7 +559,7 @@ export default function HomeScreen() {
             </CircularProgress>
             <Text style={styles.scoreLabel}>{t.home.energy}</Text>
           </View>
-          <View style={styles.scoreItem}>
+          <View style={styles.scoreItem} accessibilityLabel={`Recovery score: ${todaySummary.recoveryScore} out of 10`}>
             <CircularProgress
               size={56}
               strokeWidth={3}
@@ -581,6 +596,8 @@ export default function HomeScreen() {
             <TouchableOpacity
               onPress={() => dismissLifeStageSuggestion(lifeStageSuggestion.type)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Dismiss suggestion"
+              accessibilityRole="button"
             >
               <X size={18} color={colors.textTertiary} />
             </TouchableOpacity>
@@ -589,6 +606,8 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.suggestionButton}
             onPress={() => router.push('/profile' as any)}
+            accessibilityLabel="Update life stage"
+            accessibilityRole="button"
           >
             <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
             <ArrowRight size={14} color="#FFFFFF" />
@@ -601,6 +620,8 @@ export default function HomeScreen() {
           style={styles.dailyRitualCard}
           onPress={() => router.push("/scan" as any)}
           activeOpacity={0.7}
+          accessibilityLabel="Start daily iris scan"
+          accessibilityRole="button"
         >
           <View style={styles.ritualIconContainer}>
             <View style={styles.ritualIconCircle}>
@@ -656,7 +677,11 @@ export default function HomeScreen() {
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>{t.home.updateLastPeriod}</Text>
-                <TouchableOpacity onPress={() => setShowEditPeriodModal(false)}>
+                <TouchableOpacity
+                  onPress={() => setShowEditPeriodModal(false)}
+                  accessibilityLabel="Close"
+                  accessibilityRole="button"
+                >
                   <X size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
@@ -689,6 +714,8 @@ export default function HomeScreen() {
                   updateLastPeriodDate(tempDate);
                   setShowEditPeriodModal(false);
                 }}
+                accessibilityLabel="Save period date"
+                accessibilityRole="button"
               >
                 <Text style={styles.saveButtonText}>{t.home.save}</Text>
               </TouchableOpacity>
