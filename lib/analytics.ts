@@ -65,6 +65,7 @@ type EventName =
   | 'account_deleted'
   | 'phase_override';
 
+const MAX_QUEUE_SIZE = 500;
 const eventQueue: { event: EventName; properties?: Record<string, string | number | boolean> }[] = [];
 let isProcessing = false;
 
@@ -104,6 +105,10 @@ export function trackEvent(
   event: EventName,
   properties?: Record<string, string | number | boolean>,
 ): void {
+  // Cap queue size to prevent unbounded memory growth when offline
+  if (eventQueue.length >= MAX_QUEUE_SIZE) {
+    eventQueue.shift();
+  }
   eventQueue.push({ event, properties });
   processQueue().catch(e => logger.log('[Analytics] Queue processing error:', e));
 }

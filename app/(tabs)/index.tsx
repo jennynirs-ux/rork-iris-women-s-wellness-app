@@ -289,15 +289,15 @@ export default function HomeScreen() {
       ? (checkIn.energy + scan.energyScore) / 2 
       : checkInEnergy;
 
-    const hasCramps = checkIn?.symptoms.includes("Cramps");
-    const hasFatigue = checkIn?.symptoms.includes("Fatigue");
-    const hasInsomnia = checkIn?.symptoms.includes("Insomnia");
-    const hasBackPain = checkIn?.symptoms.includes("Back Pain");
-    const hasAcne = checkIn?.symptoms.includes("Acne");
+    const hasCramps = checkIn?.symptoms?.includes("Cramps");
+    const hasFatigue = checkIn?.symptoms?.includes("Fatigue");
+    const hasInsomnia = checkIn?.symptoms?.includes("Insomnia");
+    const hasBackPain = checkIn?.symptoms?.includes("Back Pain");
+    const hasAcne = checkIn?.symptoms?.includes("Acne");
     const lowMood = checkIn && checkIn.mood < 5;
-    const hasMoodSwings = checkIn?.symptoms.includes("Mood Swings");
-    const hasHeadache = checkIn?.symptoms.includes("Headache");
-    const hasBloating = checkIn?.symptoms.includes("Bloating");
+    const hasMoodSwings = checkIn?.symptoms?.includes("Mood Swings");
+    const hasHeadache = checkIn?.symptoms?.includes("Headache");
+    const hasBloating = checkIn?.symptoms?.includes("Bloating");
     const poorSleep = checkIn && checkIn.sleep < 5;
     const hadCaffeine = checkIn?.hadCaffeine;
     const hadAlcohol = checkIn?.hadAlcohol;

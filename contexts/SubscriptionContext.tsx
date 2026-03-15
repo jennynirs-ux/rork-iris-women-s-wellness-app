@@ -38,6 +38,8 @@ function getRCToken() {
   });
 }
 
+let revenueCatConfigured = false;
+
 if (Platform.OS !== "web" && !isExpoGo()) {
   try {
     Purchases = require("react-native-purchases").default;
@@ -45,6 +47,9 @@ if (Platform.OS !== "web" && !isExpoGo()) {
     if (rcToken && Purchases) {
       logger.log("[RC] Configuring RevenueCat");
       Purchases.configure({ apiKey: rcToken });
+      revenueCatConfigured = true;
+    } else {
+      logger.error("[RC] MISSING API KEY — RevenueCat will not work. Set EXPO_PUBLIC_REVENUECAT_*_API_KEY env vars.");
     }
   } catch (e) {
     logger.log("[RC] RevenueCat not available:", e);
@@ -160,6 +165,18 @@ function parseRevenueCatError(error: any): PurchaseError {
 }
 
 /**
+ * Wrap a promise with a timeout
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
+/**
  * Retry logic with exponential backoff
  */
 async function retryWithBackoff<T>(
@@ -199,9 +216,9 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
   const customerInfoQuery = useQuery({
     queryKey: ["customerInfo"],
     queryFn: async () => {
-      if (!Purchases) return null;
+      if (!Purchases || !revenueCatConfigured) return null;
       try {
-        const info = await Purchases.getCustomerInfo();
+        const info: any = await withTimeout(Purchases.getCustomerInfo(), 10000, 'getCustomerInfo');
         logger.log("[RC] Customer info fetched", info.entitlements.active);
         // Cache successful result
         const hasPremium =
@@ -227,9 +244,9 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
   const offeringsQuery = useQuery({
     queryKey: ["offerings"],
     queryFn: async () => {
-      if (!Purchases) return null;
+      if (!Purchases || !revenueCatConfigured) return null;
       try {
-        const offerings = await Purchases.getOfferings();
+        const offerings: any = await withTimeout(Purchases.getOfferings(), 10000, 'getOfferings');
         logger.log("[RC] Offerings fetched", offerings.current?.identifier);
         return offerings.current;
       } catch (e) {
@@ -242,9 +259,9 @@ export const [SubscriptionContext, useSubscription] = createContextHook(() => {
 
   useEffect(() => {
     if (customerInfoQuery.data) {
+      const data = customerInfoQuery.data as any;
       const hasPremium =
-        typeof customerInfoQuery.data.entitlements?.active?.["premium"] !==
-        "undefined";
+        typeof data.entitlements?.active?.["premium"] !== "undefined";
       setIsPremium(hasPremium);
     }
   }, [customerInfoQuery.data]);

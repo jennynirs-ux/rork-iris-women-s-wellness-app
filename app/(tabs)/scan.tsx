@@ -49,6 +49,7 @@ function ScanScreenInner() {
   const [faceDetected, setFaceDetected] = useState<boolean>(false);
   const faceCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCheckingFaceRef = useRef<boolean>(false);
+  const consecutiveFailsRef = useRef<number>(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -76,7 +77,9 @@ function ScanScreenInner() {
 
     const scheduleCheck = () => {
       if (!isMountedRef.current) return;
-      faceCheckTimerRef.current = setTimeout(runFaceCheck, 500);
+      // Adaptive interval: 500ms base, backs off up to 2s after consecutive failures
+      const interval = Math.min(500 + consecutiveFailsRef.current * 300, 2000);
+      faceCheckTimerRef.current = setTimeout(runFaceCheck, interval);
     };
 
     const runFaceCheck = async () => {
@@ -95,6 +98,11 @@ function ScanScreenInner() {
           const hasFace = await detectFacePresence(snap.base64, snap.width ?? 640, snap.height ?? 480);
           if (isMountedRef.current) {
             setFaceDetected(hasFace);
+            if (hasFace) {
+              consecutiveFailsRef.current = 0;
+            } else {
+              consecutiveFailsRef.current = Math.min(consecutiveFailsRef.current + 1, 5);
+            }
           }
         }
       } catch (e) {
@@ -216,42 +224,48 @@ function ScanScreenInner() {
 
       let analysisBase64 = photo.base64;
 
-      let underEyeBase64: string | undefined;
-      if (Platform.OS !== 'web') {
-        const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
-        if (croppedBase64) {
-          analysisBase64 = croppedBase64;
-          logger.log('[Scan] Using cropped eye region for analysis');
+      try {
+        let underEyeBase64: string | undefined;
+        if (Platform.OS !== 'web') {
+          const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
+          if (croppedBase64) {
+            analysisBase64 = croppedBase64;
+            logger.log('[Scan] Using cropped eye region for analysis');
+          }
+          const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
+          if (underEyeCropped) {
+            underEyeBase64 = underEyeCropped;
+            logger.log('[Scan] Using cropped under-eye region for analysis');
+          }
         }
-        const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
-        if (underEyeCropped) {
-          underEyeBase64 = underEyeCropped;
-          logger.log('[Scan] Using cropped under-eye region for analysis');
+
+        const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
+        logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
+
+        analysisBase64 = '';
+
+        if (!eyeAnalysis) {
+          logger.log('[Scan] Eye analysis returned null — image not analyzable');
+          if (isMountedRef.current) handleCaptureFailed();
+          return;
         }
-      }
 
-      const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
-      logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
+        const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
+        const checkInContext = todayCheckIn ? {
+          energy: todayCheckIn.energy,
+          sleep: todayCheckIn.sleep,
+          stressLevel: todayCheckIn.stressLevel,
+        } : null;
 
-      analysisBase64 = '';
+        const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
 
-      if (!eyeAnalysis) {
-        logger.log('[Scan] Eye analysis returned null — image not analyzable');
+        if (!isMountedRef.current) return;
+        buildAndSaveScanResult(wellnessScores, eyeAnalysis);
+      } catch (analysisError) {
+        logger.error('[Scan] Analysis pipeline error:', analysisError);
         if (isMountedRef.current) handleCaptureFailed();
         return;
       }
-
-      const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
-      const checkInContext = todayCheckIn ? {
-        energy: todayCheckIn.energy,
-        sleep: todayCheckIn.sleep,
-        stressLevel: todayCheckIn.stressLevel,
-      } : null;
-
-      const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
-
-      if (!isMountedRef.current) return;
-      buildAndSaveScanResult(wellnessScores, eyeAnalysis);
 
     } catch (error) {
       logger.error('[Scan] Capture/analysis error:', error);
@@ -288,9 +302,17 @@ function ScanScreenInner() {
     scores: { energyScore: number; fatigueLevel: number; hydrationLevel: number; inflammation: number; recoveryScore: number; stressScore: number },
     eyeAnalysis: { brightness: number; redness: number; clarity: number; pupilDarkRatio: number; symmetry: number; scleraYellowness: number; underEyeDarkness: number; eyeOpenness: number; tearFilmQuality: number },
   ) => {
-    const { stressScore, energyScore, recoveryScore, hydrationLevel, fatigueLevel, inflammation } = scores;
+    const clamp = (val: number, min: number = 0, max: number = 10) => {
+      const v = Number.isFinite(val) ? val : 5;
+      return Math.max(min, Math.min(max, v));
+    };
+    const stressScore = clamp(scores.stressScore, 1, 10);
+    const energyScore = clamp(scores.energyScore, 1, 10);
+    const recoveryScore = clamp(scores.recoveryScore, 1, 10);
+    const hydrationLevel = clamp(scores.hydrationLevel, 1, 10);
+    const fatigueLevel = clamp(scores.fatigueLevel, 1, 10);
+    const inflammation = clamp(scores.inflammation, 1, 10);
     const detectedPhase = currentPhase;
-    const clamp = (val: number, min: number = 0, max: number = 10) => Math.max(min, Math.min(max, val));
 
     const _wellnessScore = clamp((energyScore + (10 - stressScore) + recoveryScore) / 3);
     const bodyBalance = clamp((recoveryScore + hydrationLevel + (10 - fatigueLevel)) / 3);

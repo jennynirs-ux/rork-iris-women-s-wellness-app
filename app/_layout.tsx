@@ -6,7 +6,7 @@ import { View, StyleSheet, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AppContext, useApp } from "@/contexts/AppContext";
-import { AdminContext } from "@/contexts/AdminContext";
+import { AdminContext, useAdmin } from "@/contexts/AdminContext";
 import { ReferralContext } from "@/contexts/ReferralContext";
 import { SubscriptionContext } from "@/contexts/SubscriptionContext";
 import { ThemeContext, useTheme } from "@/contexts/ThemeContext";
@@ -89,9 +89,11 @@ function DeepLinkHandler({ children }: { children: React.ReactNode }) {
 /**
  * Redirects to onboarding if user hasn't completed it, regardless of which
  * route they enter from (prevents deep-link bypass of onboarding).
+ * Also guards admin route — redirects unauthenticated users to admin-login.
  */
 function OnboardingGate({ children }: { children: React.ReactNode }) {
   const { isLoading, userProfile } = useApp();
+  const { isAuthenticated: isAdminAuthenticated } = useAdmin();
   const router = useRouter();
   const segments = useSegments();
 
@@ -103,8 +105,14 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 
     if (!hasCompleted && !isOnboardingScreen) {
       router.replace('/onboarding' as any);
+      return;
     }
-  }, [isLoading, userProfile?.hasCompletedOnboarding, segments]);
+
+    // Guard admin route — redirect to admin-login if not authenticated
+    if (segments[0] === 'admin' && !isAdminAuthenticated) {
+      router.replace('/admin-login' as any);
+    }
+  }, [isLoading, userProfile?.hasCompletedOnboarding, segments, isAdminAuthenticated]);
 
   return <>{children}</>;
 }

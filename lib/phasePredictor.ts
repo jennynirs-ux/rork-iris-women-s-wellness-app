@@ -15,7 +15,17 @@ import {
   EnrichedPhaseInfo,
 } from "@/types";
 
+function isValidDateString(dateStr: string | null | undefined): boolean {
+  if (!dateStr || typeof dateStr !== 'string') return false;
+  const d = new Date(dateStr);
+  return !isNaN(d.getTime());
+}
+
 function getCycleDayFromDate(lastPeriodDate: string): number {
+  if (!isValidDateString(lastPeriodDate)) {
+    logger.error('[PhasePredictor] Invalid lastPeriodDate:', lastPeriodDate);
+    return 1;
+  }
   const lastPeriod = new Date(lastPeriodDate);
   const today = new Date();
   const daysSinceLastPeriod = Math.floor(
@@ -25,6 +35,12 @@ function getCycleDayFromDate(lastPeriodDate: string): number {
 }
 
 export function getNextPeriodDate(lastPeriodDate: string, cycleLength: number): Date {
+  if (!isValidDateString(lastPeriodDate)) {
+    logger.error('[PhasePredictor] getNextPeriodDate called with invalid date:', lastPeriodDate);
+    const fallback = new Date();
+    fallback.setDate(fallback.getDate() + (cycleLength || 28));
+    return fallback;
+  }
   const lastPeriod = new Date(lastPeriodDate);
   const nextPeriod = new Date(lastPeriod);
   nextPeriod.setDate(lastPeriod.getDate() + cycleLength);
@@ -35,6 +51,10 @@ export function findEffectiveCycleStart(
   lastPeriodDate: string,
   checkIns: DailyCheckIn[]
 ): string {
+  if (!isValidDateString(lastPeriodDate)) {
+    logger.error('[PhasePredictor] findEffectiveCycleStart: invalid lastPeriodDate');
+    return new Date().toISOString();
+  }
   const bleedingCheckIns = checkIns.filter(
     (c) => c.bleedingLevel && c.bleedingLevel !== 'none'
   );
@@ -122,6 +142,20 @@ export function computeEnrichedPhaseInfo(
   t: any
 ): EnrichedPhaseInfo {
   const cycleLength = userProfile.cycleLength || 28;
+
+  if (!isValidDateString(userProfile.lastPeriodDate)) {
+    logger.error('[PhasePredictor] computeEnrichedPhaseInfo: invalid lastPeriodDate');
+    return {
+      phaseName: t?.phases?.[phaseEstimate.mostLikely] ?? 'Follicular',
+      phaseDay: 1,
+      cycleDay: 1,
+      totalCycleDays: cycleLength,
+      phaseColor: '#8BC9A3',
+      phaseDescription: phaseEstimate.reasoning,
+      phase: phaseEstimate.mostLikely,
+      effectiveCycleStart: new Date().toISOString(),
+    };
+  }
 
   if (userProfile.lifeStage === 'pregnancy') {
     const weeksPregnant = userProfile.weeksPregnant || 0;

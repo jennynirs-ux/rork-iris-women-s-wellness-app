@@ -103,6 +103,28 @@ function getInitialUserProfile(): UserProfile {
   };
 }
 
+function validateUserProfile(data: any): UserProfile {
+  const defaults = getInitialUserProfile();
+  if (!data || typeof data !== 'object') {
+    logger.error('[AppContext] Invalid profile data, using defaults');
+    return defaults;
+  }
+  // Ensure required fields have correct types; fall back to defaults otherwise
+  return {
+    ...defaults,
+    ...data,
+    name: typeof data.name === 'string' ? data.name : defaults.name,
+    cycleLength: typeof data.cycleLength === 'number' && data.cycleLength > 0 ? data.cycleLength : defaults.cycleLength,
+    lastPeriodDate: (typeof data.lastPeriodDate === 'string' && !isNaN(new Date(data.lastPeriodDate).getTime()))
+      ? data.lastPeriodDate
+      : defaults.lastPeriodDate,
+    goals: Array.isArray(data.goals) ? data.goals : defaults.goals,
+    mainFocus: Array.isArray(data.mainFocus) ? data.mainFocus : defaults.mainFocus,
+    hasCompletedOnboarding: typeof data.hasCompletedOnboarding === 'boolean' ? data.hasCompletedOnboarding : defaults.hasCompletedOnboarding,
+    isPremium: typeof data.isPremium === 'boolean' ? data.isPremium : defaults.isPremium,
+  };
+}
+
 export const [AppContext, useApp] = createContextHook(() => {
   const queryClient = useQueryClient();
   const [userProfile, setUserProfile] = useState<UserProfile>(getInitialUserProfile());
@@ -123,28 +145,51 @@ export const [AppContext, useApp] = createContextHook(() => {
   });
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [phaseOverrides, setPhaseOverrides] = useState<Record<string, CyclePhase>>({});
+  const phaseOverridesRef = useRef(phaseOverrides);
+  phaseOverridesRef.current = phaseOverrides;
 
   const userQuery = useQuery({
     queryKey: ["userProfile"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_USER);
-      return stored ? JSON.parse(stored) : getInitialUserProfile();
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_USER);
+        if (!stored) return getInitialUserProfile();
+        const parsed = JSON.parse(stored);
+        return validateUserProfile(parsed);
+      } catch (e) {
+        logger.error('[AppContext] Failed to load user profile:', e);
+        return getInitialUserProfile();
+      }
     },
   });
 
   const checkInsQuery = useQuery({
     queryKey: ["checkIns"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_CHECKINS);
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_CHECKINS);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        logger.error('[AppContext] Failed to load check-ins:', e);
+        return [];
+      }
     },
   });
 
   const scansQuery = useQuery({
     queryKey: ["scans"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_SCANS);
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_SCANS);
+        if (!stored) return [];
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        logger.error('[AppContext] Failed to load scans:', e);
+        return [];
+      }
     },
   });
 
@@ -784,7 +829,8 @@ export const [AppContext, useApp] = createContextHook(() => {
 
   const setPhaseOverrideMutation = useMutation({
     mutationFn: async ({ date, phase }: { date: string; phase: CyclePhase | null }) => {
-      const updated = { ...phaseOverrides };
+      // Use ref to always get latest state, preventing race conditions from rapid taps
+      const updated = { ...phaseOverridesRef.current };
       if (phase === null) {
         delete updated[date];
       } else {
