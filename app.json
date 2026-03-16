@@ -59,14 +59,7 @@
           "color": "#E89BA4"
         }
       ],
-      "expo-splash-screen",
-      "expo-image-manipulator",
-      "expo-haptics",
-      "expo-clipboard",
-      "expo-constants",
-      "expo-file-system",
-      "expo-sharing",
-      "expo-linear-gradient"
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true
