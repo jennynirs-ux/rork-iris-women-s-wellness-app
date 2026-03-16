@@ -3,7 +3,7 @@ import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { predictPhase, updatePersonalBaseline, updatePhaseBaselines, shouldAskAdaptiveQuestion, findEffectiveCycleStart, computeEnrichedPhaseInfo } from "@/lib/phasePredictor";
+import { predictPhase, updatePersonalBaseline, updatePhaseBaselines, shouldAskAdaptiveQuestion, findEffectiveCycleStart, computeEnrichedPhaseInfo, getPhaseForCycleDay } from "@/lib/phasePredictor";
 import { scheduleMenstrualPhaseNotification } from "@/lib/notifications";
 import { Language, getTranslation } from "@/constants/translations";
 import { getHealthKitAvailability, requestHealthKitPermissions, fetchAllHealthData, saveHealthConnection, loadHealthConnection, saveHealthData, loadHealthData } from "@/lib/healthKit";
@@ -582,8 +582,17 @@ export const [AppContext, useApp] = createContextHook(() => {
   }, [profileWithEffectiveStart, checkIns, scans, cycleHistory, baseline, phaseBaselines, previousPhase]);
 
   const currentPhase = useMemo(() => {
-    return phaseEstimate.mostLikely;
-  }, [phaseEstimate]);
+    // Use calendar-math phase to stay consistent with the Calendar tab.
+    // The Bayesian phaseEstimate.mostLikely is still available for
+    // confidence scoring and reasoning text.
+    const cycleLength = profileWithEffectiveStart.cycleLength || 28;
+    const start = profileWithEffectiveStart.lastPeriodDate;
+    if (!start) return phaseEstimate.mostLikely;
+    const daysSince = Math.max(1, Math.floor(
+      (Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
+    ) + 1);
+    return getPhaseForCycleDay(daysSince, cycleLength);
+  }, [profileWithEffectiveStart, phaseEstimate]);
 
   useEffect(() => {
     if (currentPhase !== previousPhase) {

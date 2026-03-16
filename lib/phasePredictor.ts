@@ -241,7 +241,9 @@ export function computeEnrichedPhaseInfo(
   const isOverdue = daysSinceStart > cycleLength;
   const dayInCycle = isOverdue ? cycleLength : daysSinceStart;
 
-  const currentPhase = isOverdue ? 'luteal' as CyclePhase : phaseEstimate.mostLikely;
+  // Use calendar-math phase so Home/Insights match the Calendar tab.
+  // The Bayesian phaseEstimate is still available for confidence/reasoning.
+  const currentPhase = isOverdue ? 'luteal' as CyclePhase : getPhaseForCycleDay(dayInCycle, cycleLength);
   const ranges = getPhaseRanges(cycleLength);
   const phaseRange = ranges[currentPhase];
   const phaseDay = Math.max(1, dayInCycle - phaseRange[0] + 1);
