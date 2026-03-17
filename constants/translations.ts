@@ -720,6 +720,23 @@ type Translations = {
     improve4: string;
     improve5: string;
   };
+  menopause?: {
+    hotFlashCount: string;
+    hotFlashSeverity: string;
+    nightSweatSeverity: string;
+    tookHRT: string;
+    mild: string;
+    moderate: string;
+    severe: string;
+    none: string;
+    vmsScore: string;
+    vasomotorSymptoms: string;
+    hotFlashTrend: string;
+    nightSweatFrequency: string;
+    increasing: string;
+    stable: string;
+    decreasing: string;
+  };
   programs: {
     title: string;
     subtitle: string;
@@ -1960,6 +1977,23 @@ const en: Translations = {
     improve4: 'Stay socially active and engaged',
     improve5: 'Regular health check-ups and screenings',
   },
+  menopause: {
+    hotFlashCount: 'Hot Flashes Today',
+    hotFlashSeverity: 'Severity',
+    nightSweatSeverity: 'Night Sweats',
+    tookHRT: 'Took HRT today',
+    mild: 'Mild',
+    moderate: 'Moderate',
+    severe: 'Severe',
+    none: 'None',
+    vmsScore: 'VMS Score',
+    vasomotorSymptoms: 'Vasomotor Symptoms',
+    hotFlashTrend: 'Hot Flash Trend',
+    nightSweatFrequency: 'Night Sweats',
+    increasing: 'Increasing',
+    stable: 'Stable',
+    decreasing: 'Decreasing',
+  },
   symptoms: {
     cramps: 'Cramps',
     headache: 'Headache',
@@ -2992,6 +3026,23 @@ const sv: Translations = {
     improve3: 'Fokusera på näring, speciellt kalcium och fiber',
     improve4: 'Stanna socialt aktiv och engagerad',
     improve5: 'Regelbundna hälsokontroller och screening',
+  },
+  menopause: {
+    hotFlashCount: 'Värmevallningar idag',
+    hotFlashSeverity: 'Allvarlighetsgrad',
+    nightSweatSeverity: 'Nattsvettningar',
+    tookHRT: 'Tog HRT idag',
+    mild: 'Mild',
+    moderate: 'Måttlig',
+    severe: 'Allvarlig',
+    none: 'Ingen',
+    vmsScore: 'VMS-poäng',
+    vasomotorSymptoms: 'Vasomotoriska symtom',
+    hotFlashTrend: 'Värmevallningstrend',
+    nightSweatFrequency: 'Nattsvettningar',
+    increasing: 'Ökar',
+    stable: 'Stabil',
+    decreasing: 'Minskar',
   },
   symptoms: {
     cramps: 'Kramp',
@@ -4026,6 +4077,23 @@ const de: Translations = {
     improve4: 'Bleibe sozial aktiv und engagiert',
     improve5: 'Regelmäßige Gesundheitschecks und Screenings',
   },
+  menopause: {
+    hotFlashCount: 'Hitzewallungen heute',
+    hotFlashSeverity: 'Schweregrad',
+    nightSweatSeverity: 'Nachtschweiß',
+    tookHRT: 'HRT heute genommen',
+    mild: 'Leicht',
+    moderate: 'Moderat',
+    severe: 'Schwer',
+    none: 'Keine',
+    vmsScore: 'VMS-Punktzahl',
+    vasomotorSymptoms: 'Vasomotorische Symptome',
+    hotFlashTrend: 'Hitzewallungs-Trend',
+    nightSweatFrequency: 'Nachtschweiß',
+    increasing: 'Zunehmend',
+    stable: 'Stabil',
+    decreasing: 'Abnehmend',
+  },
   symptoms: {
     cramps: 'Krämpfe',
     headache: 'Kopfschmerzen',
@@ -5058,6 +5126,23 @@ const fr: Translations = {
     improve3: 'Concentrez-vous sur la nutrition, en particulier le calcium et les fibres',
     improve4: 'Restez socialement actif et engagé',
     improve5: 'Contrôles de santé réguliers et dépistages',
+  },
+  menopause: {
+    hotFlashCount: 'Bouffées de chaleur aujourd\'hui',
+    hotFlashSeverity: 'Sévérité',
+    nightSweatSeverity: 'Sueurs nocturnes',
+    tookHRT: 'THS pris aujourd\'hui',
+    mild: 'Léger',
+    moderate: 'Modéré',
+    severe: 'Grave',
+    none: 'Aucune',
+    vmsScore: 'Score VMS',
+    vasomotorSymptoms: 'Symptômes vasomoteurs',
+    hotFlashTrend: 'Tendance des bouffées de chaleur',
+    nightSweatFrequency: 'Sueurs nocturnes',
+    increasing: 'Augmentation',
+    stable: 'Stable',
+    decreasing: 'Diminution',
   },
   symptoms: {
     cramps: 'Crampes',
@@ -6092,6 +6177,23 @@ const es: Translations = {
     improve4: 'Mantente socialmente activo y comprometido',
     improve5: 'Chequeos de salud regulares y exámenes de detección',
   },
+  menopause: {
+    hotFlashCount: 'Sofocos hoy',
+    hotFlashSeverity: 'Severidad',
+    nightSweatSeverity: 'Sudores nocturnos',
+    tookHRT: 'Tomé TRH hoy',
+    mild: 'Leve',
+    moderate: 'Moderado',
+    severe: 'Grave',
+    none: 'Ninguno',
+    vmsScore: 'Puntuación VMS',
+    vasomotorSymptoms: 'Síntomas vasomotores',
+    hotFlashTrend: 'Tendencia de sofocos',
+    nightSweatFrequency: 'Sudores nocturnos',
+    increasing: 'Aumentando',
+    stable: 'Estable',
+    decreasing: 'Disminuyendo',
+  },
   symptoms: {
     cramps: 'Calambres',
     headache: 'Dolor de cabeza',
@@ -7124,6 +7226,23 @@ const it: Translations = {
     improve3: 'Concentrati sulla nutrizione, specialmente calcio e fibre',
     improve4: 'Rimani socialmente attivo e coinvolto',
     improve5: 'Regolari controlli di salute e screening',
+  },
+  menopause: {
+    hotFlashCount: 'Vampate di calore oggi',
+    hotFlashSeverity: 'Gravità',
+    nightSweatSeverity: 'Sudorazioni notturne',
+    tookHRT: 'Ho preso TOS oggi',
+    mild: 'Lieve',
+    moderate: 'Moderato',
+    severe: 'Grave',
+    none: 'Nessuno',
+    vmsScore: 'Punteggio VMS',
+    vasomotorSymptoms: 'Sintomi vasomotori',
+    hotFlashTrend: 'Tendenza vampate di calore',
+    nightSweatFrequency: 'Sudorazioni notturne',
+    increasing: 'Aumentando',
+    stable: 'Stabile',
+    decreasing: 'Diminuendo',
   },
   symptoms: {
     cramps: 'Crampi',
@@ -8158,6 +8277,23 @@ const nl: Translations = {
     improve4: 'Blijf sociaal actief en betrokken',
     improve5: 'Regelmatige gezondheidscontroles en screening',
   },
+  menopause: {
+    hotFlashCount: 'Opvliegers vandaag',
+    hotFlashSeverity: 'Ernst',
+    nightSweatSeverity: 'Nachtzweten',
+    tookHRT: 'Vandaag HRS genomen',
+    mild: 'Mild',
+    moderate: 'Matig',
+    severe: 'Ernstig',
+    none: 'Geen',
+    vmsScore: 'VMS-score',
+    vasomotorSymptoms: 'Vasomotorische symptomen',
+    hotFlashTrend: 'Trend opvliegers',
+    nightSweatFrequency: 'Nachtzweten',
+    increasing: 'Toeneming',
+    stable: 'Stabiel',
+    decreasing: 'Afname',
+  },
   symptoms: {
     cramps: 'Krampen',
     headache: 'Hoofdpijn',
@@ -9191,6 +9327,23 @@ const pl: Translations = {
     improve4: 'Pozostań społecznie aktywna i zaangażowana',
     improve5: 'Regularne badania zdrowotne i przesiewowe',
   },
+  menopause: {
+    hotFlashCount: 'Uderzenia gorąca dzisiaj',
+    hotFlashSeverity: 'Nasilenie',
+    nightSweatSeverity: 'Nocne poty',
+    tookHRT: 'Przyjęła HTZ dzisiaj',
+    mild: 'Łagodne',
+    moderate: 'Umiarkowane',
+    severe: 'Poważne',
+    none: 'Brak',
+    vmsScore: 'Wynik VMS',
+    vasomotorSymptoms: 'Objawy wazomotoryczne',
+    hotFlashTrend: 'Trend uderzeń gorąca',
+    nightSweatFrequency: 'Nocne poty',
+    increasing: 'Zwiększanie się',
+    stable: 'Stabilne',
+    decreasing: 'Zmniejszanie się',
+  },
   symptoms: {
     cramps: 'Skurcze',
     headache: 'Ból głowy',
@@ -10223,6 +10376,23 @@ const pt: Translations = {
     improve3: 'Concentre-se em nutrição, especialmente cálcio e fibra',
     improve4: 'Mantenha-se socialmente ativo e engajado',
     improve5: 'Verificações de saúde regulares e triagens',
+  },
+  menopause: {
+    hotFlashCount: 'Ondas de calor hoje',
+    hotFlashSeverity: 'Severidade',
+    nightSweatSeverity: 'Suores noturnos',
+    tookHRT: 'Tomei TRH hoje',
+    mild: 'Leve',
+    moderate: 'Moderado',
+    severe: 'Grave',
+    none: 'Nenhum',
+    vmsScore: 'Pontuação VMS',
+    vasomotorSymptoms: 'Sintomas vasomotores',
+    hotFlashTrend: 'Tendência de ondas de calor',
+    nightSweatFrequency: 'Suores noturnos',
+    increasing: 'Aumentando',
+    stable: 'Estável',
+    decreasing: 'Diminuindo',
   },
   symptoms: {
     cramps: 'Cólicas',

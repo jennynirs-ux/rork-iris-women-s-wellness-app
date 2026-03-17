@@ -11,6 +11,7 @@ import { trackEvent } from "@/lib/analytics";
 import { UnitSystem } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
 import { updateWidgetData } from "@/lib/widgetData";
+import { trpcClient } from "@/lib/trpc";
 
 function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -410,6 +411,22 @@ export const [AppContext, useApp] = createContextHook(() => {
       } else {
         trackEvent('checkin_submitted', fullCheckInProperties);
       }
+
+      // Update partner with shared data if user has a partner linked
+      if (userProfile.linkedPartnerId && latest && userProfile.name) {
+        try {
+          trpcClient.partner.update.mutate({
+            userId: userProfile.name, // Using name as userId placeholder
+            phase: previousPhase || 'unknown',
+            phaseDay: 1,
+            totalCycleDays: userProfile.cycleLength,
+            mood: latest.mood,
+            energy: latest.energy,
+          });
+        } catch (err) {
+          logger.log('[AppContext] Failed to update partner data:', err);
+        }
+      }
     },
   });
 
@@ -531,6 +548,22 @@ export const [AppContext, useApp] = createContextHook(() => {
         trackEvent('first_scan', fullScanProperties);
       } else {
         trackEvent('scan_completed', fullScanProperties);
+      }
+
+      // Update partner with shared data if user has a partner linked
+      if (userProfile.linkedPartnerId && latestScan && userProfile.name) {
+        try {
+          trpcClient.partner.update.mutate({
+            userId: userProfile.name, // Using name as userId placeholder
+            phase: previousPhase || 'unknown',
+            phaseDay: 1,
+            totalCycleDays: userProfile.cycleLength,
+            mood: null,
+            energy: latestScan.energyScore,
+          });
+        } catch (err) {
+          logger.log('[AppContext] Failed to update partner data:', err);
+        }
       }
     },
   });

@@ -8,7 +8,7 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb } from "lucide-react-native";
+import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb, Plus } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -164,6 +164,10 @@ export default function CheckInScreen() {
   const [hadProcessedFood, setHadProcessedFood] = useState(false);
   const [cervicalMucus, setCervicalMucus] = useState<"dry" | "sticky" | "creamy" | "egg_white" | undefined>(undefined);
   const [ovulationPain, setOvulationPain] = useState<boolean | undefined>(undefined);
+  const [hotFlashCount, setHotFlashCount] = useState<string>("0");
+  const [hotFlashSeverity, setHotFlashSeverity] = useState<"mild" | "moderate" | "severe" | undefined>(undefined);
+  const [nightSweatSeverity, setNightSweatSeverity] = useState<"none" | "mild" | "moderate" | "severe">("none");
+  const [tookHRT, setTookHRT] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeInfoModal, setActiveInfoModal] = useState<string | null>(null);
 
@@ -213,6 +217,10 @@ export default function CheckInScreen() {
         setOvulationPain(existingCheckIn.ovulationPain);
         setMood(existingCheckIn.mood || 5);
         setEnergy(existingCheckIn.energy || 5);
+        setHotFlashCount((existingCheckIn.hotFlashCount ?? 0).toString());
+        setHotFlashSeverity(existingCheckIn.hotFlashSeverity);
+        setNightSweatSeverity(existingCheckIn.nightSweatSeverity || "none");
+        setTookHRT(existingCheckIn.tookHRT || false);
         setIsEditMode(true);
       }
     }
@@ -261,6 +269,10 @@ export default function CheckInScreen() {
       hadProcessedFood,
       cervicalMucus,
       ovulationPain,
+      hotFlashCount: hotFlashCount ? parseInt(hotFlashCount) : undefined,
+      hotFlashSeverity,
+      nightSweatSeverity,
+      tookHRT,
     };
     
     if (isEditMode) {
@@ -713,6 +725,123 @@ export default function CheckInScreen() {
           </View>
         )}
 
+        {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
+
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionLabel}>{t.menopause?.hotFlashCount || 'Hot Flashes Today'}</Text>
+              <View style={styles.hotFlashCounterContainer}>
+                <TouchableOpacity
+                  style={styles.counterButton}
+                  onPress={() => setHotFlashCount(Math.max(0, parseInt(hotFlashCount || '0') - 1).toString())}
+                  accessibilityLabel="Decrease hot flash count"
+                  accessibilityRole="button"
+                >
+                  <Minus size={20} color={colors.primary} />
+                </TouchableOpacity>
+                <TextInput
+                  style={styles.counterInput}
+                  value={hotFlashCount}
+                  onChangeText={(text) => {
+                    const num = parseInt(text) || 0;
+                    if (num >= 0 && num <= 10) setHotFlashCount(num.toString());
+                  }}
+                  keyboardType="numeric"
+                  maxLength={2}
+                  accessibilityLabel="Hot flash count"
+                />
+                <TouchableOpacity
+                  style={styles.counterButton}
+                  onPress={() => setHotFlashCount(Math.min(10, parseInt(hotFlashCount || '0') + 1).toString())}
+                  accessibilityLabel="Increase hot flash count"
+                  accessibilityRole="button"
+                >
+                  <Plus size={20} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {parseInt(hotFlashCount || '0') > 0 && (
+              <View style={styles.subsection}>
+                <Text style={styles.subsectionLabel}>{t.menopause?.hotFlashSeverity || 'Severity'}</Text>
+                <View style={styles.severityContainer}>
+                  {(['mild', 'moderate', 'severe'] as const).map((severity) => (
+                    <TouchableOpacity
+                      key={severity}
+                      style={[
+                        styles.severityChip,
+                        hotFlashSeverity === severity && styles.severityChipActive,
+                      ]}
+                      onPress={() => setHotFlashSeverity(severity)}
+                      accessibilityLabel={t.menopause?.[severity] || severity}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: hotFlashSeverity === severity }}
+                    >
+                      <Text
+                        style={[
+                          styles.severityText,
+                          hotFlashSeverity === severity && styles.severityTextActive,
+                        ]}
+                      >
+                        {t.menopause?.[severity] || severity.charAt(0).toUpperCase() + severity.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View style={styles.subsection}>
+              <Text style={styles.subsectionLabel}>{t.menopause?.nightSweatSeverity || 'Night Sweats'}</Text>
+              <View style={styles.severityContainer}>
+                {(['none', 'mild', 'moderate', 'severe'] as const).map((severity) => (
+                  <TouchableOpacity
+                    key={severity}
+                    style={[
+                      styles.severityChip,
+                      nightSweatSeverity === severity && styles.severityChipActive,
+                    ]}
+                    onPress={() => setNightSweatSeverity(severity)}
+                    accessibilityLabel={t.menopause?.[severity] || severity}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: nightSweatSeverity === severity }}
+                  >
+                    <Text
+                      style={[
+                        styles.severityText,
+                        nightSweatSeverity === severity && styles.severityTextActive,
+                      ]}
+                    >
+                      {t.menopause?.[severity] || severity.charAt(0).toUpperCase() + severity.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.hrtChip,
+                tookHRT && styles.hrtChipActive,
+              ]}
+              onPress={() => setTookHRT(!tookHRT)}
+              accessibilityLabel={t.menopause?.tookHRT || 'Took HRT'}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: tookHRT }}
+            >
+              <Text
+                style={[
+                  styles.hrtText,
+                  tookHRT && styles.hrtTextActive,
+                ]}
+              >
+                {t.menopause?.tookHRT || 'Took HRT today'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.anySymptoms}</Text>
@@ -1134,5 +1263,90 @@ function createCheckInStyles(colors: typeof Colors.light) { return StyleSheet.cr
     alignItems: "center" as const,
     gap: 6,
     flex: 1,
+  },
+  subsection: {
+    marginBottom: 16,
+  },
+  subsectionLabel: {
+    fontSize: 14,
+    fontWeight: "600" as const,
+    color: colors.text,
+    marginBottom: 10,
+  },
+  hotFlashCounterContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    gap: 12,
+  },
+  counterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  counterInput: {
+    width: 60,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    fontSize: 18,
+    fontWeight: "600" as const,
+    color: colors.text,
+    textAlign: "center" as const,
+  },
+  severityContainer: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
+  },
+  severityChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  severityChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  severityText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: "500" as const,
+  },
+  severityTextActive: {
+    color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  hrtChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: 8,
+  },
+  hrtChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  hrtText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: "500" as const,
+  },
+  hrtTextActive: {
+    color: colors.primary,
+    fontWeight: "600" as const,
   },
 }); }

@@ -50,6 +50,7 @@ import { LANGUAGES } from "@/constants/translations";
 import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWeightInput, parseHeightInput } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
 import { generateDoctorReport } from "@/lib/doctorReport";
+import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
 
 function getTranslatedMonths(t: any): string[] {
   const m = t.calendar.months;
@@ -385,8 +386,26 @@ export default function ProfileScreen() {
   // Apple Health integration enabled for B-007
   const APPLE_HEALTH_ENABLED = true as boolean;
   const insets = useSafeAreaInsets();
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [monthlyComparison, setMonthlyComparison] = useState<MonthlyComparison[]>([]);
+
+  // Partner mode states
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [partnerCode, setPartnerCode] = useState(userProfile.partnerCode || '');
+  const [partnerInputCode, setPartnerInputCode] = useState('');
 
   const styles = useMemo(() => createProfileStyles(colors), [colors]);
+
+  // Calculate milestones and monthly comparison whenever scans, checkIns, or userProfile change
+  useEffect(() => {
+    const loadGameification = () => {
+      const milestonesData = calculateMilestones(scans, checkIns, userProfile);
+      setMilestones(milestonesData);
+      const comparisonData = getMonthlyComparison(scans);
+      setMonthlyComparison(comparisonData);
+    };
+    loadGameification();
+  }, [scans, checkIns, userProfile]);
 
   const calculateAge = (birthday: string): number => {
     if (!birthday) return 0;
@@ -673,8 +692,62 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               )}
 
+              {/* Achievements Section */}
+              {milestones && milestones.length > 0 && (
+                <View style={styles.achievementsSection}>
+                  <Text style={styles.sectionTitle}>Achievements</Text>
+                  <View style={styles.milestonesGrid}>
+                    {milestones.map((milestone) => (
+                      <View
+                        key={milestone.id}
+                        style={[
+                          styles.milestoneCard,
+                          !milestone.unlocked && styles.milestoneCardLocked,
+                        ]}
+                      >
+                        <Text style={styles.milestoneIcon}>{milestone.icon}</Text>
+                        <Text style={styles.milestoneTitle}>{milestone.title}</Text>
+                        <Text style={[styles.milestoneDescription, !milestone.unlocked && styles.milestoneDescriptionLocked]}>
+                          {milestone.description}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+              {/* Monthly Comparison Section */}
+              {monthlyComparison && monthlyComparison.length > 0 && (
+                <View style={styles.monthlyComparisonSection}>
+                  <Text style={styles.sectionTitle}>Monthly Progress</Text>
+                  {monthlyComparison.map((comparison, index) => (
+                    <View key={index} style={styles.comparisonItem}>
+                      <View style={styles.comparisonLabel}>
+                        <Text style={styles.comparisonMetric}>{comparison.metric}</Text>
+                        <View style={[
+                          styles.comparisonChange,
+                          comparison.improved ? styles.comparisonChangeImproved : styles.comparisonChangeWorsened,
+                        ]}>
+                          <Text style={styles.comparisonChangeText}>
+                            {comparison.improved ? '↑' : '↓'} {Math.abs(comparison.change).toFixed(1)}%
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.comparisonValues}>
+                        <Text style={styles.comparisonValue}>
+                          {comparison.current.toFixed(1)} (this month)
+                        </Text>
+                        <Text style={styles.comparisonValuePrevious}>
+                          {comparison.previous.toFixed(1)} (last month)
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
               {APPLE_HEALTH_ENABLED && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => setShowHealthModal(true)}
               >
@@ -1302,6 +1375,44 @@ export default function ProfileScreen() {
                     • {(t as any).privacy?.youControlData || 'You control what data is shared (Settings > Data Privacy)'}
                   </Text>
                 </View>
+              </View>
+
+              <View style={styles.settingsGroup}>
+                <Text style={styles.settingsGroupTitle}>Partner Sharing</Text>
+                {userProfile.linkedPartnerId ? (
+                  <>
+                    <Text style={styles.settingsItemText}>Partner Connected</Text>
+                    <TouchableOpacity
+                      style={styles.settingsItem}
+                      onPress={() => {
+                        Alert.alert(
+                          'Unlink Partner',
+                          'Are you sure you want to unlink your partner?',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                              text: 'Unlink',
+                              style: 'destructive',
+                              onPress: () => {
+                                // TODO: Call unlink mutation
+                              }
+                            }
+                          ]
+                        );
+                      }}
+                    >
+                      <Text style={[styles.settingsItemText, { color: colors.primary }]}>Unlink Partner</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.settingsItem}
+                    onPress={() => setShowPartnerModal(true)}
+                  >
+                    <Text style={styles.settingsItemText}>Share with Partner</Text>
+                    <ChevronRight size={20} color={colors.textTertiary} />
+                  </TouchableOpacity>
+                )}
               </View>
 
               <View style={styles.settingsGroup}>
@@ -2001,6 +2112,69 @@ export default function ProfileScreen() {
             </View>
           </View>
         </Modal>
+
+        <Modal
+          visible={showPartnerModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowPartnerModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.cycleModalContent, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalHeaderTitle}>Share with Partner</Text>
+                <TouchableOpacity onPress={() => setShowPartnerModal(false)}>
+                  <Text style={styles.modalCloseText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} bounces={false} keyboardShouldPersistTaps="handled">
+                <View style={{ padding: 16 }}>
+                  <Text style={styles.modalSubtitle}>Your Partner Code</Text>
+                  <View style={[styles.partnerCodeContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[styles.partnerCodeText, { color: colors.text }]}>
+                      {partnerCode || 'Loading...'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (partnerCode) {
+                          // Copy to clipboard
+                          Alert.alert('Copied', 'Partner code copied to clipboard');
+                        }
+                      }}
+                      style={styles.copyButton}
+                    >
+                      <Share2 size={20} color={colors.primary} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>Enter Partner's Code</Text>
+                  <TextInput
+                    style={[styles.partnerInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
+                    placeholder="IRIS-XXXXXX"
+                    placeholderTextColor={colors.textTertiary}
+                    value={partnerInputCode}
+                    onChangeText={setPartnerInputCode}
+                    maxLength={11}
+                  />
+
+                  <TouchableOpacity
+                    style={[styles.linkButton, { backgroundColor: colors.primary }]}
+                    onPress={() => {
+                      if (partnerInputCode) {
+                        // TODO: Call link mutation
+                        Alert.alert('Partner Linked!', 'You are now sharing data with your partner');
+                        setShowPartnerModal(false);
+                      }
+                    }}
+                  >
+                    <Text style={styles.linkButtonText}>Link Partner</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -2168,6 +2342,98 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     fontSize: 14,
     fontWeight: "700" as const,
     color: colors.card,
+  },
+  achievementsSection: {
+    marginBottom: 24,
+  },
+  milestonesGrid: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    justifyContent: "space-between" as const,
+  },
+  milestoneCard: {
+    width: "48%",
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    alignItems: "center" as const,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  milestoneCardLocked: {
+    opacity: 0.5,
+  },
+  milestoneIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  milestoneTitle: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: colors.text,
+    marginBottom: 4,
+    textAlign: "center" as const,
+  },
+  milestoneDescription: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textAlign: "center" as const,
+  },
+  milestoneDescriptionLocked: {
+    color: colors.textTertiary,
+  },
+  monthlyComparisonSection: {
+    marginBottom: 24,
+  },
+  comparisonItem: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  comparisonLabel: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+    marginBottom: 8,
+  },
+  comparisonMetric: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    color: colors.text,
+  },
+  comparisonChange: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  comparisonChangeImproved: {
+    backgroundColor: "#6BCB7720",
+  },
+  comparisonChangeWorsened: {
+    backgroundColor: "#FF6B6B20",
+  },
+  comparisonChangeText: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: colors.text,
+  },
+  comparisonValues: {
+    marginTop: 8,
+  },
+  comparisonValue: {
+    fontSize: 14,
+    fontWeight: "500" as const,
+    color: colors.text,
+  },
+  comparisonValuePrevious: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
   editContainer: {
     backgroundColor: colors.card,
@@ -2938,5 +3204,41 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     color: '#F57F17',
     lineHeight: 18,
     textAlign: "center" as const,
+  },
+  partnerCodeContainer: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 12,
+  },
+  partnerCodeText: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    letterSpacing: 2,
+  },
+  copyButton: {
+    padding: 8,
+  },
+  partnerInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    marginTop: 12,
+  },
+  linkButton: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    marginTop: 20,
+  },
+  linkButtonText: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+    color: '#FFFFFF',
   },
 }); }

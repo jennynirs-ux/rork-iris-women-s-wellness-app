@@ -196,6 +196,51 @@ const generateCheckInInsights = (
   return insights;
 };
 
+const calculateVasomotorMetrics = (checkIns: DailyCheckIn[], t: any) => {
+  if (checkIns.length === 0) {
+    return null;
+  }
+
+  const last7Days = checkIns.slice(-7);
+
+  const avgHotFlashes = last7Days.reduce((sum, ci) => sum + (ci.hotFlashCount || 0), 0) / last7Days.length;
+
+  const hotFlashSeverities = last7Days
+    .filter(ci => ci.hotFlashCount && ci.hotFlashCount > 0)
+    .map(ci => ci.hotFlashSeverity || 'mild');
+
+  const severityMultiplier = (severity: string | undefined) => {
+    switch (severity) {
+      case 'severe': return 3;
+      case 'moderate': return 2;
+      default: return 1;
+    }
+  };
+
+  const avgSeverityMultiplier = hotFlashSeverities.length > 0
+    ? hotFlashSeverities.reduce((sum, sev) => sum + severityMultiplier(sev), 0) / hotFlashSeverities.length
+    : 1;
+
+  const nightSweatDays = last7Days.filter(ci => ci.nightSweatSeverity && ci.nightSweatSeverity !== 'none').length;
+
+  const vmsScore = (avgHotFlashes * avgSeverityMultiplier) + (nightSweatDays * 1.5);
+
+  let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
+  if (last7Days.length >= 3) {
+    const first3Avg = last7Days.slice(0, 3).reduce((sum, ci) => sum + (ci.hotFlashCount || 0), 0) / 3;
+    const last3Avg = last7Days.slice(-3).reduce((sum, ci) => sum + (ci.hotFlashCount || 0), 0) / 3;
+    if (last3Avg > first3Avg * 1.2) trend = 'increasing';
+    else if (last3Avg < first3Avg * 0.8) trend = 'decreasing';
+  }
+
+  return {
+    avgHotFlashes: avgHotFlashes.toFixed(1),
+    trend,
+    nightSweatDays,
+    vmsScore: vmsScore.toFixed(1),
+  };
+};
+
 
 
 const getPhaseGuidance = (phase: CyclePhase, t: any) => {
@@ -871,6 +916,39 @@ export default function InsightsScreen() {
               })}
             </View>
           )}
+
+          {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (() => {
+            const vmsMetrics = calculateVasomotorMetrics(checkIns, t);
+            return vmsMetrics ? (
+              <View style={styles.vasomotorCard}>
+                <View style={styles.vasomotorHeader}>
+                  <Flame size={24} color="#E89BA4" />
+                  <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
+                </View>
+
+                <View style={styles.vasomotorMetric}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.hotFlashTrend || 'Hot Flash Trend'}</Text>
+                  <Text style={styles.vasomotorMetricValue}>
+                    {vmsMetrics.trend === 'increasing' ? t.menopause?.increasing || 'Increasing' : vmsMetrics.trend === 'decreasing' ? t.menopause?.decreasing || 'Decreasing' : t.menopause?.stable || 'Stable'}
+                  </Text>
+                  <Text style={styles.vasomotorMetricSubtext}>Avg {vmsMetrics.avgHotFlashes} per day (last 7 days)</Text>
+                </View>
+
+                <View style={styles.vasomotorMetric}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.nightSweatFrequency || 'Night Sweats'}</Text>
+                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} of 7 days</Text>
+                </View>
+
+                <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.vmsScore || 'VMS Score'}</Text>
+                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? '#E89BA4' : '#10B981' }]}>
+                    {vmsMetrics.vmsScore}
+                  </Text>
+                  <Text style={styles.vasomotorMetricSubtext}>Symptom severity indicator</Text>
+                </View>
+              </View>
+            ) : null;
+          })()}
 
           <View style={styles.phaseCard}>
             <Text style={styles.phaseTitle}>{isNonCycleLifeStage ? (lifeStageOverride === 'pregnancy' ? t.onboarding.pregnant : lifeStageOverride === 'postpartum' ? t.phases.postpartumRecovery : lifeStageOverride === 'perimenopause' ? t.phases.perimenopauseTransition : t.phases.menopause) : t.insights.currentCyclePhase}</Text>
@@ -2857,5 +2935,50 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 13,
     color: colors.textSecondary,
     textAlign: "center" as const,
+  },
+  vasomotorCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: "#E89BA4",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  vasomotorHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    marginBottom: 20,
+    gap: 12,
+  },
+  vasomotorTitle: {
+    fontSize: 18,
+    fontWeight: "700" as const,
+    color: colors.text,
+    flex: 1,
+  },
+  vasomotorMetric: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  vasomotorMetricLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: "500" as const,
+    marginBottom: 6,
+  },
+  vasomotorMetricValue: {
+    fontSize: 22,
+    fontWeight: "700" as const,
+    color: colors.text,
+    marginBottom: 4,
+  },
+  vasomotorMetricSubtext: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginTop: 4,
   },
 }); }

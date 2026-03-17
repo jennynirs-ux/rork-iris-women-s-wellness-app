@@ -1,12 +1,11 @@
 import { AdminUser, AdminPermission } from '@/types/admin';
-import { ADMIN_CREDENTIALS, ROLE_PERMISSIONS } from '@/constants/adminData';
-import { sha256 } from '@/lib/crypto';
+import { trpcClient } from '@/lib/trpc';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY_ADMIN = 'iris_admin_session';
+const STORAGE_KEY_ADMIN_TOKEN = 'iris_admin_token';
 
 export const [AdminContext, useAdmin] = createContextHook(() => {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
@@ -15,8 +14,24 @@ export const [AdminContext, useAdmin] = createContextHook(() => {
   const sessionQuery = useQuery({
     queryKey: ['adminSession'],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_ADMIN);
-      return stored ? JSON.parse(stored) as AdminUser : null;
+      const token = await AsyncStorage.getItem(STORAGE_KEY_ADMIN_TOKEN);
+      if (!token) return null;
+
+      // Verify token is still valid on the server
+      try {
+        const result = await trpcClient.admin.verify.query({ token });
+        if (result.valid) {
+          return {
+            username: result.username,
+            role: result.role,
+            permissions: result.permissions as AdminPermission[],
+          } as AdminUser;
+        }
+      } catch (error) {
+        // Token verification failed
+      }
+
+      return null;
     },
   });
 
@@ -28,28 +43,34 @@ export const [AdminContext, useAdmin] = createContextHook(() => {
 
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const cred = ADMIN_CREDENTIALS[username.toLowerCase()];
-      if (!cred) throw new Error('Invalid credentials');
-      const inputHash = await sha256(password);
-      if (inputHash !== cred.passwordHash) {
-        throw new Error('Invalid credentials');
+      // Send credentials to server
+      const result = await trpcClient.admin.login.mutate({ username, password });
+
+      if (!result.success) {
+        throw new Error('Login failed');
       }
+
+      // Store token in AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEY_ADMIN_TOKEN, result.token);
+
       const user: AdminUser = {
         username: username.toLowerCase(),
-        role: cred.role,
-        permissions: ROLE_PERMISSIONS[cred.role] as AdminPermission[],
+        role: result.role,
+        permissions: [] as AdminPermission[], // Will be populated on verify
       };
-      await AsyncStorage.setItem(STORAGE_KEY_ADMIN, JSON.stringify(user));
+
       return user;
     },
-    onSuccess: (user) => {
+    onSuccess: async (user) => {
       setAdminUser(user);
+      // Trigger session query to verify and get full user data
+      await queryClient.refetchQueries({ queryKey: ['adminSession'] });
     },
   });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await AsyncStorage.removeItem(STORAGE_KEY_ADMIN);
+      await AsyncStorage.removeItem(STORAGE_KEY_ADMIN_TOKEN);
     },
     onSuccess: () => {
       setAdminUser(null);

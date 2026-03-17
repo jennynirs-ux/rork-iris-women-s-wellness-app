@@ -34,6 +34,11 @@ import {
   ArrowRight,
   Baby,
   Thermometer,
+  ChevronDown,
+  ChevronUp,
+  Send,
+  ThumbsUp,
+  Flag,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import CircularProgress from "@/components/CircularProgress";
@@ -43,6 +48,9 @@ import { router } from "expo-router";
 import { Habit } from "@/types";
 import Colors from "@/constants/colors";
 import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
+import { trpc } from "@/lib/trpc";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { calculateStreaks, StreakData } from "@/lib/gamification";
 
 const PHASE_INFO = {
   menstrual: { color: "#E89BA4", icon: Moon },
@@ -72,6 +80,32 @@ const HABIT_COLORS = {
   selfcheck: "#E89BA4",
   pelvicfloor: "#F4C896",
 };
+
+const COMMUNITY_CATEGORY_ICONS = {
+  nutrition: Apple,
+  exercise: Activity,
+  selfcare: Moon,
+  mindfulness: Brain,
+  sleep: Moon,
+};
+
+const COMMUNITY_CATEGORY_COLORS = {
+  nutrition: "#8BC9A3",
+  exercise: "#F4A896",
+  selfcare: "#F4C8D4",
+  mindfulness: "#96E8D4",
+  sleep: "#B8A4E8",
+};
+
+interface CommunityTip {
+  id: string;
+  phase: string;
+  content: string;
+  category: "nutrition" | "exercise" | "selfcare" | "mindfulness" | "sleep";
+  likes: number;
+  createdAt: string;
+  reportCount: number;
+}
 
 interface HabitCardProps {
   habit: Habit;
@@ -155,6 +189,59 @@ const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: Coaching
 });
 
 CoachingTipCard.displayName = 'CoachingTipCard';
+
+interface CommunityTipCardProps {
+  tip: CommunityTip;
+  colors: typeof Colors.light;
+  onLike: (tipId: string) => void;
+  onReport: (tipId: string) => void;
+  styles: ReturnType<typeof createStyles>;
+  isLiked: boolean;
+}
+
+const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, isLiked }: CommunityTipCardProps) => {
+  const IconComponent = COMMUNITY_CATEGORY_ICONS[tip.category];
+  const categoryColor = COMMUNITY_CATEGORY_COLORS[tip.category];
+
+  return (
+    <View style={[styles.communityTipCard, { borderLeftColor: categoryColor }]}>
+      <View style={styles.communityTipContent}>
+        <View style={styles.communityTipHeader}>
+          <View style={[styles.communityTipIcon, { backgroundColor: categoryColor + "20" }]}>
+            <IconComponent size={16} color={categoryColor} />
+          </View>
+          <Text style={styles.communityTipCategory}>{tip.category}</Text>
+        </View>
+        <Text style={styles.communityTipText}>{tip.content}</Text>
+        <View style={styles.communityTipFooter}>
+          <TouchableOpacity
+            style={[styles.communityTipActionButton, isLiked && styles.communityTipActionButtonActive]}
+            onPress={() => onLike(tip.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={`Like tip, ${tip.likes} likes`}
+            accessibilityRole="button"
+          >
+            <ThumbsUp size={14} color={isLiked ? colors.primary : colors.textTertiary} />
+            <Text style={[styles.communityTipActionText, isLiked && { color: colors.primary }]}>
+              {tip.likes}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.communityTipActionButton}
+            onPress={() => onReport(tip.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Report tip"
+            accessibilityRole="button"
+          >
+            <Flag size={14} color={colors.textTertiary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+});
+
+CommunityTipCard.displayName = 'CommunityTipCard';
 
 function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light }) {
   const monthRef = useRef<TextInput>(null);
@@ -310,8 +397,78 @@ export default function HomeScreen() {
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
   const [dismissedCoachingTips, setDismissedCoachingTips] = useState<Set<string>>(new Set());
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [communityTipText, setCommunityTipText] = useState("");
+  const [communityTipCategory, setCommunityTipCategory] = useState<"nutrition" | "exercise" | "selfcare" | "mindfulness" | "sleep">("mindfulness");
+  const [communityCollapsed, setCommunityCollapsed] = useState(false);
+  const [likedTips, setLikedTips] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  // Get user ID from storage
+  useEffect(() => {
+    const loadUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("iris_user_id");
+        if (!storedUserId) {
+          const newId = Math.random().toString(36).substring(2, 15);
+          await AsyncStorage.setItem("iris_user_id", newId);
+          setUserId(newId);
+        } else {
+          setUserId(storedUserId);
+        }
+      } catch (err) {
+        console.error("Error loading user ID:", err);
+      }
+    };
+    loadUserId();
+  }, []);
+
+  // Calculate streaks whenever scans or checkIns change
+  useEffect(() => {
+    const loadStreaks = async () => {
+      const streaks = await calculateStreaks(scans, checkIns);
+      setStreakData(streaks);
+    };
+    loadStreaks();
+  }, [scans, checkIns]);
+
+  // Fetch community feed
+  const { data: communityFeedData, refetch: refetchCommunityFeed } = trpc.community.feed.useQuery(
+    { phase: currentPhase, limit: 5 },
+    { enabled: !communityCollapsed && !!currentPhase }
+  );
+
+  // Submit community tip mutation
+  const submitTipMutation = trpc.community.submit.useMutation({
+    onSuccess: () => {
+      setCommunityTipText("");
+      setCommunityTipCategory("mindfulness");
+      setShowCommunityModal(false);
+      refetchCommunityFeed();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    },
+  });
+
+  // Like tip mutation
+  const likeTipMutation = trpc.community.like.useMutation({
+    onSuccess: () => {
+      refetchCommunityFeed();
+    },
+  });
+
+  // Report tip mutation
+  const reportTipMutation = trpc.community.report.useMutation({
+    onSuccess: () => {
+      refetchCommunityFeed();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+  });
 
   const coachingTips = useMemo(() => {
     const allTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
@@ -536,6 +693,40 @@ export default function HomeScreen() {
     updateHabit({ habitId, completed: !completed });
   }, [updateHabit]);
 
+  const handleSubmitCommunityTip = useCallback(() => {
+    if (!communityTipText.trim() || communityTipText.length < 10 || !userId) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    submitTipMutation.mutate({
+      phase: currentPhase,
+      content: communityTipText,
+      category: communityTipCategory,
+      userId,
+    });
+  }, [communityTipText, communityTipCategory, currentPhase, userId, submitTipMutation]);
+
+  const handleLikeCommunityTip = useCallback((tipId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setLikedTips((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(tipId)) {
+        newSet.delete(tipId);
+      } else {
+        newSet.add(tipId);
+      }
+      return newSet;
+    });
+    likeTipMutation.mutate({ tipId });
+  }, [likeTipMutation]);
+
+  const handleReportCommunityTip = useCallback((tipId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    reportTipMutation.mutate({ tipId });
+  }, [reportTipMutation]);
+
   const renderHeaderComponent = useCallback(() => (
     <View>
       <View style={styles.header}>
@@ -624,6 +815,17 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {streakData && (
+        <View style={styles.streakCard}>
+          <Text style={styles.streakText}>
+            🔥 {streakData.scanStreak}-day scan streak!
+          </Text>
+          {streakData.scanStreak === 0 && (
+            <Text style={styles.streakSubtext}>Keep your streak! Scan today</Text>
+          )}
+        </View>
+      )}
+
       {lifeStageSuggestion && (
         <View style={styles.suggestionBanner}>
           <View style={styles.suggestionIconRow}>
@@ -698,11 +900,63 @@ export default function HomeScreen() {
         </View>
       )}
 
+      <View style={styles.communitySection}>
+        <TouchableOpacity
+          style={styles.communitySectionHeader}
+          onPress={() => setCommunityCollapsed(!communityCollapsed)}
+          activeOpacity={0.7}
+          accessibilityLabel="Toggle community feed"
+          accessibilityRole="button"
+        >
+          <Text style={styles.sectionTitle}>From the Community</Text>
+          {communityCollapsed ? (
+            <ChevronDown size={20} color={colors.text} />
+          ) : (
+            <ChevronUp size={20} color={colors.text} />
+          )}
+        </TouchableOpacity>
+
+        {!communityCollapsed && (
+          <View style={styles.communityContent}>
+            {communityFeedData?.tips && communityFeedData.tips.length > 0 ? (
+              <>
+                {communityFeedData.tips.map((tip) => (
+                  <CommunityTipCard
+                    key={tip.id}
+                    tip={tip}
+                    colors={colors}
+                    onLike={handleLikeCommunityTip}
+                    onReport={handleReportCommunityTip}
+                    isLiked={likedTips.has(tip.id)}
+                    styles={styles}
+                  />
+                ))}
+              </>
+            ) : (
+              <Text style={styles.communityEmptyText}>
+                No tips yet for this phase. Be the first to share!
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.communityShareButton}
+              onPress={() => setShowCommunityModal(true)}
+              activeOpacity={0.7}
+              accessibilityLabel="Share a tip"
+              accessibilityRole="button"
+            >
+              <Send size={16} color="#FFFFFF" />
+              <Text style={styles.communityShareButtonText}>Share a tip</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip]);
 
   if (isLoading) {
     return (
@@ -758,7 +1012,7 @@ export default function HomeScreen() {
               <Text style={styles.modalDescription}>
                 Select the first day of your last period to adjust your cycle tracking. Day {enrichedPhaseInfo.cycleDay} of {enrichedPhaseInfo.totalCycleDays} — {enrichedPhaseInfo.phaseName}
               </Text>
-              
+
               <View style={styles.datePickerContainer}>
                 {Platform.OS === "web" ? (
                   <WebDatePicker date={tempDate} onChange={setTempDate} colors={colors} />
@@ -789,6 +1043,89 @@ export default function HomeScreen() {
               >
                 <Text style={styles.saveButtonText}>{t.home.save}</Text>
               </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showCommunityModal}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setShowCommunityModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Share a Tip</Text>
+                <TouchableOpacity
+                  onPress={() => setShowCommunityModal(false)}
+                  accessibilityLabel="Close"
+                  accessibilityRole="button"
+                >
+                  <X size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.modalDescription}>
+                Share a helpful tip with others in your {currentPhase} phase. Keep it 10-280 characters.
+              </Text>
+
+              <View style={styles.communityModalForm}>
+                <Text style={styles.formLabel}>Category</Text>
+                <View style={styles.categorySelector}>
+                  {(["nutrition", "exercise", "selfcare", "mindfulness", "sleep"] as const).map((cat) => (
+                    <TouchableOpacity
+                      key={cat}
+                      style={[
+                        styles.categoryButton,
+                        communityTipCategory === cat && styles.categoryButtonActive,
+                      ]}
+                      onPress={() => setCommunityTipCategory(cat)}
+                      accessibilityLabel={`Select ${cat} category`}
+                      accessibilityRole="button"
+                    >
+                      <Text
+                        style={[
+                          styles.categoryButtonText,
+                          communityTipCategory === cat && { color: "#FFFFFF" },
+                        ]}
+                      >
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={styles.formLabel}>Your Tip</Text>
+                <TextInput
+                  style={styles.communityTipInput}
+                  placeholder="Share your wisdom..."
+                  placeholderTextColor={colors.textTertiary}
+                  value={communityTipText}
+                  onChangeText={setCommunityTipText}
+                  multiline
+                  maxLength={280}
+                  textAlignVertical="top"
+                />
+                <Text style={styles.characterCount}>
+                  {communityTipText.length}/280
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    styles.submitTipButton,
+                    (communityTipText.length < 10 || submitTipMutation.isPending) && styles.submitTipButtonDisabled,
+                  ]}
+                  onPress={handleSubmitCommunityTip}
+                  disabled={communityTipText.length < 10 || submitTipMutation.isPending}
+                  accessibilityLabel="Submit tip"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.submitTipButtonText}>
+                    {submitTipMutation.isPending ? "Submitting..." : "Submit Tip"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -902,6 +1239,26 @@ function createStyles(colors: typeof Colors.light) {
       fontSize: 16,
       fontWeight: "600" as const,
       color: colors.primary,
+    },
+    streakCard: {
+      backgroundColor: "#FF6B6B20",
+      borderRadius: 12,
+      padding: 12,
+      marginHorizontal: 20,
+      marginTop: 16,
+      marginBottom: 4,
+      borderLeftWidth: 4,
+      borderLeftColor: "#FF6B6B",
+    },
+    streakText: {
+      fontSize: 16,
+      fontWeight: "700" as const,
+      color: colors.text,
+    },
+    streakSubtext: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginTop: 4,
     },
     habitsList: {
       marginBottom: 16,
@@ -1145,6 +1502,167 @@ function createStyles(colors: typeof Colors.light) {
       color: colors.textSecondary,
       lineHeight: 19,
       marginLeft: 32,
+    },
+    communitySection: {
+      marginBottom: 24,
+    },
+    communitySectionHeader: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
+      paddingHorizontal: 20,
+      marginBottom: 12,
+    },
+    communityContent: {
+      paddingHorizontal: 20,
+    },
+    communityTipCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 12,
+      borderLeftWidth: 4,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    communityTipContent: {
+      flex: 1,
+    },
+    communityTipHeader: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      marginBottom: 8,
+      gap: 8,
+    },
+    communityTipIcon: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+    },
+    communityTipCategory: {
+      fontSize: 12,
+      fontWeight: "600" as const,
+      color: colors.textSecondary,
+      textTransform: "capitalize" as const,
+    },
+    communityTipText: {
+      fontSize: 13,
+      color: colors.text,
+      lineHeight: 19,
+      marginBottom: 12,
+    },
+    communityTipFooter: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 8,
+    },
+    communityTipActionButton: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+    },
+    communityTipActionButtonActive: {
+      backgroundColor: colors.primaryLight,
+    },
+    communityTipActionText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontWeight: "600" as const,
+    },
+    communityEmptyText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontStyle: "italic" as const,
+      textAlign: "center" as const,
+      marginVertical: 24,
+    },
+    communityShareButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 20,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      gap: 8,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    communityShareButtonText: {
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "600" as const,
+    },
+    communityModalForm: {
+      gap: 16,
+    },
+    formLabel: {
+      fontSize: 13,
+      fontWeight: "600" as const,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    categorySelector: {
+      flexDirection: "row" as const,
+      flexWrap: "wrap" as const,
+      gap: 8,
+    },
+    categoryButton: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    categoryButtonActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    categoryButtonText: {
+      fontSize: 12,
+      fontWeight: "600" as const,
+      color: colors.textSecondary,
+    },
+    communityTipInput: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 16,
+      padding: 12,
+      minHeight: 100,
+      fontSize: 14,
+      color: colors.text,
+      fontFamily: undefined,
+    },
+    characterCount: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      textAlign: "right" as const,
+    },
+    submitTipButton: {
+      backgroundColor: colors.primary,
+      padding: 16,
+      borderRadius: 16,
+      alignItems: "center" as const,
+      marginTop: 8,
+    },
+    submitTipButtonDisabled: {
+      opacity: 0.5,
+    },
+    submitTipButtonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "600" as const,
     },
   });
 }

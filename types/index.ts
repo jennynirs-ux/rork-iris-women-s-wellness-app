@@ -65,6 +65,8 @@ export interface UserProfile {
   birthDate?: string;
   deliveryType?: "vaginal" | "cesarean" | "other";
   dataConsent?: boolean;
+  partnerCode?: string;
+  linkedPartnerId?: string | null;
 }
 
 export interface DailyCheckIn {
@@ -85,6 +87,10 @@ export interface DailyCheckIn {
   hadProcessedFood?: boolean;
   cervicalMucus?: "dry" | "sticky" | "creamy" | "egg_white";
   ovulationPain?: boolean;
+  hotFlashCount?: number;
+  hotFlashSeverity?: 'mild' | 'moderate' | 'severe';
+  nightSweatSeverity?: 'none' | 'mild' | 'moderate' | 'severe';
+  tookHRT?: boolean;
 }
 
 export interface RawOpticalSignals {
