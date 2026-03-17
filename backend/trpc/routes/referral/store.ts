@@ -1,4 +1,6 @@
 import logger from "@/lib/logger";
+import * as persistence from "../persistence";
+
 interface ReferralCodeEntry {
   userId: string;
   referralCode: string;
@@ -26,10 +28,25 @@ interface ReferrerStats {
 
 const REFERRAL_CODE_PATTERN = /^IRIS-[A-Z0-9]{6}$/;
 
-const referralCodes = new Map<string, ReferralCodeEntry>();
-const codeToEntry = new Map<string, ReferralCodeEntry>();
-const referredUsers = new Map<string, ReferredUserEntry>();
-const referrerToReferred = new Map<string, ReferredUserEntry[]>();
+// Initialize from persisted file or empty
+interface ReferralStoreData {
+  referralCodes: [string, ReferralCodeEntry][];
+  codeToEntry: [string, ReferralCodeEntry][];
+  referredUsers: [string, ReferredUserEntry][];
+  referrerToReferred: [string, ReferredUserEntry[]][];
+}
+
+const storedData = persistence.load<ReferralStoreData>('referral-store.json') || {
+  referralCodes: [],
+  codeToEntry: [],
+  referredUsers: [],
+  referrerToReferred: [],
+};
+
+const referralCodes = new Map<string, ReferralCodeEntry>(storedData.referralCodes);
+const codeToEntry = new Map<string, ReferralCodeEntry>(storedData.codeToEntry);
+const referredUsers = new Map<string, ReferredUserEntry>(storedData.referredUsers);
+const referrerToReferred = new Map<string, ReferredUserEntry[]>(storedData.referrerToReferred);
 
 function isValidCodeFormat(code: string): boolean {
   return REFERRAL_CODE_PATTERN.test(code.toUpperCase());
@@ -44,6 +61,7 @@ function register(userId: string, referralCode: string): void {
   referralCodes.set(userId, entry);
   codeToEntry.set(referralCode.toUpperCase(), entry);
   logger.log("[ReferralStore] Registered code:", referralCode.toUpperCase(), "for user:", userId, "total codes:", codeToEntry.size);
+  persistReferralStore();
 }
 
 function getByCode(code: string): ReferralCodeEntry | undefined {
@@ -69,6 +87,7 @@ function applyReferral(referrerUserId: string, newUserId: string, referralCode: 
   const existing = referrerToReferred.get(referrerUserId) || [];
   existing.push(entry);
   referrerToReferred.set(referrerUserId, existing);
+  persistReferralStore();
 }
 
 function updateMilestone(userId: string, milestone: "installed" | "onboarded" | "subscribed"): void {
@@ -76,6 +95,7 @@ function updateMilestone(userId: string, milestone: "installed" | "onboarded" | 
   if (entry) {
     entry.currentMilestone = milestone;
     entry.milestoneUpdatedAt = new Date().toISOString();
+    persistReferralStore();
   }
 }
 
@@ -110,6 +130,16 @@ function getReferrerStats(referrerUserId: string): ReferrerStats {
     referralGoal,
     progressToNext: subscribed % referralGoal,
   };
+}
+
+function persistReferralStore(): void {
+  const data: ReferralStoreData = {
+    referralCodes: Array.from(referralCodes.entries()),
+    codeToEntry: Array.from(codeToEntry.entries()),
+    referredUsers: Array.from(referredUsers.entries()),
+    referrerToReferred: Array.from(referrerToReferred.entries()),
+  };
+  persistence.save('referral-store.json', data);
 }
 
 export const referralStore = {

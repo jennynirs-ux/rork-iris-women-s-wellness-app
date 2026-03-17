@@ -64,6 +64,7 @@ export interface UserProfile {
   weeksPregnant?: number;
   birthDate?: string;
   deliveryType?: "vaginal" | "cesarean" | "other";
+  dataConsent?: boolean;
 }
 
 export interface DailyCheckIn {

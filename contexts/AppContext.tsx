@@ -373,6 +373,8 @@ export const [AppContext, useApp] = createContextHook(() => {
       setCheckIns(data);
       queryClient.setQueryData(["checkIns"], data);
       const latest = data[data.length - 1];
+
+      // Build event properties with limited metrics for all users
       const checkInProps = latest ? {
         energy: latest.energy,
         sleep: latest.sleep,
@@ -381,10 +383,31 @@ export const [AppContext, useApp] = createContextHook(() => {
         symptoms: (latest.symptoms || []).join(','),
         cyclePhase: previousPhase || 'unknown',
       } : undefined;
+
+      // If user consented to data sharing, include all check-in fields
+      const fullCheckInProperties = userProfile.dataConsent && latest ? {
+        ...checkInProps,
+        mood: latest.mood,
+        energy: latest.energy,
+        sleep: latest.sleep,
+        ...(latest.sleepHours !== undefined && { sleepHours: latest.sleepHours }),
+        stressLevel: latest.stressLevel ?? 5,
+        symptoms: (latest.symptoms || []).join(','),
+        bleedingLevel: latest.bleedingLevel ?? 'none',
+        cervicalMucus: latest.cervicalMucus ?? 'dry',
+        caffeine: latest.hadCaffeine ? 1 : 0,
+        alcohol: latest.hadAlcohol ? 1 : 0,
+        isIll: latest.isIll ? 1 : 0,
+        sugar: latest.hadSugar ? 1 : 0,
+        processedFood: latest.hadProcessedFood ? 1 : 0,
+        ovulationPain: latest.ovulationPain ? 1 : 0,
+        ...(latest.notes && { notes: latest.notes }),
+      } : checkInProps;
+
       if (checkIns.length === 0) {
-        trackEvent('first_checkin', checkInProps);
+        trackEvent('first_checkin', fullCheckInProperties);
       } else {
-        trackEvent('checkin_submitted', checkInProps);
+        trackEvent('checkin_submitted', fullCheckInProperties);
       }
     },
   });
@@ -445,6 +468,8 @@ export const [AppContext, useApp] = createContextHook(() => {
     onSuccess: (data) => {
       setScans(data);
       const latestScan = data[0];
+
+      // Build event properties with limited metrics for all users
       const scanMetrics = latestScan ? {
         stressScore: latestScan.stressScore,
         energyScore: latestScan.energyScore,
@@ -457,10 +482,54 @@ export const [AppContext, useApp] = createContextHook(() => {
         eyeOpenness: latestScan.physiologicalStates.calmVsAlert,
         tearFilmQuality: latestScan.rawOpticalSignals.tearFilmReflectivity,
       } : undefined;
+
+      // If user consented to data sharing, include all scan fields
+      const fullScanProperties = userProfile.dataConsent && latestScan ? {
+        ...scanMetrics,
+        // Raw optical signals
+        pupilDiameter: latestScan.rawOpticalSignals.pupilDiameter,
+        pupilContractionSpeed: latestScan.rawOpticalSignals.pupilContractionSpeed,
+        pupilDilationSpeed: latestScan.rawOpticalSignals.pupilDilationSpeed,
+        pupilLatency: latestScan.rawOpticalSignals.pupilLatency,
+        pupilRecoveryTime: latestScan.rawOpticalSignals.pupilRecoveryTime,
+        pupilSymmetry: latestScan.rawOpticalSignals.pupilSymmetry,
+        blinkFrequency: latestScan.rawOpticalSignals.blinkFrequency,
+        blinkDuration: latestScan.rawOpticalSignals.blinkDuration,
+        microSaccadeFrequency: latestScan.rawOpticalSignals.microSaccadeFrequency,
+        gazeStability: latestScan.rawOpticalSignals.gazeStability,
+        scleraRedness: latestScan.rawOpticalSignals.scleraRedness,
+        scleraBrightness: latestScan.rawOpticalSignals.scleraBrightness,
+        tearFilmReflectivity: latestScan.rawOpticalSignals.tearFilmReflectivity,
+        // Physiological states
+        physiologicalStressLevel: latestScan.physiologicalStates.stressLevel,
+        sympatheticActivation: latestScan.physiologicalStates.sympatheticActivation,
+        calmVsAlert: latestScan.physiologicalStates.calmVsAlert,
+        cognitiveLoad: latestScan.physiologicalStates.cognitiveLoad,
+        energyLevel: latestScan.physiologicalStates.energyLevel,
+        fatigueLoad: latestScan.physiologicalStates.fatigueLoad,
+        recoveryReadiness: latestScan.physiologicalStates.recoveryReadiness,
+        sleepDebtLikelihood: latestScan.physiologicalStates.sleepDebtLikelihood,
+        dehydrationTendency: latestScan.physiologicalStates.dehydrationTendency,
+        inflammatoryStress: latestScan.physiologicalStates.inflammatoryStress,
+        // Skin beauty signals
+        skinStress: latestScan.skinBeautySignals.skinStress,
+        breakoutRiskWindow: latestScan.skinBeautySignals.breakoutRiskWindow ? 1 : 0,
+        drynessTendency: latestScan.skinBeautySignals.drynessTendency,
+        bestBeautyCareTiming: latestScan.skinBeautySignals.bestBeautyCareTiming ? 1 : 0,
+        avoidIrritationFlag: latestScan.skinBeautySignals.avoidIrritationFlag ? 1 : 0,
+        // Emotional mental state
+        emotionalSensitivity: latestScan.emotionalMentalState.emotionalSensitivity,
+        socialEnergy: latestScan.emotionalMentalState.socialEnergy,
+        moodVolatilityRisk: latestScan.emotionalMentalState.moodVolatilityRisk,
+        cognitiveSharpness: latestScan.emotionalMentalState.cognitiveSharpness,
+        // Additional scan info
+        hormonalState: latestScan.hormonalState,
+      } : scanMetrics;
+
       if (scans.length === 0) {
-        trackEvent('first_scan', scanMetrics);
+        trackEvent('first_scan', fullScanProperties);
       } else {
-        trackEvent('scan_completed', scanMetrics);
+        trackEvent('scan_completed', fullScanProperties);
       }
     },
   });

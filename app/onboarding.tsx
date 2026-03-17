@@ -12,6 +12,7 @@ import {
   Pressable,
   ActivityIndicator,
   Animated,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -160,6 +161,8 @@ export default function OnboardingScreen() {
   const [showBabyBirthMonthPicker, setShowBabyBirthMonthPicker] = useState(false);
   const [showBabyBirthYearPicker, setShowBabyBirthYearPicker] = useState(false);
   const [deliveryType, setDeliveryType] = useState<"vaginal" | "cesarean" | "other">("vaginal");
+
+  const [dataConsent, setDataConsent] = useState(false);
 
   const isAnyPickerOpen = showDayPicker || showMonthPicker || showYearPicker || 
     showPeriodDayPicker || showPeriodMonthPicker || showPeriodYearPicker ||
@@ -365,6 +368,7 @@ export default function OnboardingScreen() {
       birthDate: selectedLifeStage === "postpartum" ? birthDateISO : undefined,
       deliveryType: selectedLifeStage === "postpartum" ? deliveryType : undefined,
       hasCompletedOnboarding: true,
+      dataConsent,
     });
 
     trackMilestone("onboarded").catch((err) => {
@@ -1386,7 +1390,22 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-
+      <View style={styles.dataConsentSection}>
+        <View style={styles.dataConsentRow}>
+          <Switch
+            value={dataConsent}
+            onValueChange={setDataConsent}
+            trackColor={{ false: colors.textTertiary + "40", true: colors.primary + "60" }}
+            thumbColor={dataConsent ? colors.primary : colors.textTertiary}
+          />
+          <View style={styles.dataConsentTextContainer}>
+            <Text style={styles.dataConsentLabel}>Share anonymous data</Text>
+            <Text style={styles.dataConsentDescription}>
+              Help us improve by sharing anonymous health insights with our research team
+            </Text>
+          </View>
+        </View>
+      </View>
 
       <View style={styles.disclaimerContainer}>
         <Text style={styles.disclaimerText}>
@@ -1926,6 +1945,33 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
     fontSize: 13,
     color: colors.error,
     fontWeight: "500" as const,
+  },
+  dataConsentSection: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  dataConsentRow: {
+    flexDirection: "row" as const,
+    alignItems: "flex-start" as const,
+    gap: 12,
+  },
+  dataConsentTextContainer: {
+    flex: 1,
+    justifyContent: "center" as const,
+  },
+  dataConsentLabel: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    color: colors.text,
+    marginBottom: 4,
+  },
+  dataConsentDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSecondary,
   },
   disclaimerContainer: {
     backgroundColor: colors.surface,

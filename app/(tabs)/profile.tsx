@@ -483,6 +483,21 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleToggleDataConsent = async (value: boolean) => {
+    try {
+      await updateUserProfile({
+        ...userProfile,
+        dataConsent: value,
+      });
+    } catch (error) {
+      logger.error('Failed to toggle data consent:', error);
+      Alert.alert(
+        t.settings.error,
+        'Failed to update data consent preference. Please try again.'
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
@@ -1102,6 +1117,23 @@ export default function ProfileScreen() {
 
               <View style={styles.settingsGroup}>
                 <Text style={styles.settingsGroupTitle}>{t.settings.dataPrivacy}</Text>
+
+                <View style={styles.dataConsentItem}>
+                  <View style={styles.dataConsentContent}>
+                    <Text style={styles.dataConsentItemText}>Share Anonymous Data</Text>
+                    <Text style={styles.dataConsentItemDescription}>
+                      Help improve Iris by sharing anonymous health insights with our research team
+                    </Text>
+                  </View>
+                  <Switch
+                    value={userProfile.dataConsent ?? false}
+                    onValueChange={handleToggleDataConsent}
+                    trackColor={{ false: colors.border, true: colors.primaryLight }}
+                    thumbColor={userProfile.dataConsent ? colors.primary : colors.surface}
+                    ios_backgroundColor={colors.border}
+                  />
+                </View>
+
                 <View style={styles.downloadDataSection}>
                   <Text style={styles.downloadDataDesc}>{t.settings.downloadMyDataDesc}</Text>
                 </View>
@@ -2481,6 +2513,30 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     fontSize: 14,
     color: colors.textSecondary,
     marginRight: 8,
+  },
+  dataConsentItem: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  dataConsentContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  dataConsentItemText: {
+    fontSize: 15,
+    color: colors.text,
+    fontWeight: "500" as const,
+    marginBottom: 4,
+  },
+  dataConsentItemDescription: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
   downloadDataSection: {
     paddingHorizontal: 16,

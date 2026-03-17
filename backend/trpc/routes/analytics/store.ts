@@ -1,4 +1,6 @@
 import logger from "@/lib/logger";
+import { load, save } from "../persistence";
+
 export type EventName =
   | 'app_opened'
   | 'onboarding_started'
@@ -80,8 +82,10 @@ export interface UserSnapshot {
   checkInEntries: CheckInEntry[];
 }
 
-const events: TrackingEvent[] = [];
-const userSnapshots = new Map<string, UserSnapshot>();
+// Initialize from persisted files or empty
+let events: TrackingEvent[] = load<TrackingEvent[]>('analytics-events.json') || [];
+const userSnapshotsArray = load<[string, UserSnapshot][]>('analytics-snapshots.json') || [];
+const userSnapshots = new Map<string, UserSnapshot>(userSnapshotsArray);
 
 function getOrCreateSnapshot(userId: string): UserSnapshot {
   let snap = userSnapshots.get(userId);
@@ -208,6 +212,14 @@ function trackEvent(event: TrackingEvent): void {
   }
 
   logger.log(`[Analytics] Event: ${event.event} | User: ${event.userId} | Props:`, event.properties || {});
+
+  // Debounced save after each event
+  persistAnalyticsData();
+}
+
+function persistAnalyticsData(): void {
+  save('analytics-events.json', events);
+  save('analytics-snapshots.json', Array.from(userSnapshots.entries()));
 }
 
 export interface FunnelStep {
@@ -717,8 +729,17 @@ function getAggregatedStats(): AggregatedStats {
   };
 }
 
+function getAllUserScanData(): UserSnapshot[] {
+  return Array.from(userSnapshots.values()).map(snapshot => ({
+    ...snapshot,
+    scanMetrics: snapshot.scanMetrics,
+    checkInEntries: snapshot.checkInEntries,
+  }));
+}
+
 export const analyticsStore = {
   trackEvent,
   getAggregatedStats,
   getOrCreateSnapshot,
+  getAllUserScanData,
 };
