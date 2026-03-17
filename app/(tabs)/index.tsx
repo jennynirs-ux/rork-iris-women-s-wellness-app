@@ -815,14 +815,11 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {streakData && (
+      {streakData && streakData.scanStreak > 0 && (
         <View style={styles.streakCard}>
           <Text style={styles.streakText}>
             🔥 {streakData.scanStreak}-day scan streak!
           </Text>
-          {streakData.scanStreak === 0 && (
-            <Text style={styles.streakSubtext}>Keep your streak! Scan today</Text>
-          )}
         </View>
       )}
 
@@ -900,57 +897,51 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={styles.communitySection}>
-        <TouchableOpacity
-          style={styles.communitySectionHeader}
-          onPress={() => setCommunityCollapsed(!communityCollapsed)}
-          activeOpacity={0.7}
-          accessibilityLabel="Toggle community feed"
-          accessibilityRole="button"
-        >
-          <Text style={styles.sectionTitle}>From the Community</Text>
-          {communityCollapsed ? (
-            <ChevronDown size={20} color={colors.text} />
-          ) : (
-            <ChevronUp size={20} color={colors.text} />
-          )}
-        </TouchableOpacity>
-
-        {!communityCollapsed && (
-          <View style={styles.communityContent}>
-            {communityFeedData?.tips && communityFeedData.tips.length > 0 ? (
-              <>
-                {communityFeedData.tips.map((tip) => (
-                  <CommunityTipCard
-                    key={tip.id}
-                    tip={tip}
-                    colors={colors}
-                    onLike={handleLikeCommunityTip}
-                    onReport={handleReportCommunityTip}
-                    isLiked={likedTips.has(tip.id)}
-                    styles={styles}
-                  />
-                ))}
-              </>
+      {communityFeedData?.tips && communityFeedData.tips.length > 0 && (
+        <View style={styles.communitySection}>
+          <TouchableOpacity
+            style={styles.communitySectionHeader}
+            onPress={() => setCommunityCollapsed(!communityCollapsed)}
+            activeOpacity={0.7}
+            accessibilityLabel="Toggle community feed"
+            accessibilityRole="button"
+          >
+            <Text style={styles.sectionTitle}>From the Community</Text>
+            {communityCollapsed ? (
+              <ChevronDown size={20} color={colors.text} />
             ) : (
-              <Text style={styles.communityEmptyText}>
-                No tips yet for this phase. Be the first to share!
-              </Text>
+              <ChevronUp size={20} color={colors.text} />
             )}
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.communityShareButton}
-              onPress={() => setShowCommunityModal(true)}
-              activeOpacity={0.7}
-              accessibilityLabel="Share a tip"
-              accessibilityRole="button"
-            >
-              <Send size={16} color="#FFFFFF" />
-              <Text style={styles.communityShareButtonText}>Share a tip</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+          {!communityCollapsed && (
+            <View style={styles.communityContent}>
+              {communityFeedData.tips.map((tip) => (
+                <CommunityTipCard
+                  key={tip.id}
+                  tip={tip}
+                  colors={colors}
+                  onLike={handleLikeCommunityTip}
+                  onReport={handleReportCommunityTip}
+                  isLiked={likedTips.has(tip.id)}
+                  styles={styles}
+                />
+              ))}
+
+              <TouchableOpacity
+                style={styles.communityShareButton}
+                onPress={() => setShowCommunityModal(true)}
+                activeOpacity={0.7}
+                accessibilityLabel="Share a tip"
+                accessibilityRole="button"
+              >
+                <Send size={16} color="#FFFFFF" />
+                <Text style={styles.communityShareButtonText}>Share a tip</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
 
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
