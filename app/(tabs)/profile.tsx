@@ -32,6 +32,8 @@ import {
   RefreshCw,
   Check,
   Gift,
+  Shield,
+  FileText,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme, ThemeMode } from "@/contexts/ThemeContext";
@@ -45,6 +47,7 @@ import { areNotificationsEnabled, enableNotifications, disableNotifications } fr
 import { LANGUAGES } from "@/constants/translations";
 import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWeightInput, parseHeightInput } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
+import { generateDoctorReport } from "@/lib/doctorReport";
 
 function getTranslatedMonths(t: any): string[] {
   const m = t.calendar.months;
@@ -345,6 +348,7 @@ export default function ProfileScreen() {
   const { colors, themeMode, setTheme } = useTheme();
   const { userProfile, updateUserProfile, currentPhase, updateLastPeriodDate, phaseEstimate, checkIns, scans, language, updateLanguage, t, units, updateUnits, healthConnection, healthData, connectHealth, disconnectHealth, syncHealthData, isHealthSyncing, deleteAllData, cycleHistory, baseline, effectiveCycleStart } = useApp();
   const [isExporting, setIsExporting] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const { referralStats, referralGoal } = useReferral();
   const { isPremium } = useSubscription();
   const { syncId, lastSyncedAt, isSyncing, push, restoreFromId, ensureSyncId } = useSync();
@@ -1217,7 +1221,43 @@ export default function ProfileScreen() {
                   <Text style={styles.settingsItemText}>{t.settings.downloadMyData}</Text>
                   <ChevronRight size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+
+                <View style={styles.downloadDataSection}>
+                  <Text style={styles.downloadDataDesc}>Share a professional wellness report with your healthcare provider</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.settingsItem, isGeneratingReport && { opacity: 0.5 }]}
+                  disabled={isGeneratingReport}
+                  onPress={async () => {
+                    setIsGeneratingReport(true);
+                    try {
+                      const pdfUri = await generateDoctorReport(userProfile, scans, checkIns, currentPhase);
+                      const canShare = await Sharing.isAvailableAsync();
+                      if (canShare) {
+                        await Sharing.shareAsync(pdfUri, {
+                          mimeType: 'application/pdf',
+                          dialogTitle: 'Share Wellness Report with Doctor',
+                          UTI: 'com.adobe.pdf',
+                        });
+                      } else {
+                        Alert.alert('Error', 'Sharing is not available on this device');
+                      }
+                    } catch (e) {
+                      logger.error('[Profile] Doctor report generation error:', e);
+                      Alert.alert('Error', 'Failed to generate wellness report. Please try again.');
+                    } finally {
+                      setIsGeneratingReport(false);
+                    }
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <FileText size={20} color={colors.primary} />
+                    <Text style={styles.settingsItemText}>Share with Doctor</Text>
+                  </View>
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={styles.settingsItem}
                   onPress={() => {
                     setShowSettingsModal(false);
@@ -1239,8 +1279,31 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
 
+              <View style={styles.privacyCard}>
+                <View style={styles.privacyCardHeader}>
+                  <Shield size={20} color={colors.success} />
+                  <Text style={styles.privacyCardTitle}>
+                    {(t as any).privacy?.yourPrivacy || 'Your Privacy'}
+                  </Text>
+                </View>
+                <View style={styles.privacyCardContent}>
+                  <Text style={styles.privacyCardBullet}>
+                    • {(t as any).privacy?.eyePhotosOnDevice || 'Eye photos are analyzed on-device and never stored or sent'}
+                  </Text>
+                  <Text style={styles.privacyCardBullet}>
+                    • {(t as any).privacy?.wellnessDataLocal || 'Your wellness data stays on your phone'}
+                  </Text>
+                  <Text style={styles.privacyCardBullet}>
+                    • {(t as any).privacy?.noThirdPartySharing || 'No third-party data sharing'}
+                  </Text>
+                  <Text style={styles.privacyCardBullet}>
+                    • {(t as any).privacy?.youControlData || 'You control what data is shared (Settings > Data Privacy)'}
+                  </Text>
+                </View>
+              </View>
+
               <View style={styles.settingsGroup}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={() => {
                     Alert.alert(
@@ -2546,6 +2609,38 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     fontSize: 13,
     color: colors.textSecondary,
     lineHeight: 18,
+  },
+  privacyCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.success,
+    shadowColor: colors.success,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  privacyCardHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    marginBottom: 12,
+    gap: 8,
+  },
+  privacyCardTitle: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.text,
+  },
+  privacyCardContent: {
+    gap: 10,
+  },
+  privacyCardBullet: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
   deleteButton: {
     backgroundColor: colors.surface,

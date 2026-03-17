@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, X } from "lucide-react-native";
+import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, X, Shield } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -439,6 +439,13 @@ export default function OnboardingScreen() {
       <Text style={styles.patentText}>
         {t.onboarding.welcomeBody3}
       </Text>
+
+      <View style={styles.privacyNote}>
+        <Shield size={14} color={colors.primary} />
+        <Text style={styles.privacyNoteText}>
+          {(t as any).privacy?.allAnalysisOnDevice || 'Your privacy matters — all analysis happens on your device'}
+        </Text>
+      </View>
 
       <TouchableOpacity
         style={styles.referralToggle}
@@ -1748,6 +1755,25 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
     marginTop: 8,
     paddingHorizontal: 8,
     fontStyle: "italic" as const,
+  },
+  privacyNote: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    marginTop: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 12,
+    gap: 8,
+  },
+  privacyNoteText: {
+    fontSize: 14,
+    color: colors.primary,
+    textAlign: "center" as const,
+    fontWeight: "500" as const,
+    flex: 1,
   },
   howItWorksContainer: {
     marginBottom: 24,

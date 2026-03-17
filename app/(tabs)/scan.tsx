@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { Heart, X, Info, Eye, RefreshCw, AlertTriangle, User, CheckCircle } from "lucide-react-native";
+import { Heart, X, Info, Eye, RefreshCw, AlertTriangle, User, CheckCircle, Shield } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -590,6 +590,13 @@ function ScanScreenInner() {
                   <Text style={styles.disclaimerText}>{t.scan.disclaimer}</Text>
                 </View>
 
+                <View style={styles.privacyBadge}>
+                  <Shield size={12} color="rgba(255,255,255,0.7)" />
+                  <Text style={styles.privacyBadgeText}>
+                    {(t as any).privacy?.onDeviceOnly || 'On-device only · Photos never stored'}
+                  </Text>
+                </View>
+
                 <TouchableOpacity
                   style={[
                     styles.scanButton,
@@ -842,6 +849,24 @@ function createScanStyles(colors: typeof Colors.light) { return StyleSheet.creat
     color: colors.card,
     marginTop: 20,
     textAlign: "center" as const,
+  },
+  privacyBadge: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginTop: 12,
+    marginBottom: 12,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 10,
+    gap: 6,
+  },
+  privacyBadgeText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.65)",
+    textAlign: "center" as const,
+    fontWeight: "500" as const,
   },
 }); }
 

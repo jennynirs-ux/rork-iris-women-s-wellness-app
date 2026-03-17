@@ -42,6 +42,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { router } from "expo-router";
 import { Habit } from "@/types";
 import Colors from "@/constants/colors";
+import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
 
 const PHASE_INFO = {
   menstrual: { color: "#E89BA4", icon: Moon },
@@ -110,6 +111,50 @@ const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps
 });
 
 HabitCard.displayName = 'HabitCard';
+
+interface CoachingTipCardProps {
+  tip: CoachingTip;
+  colors: typeof Colors.light;
+  onDismiss: (tipId: string) => void;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: CoachingTipCardProps) => {
+  const categoryColors: Record<CoachingTip['category'], string> = {
+    stress: "#FF6B6B",
+    energy: "#FFD93D",
+    recovery: "#6BCB77",
+    hydration: "#4D96FF",
+    inflammation: "#FF8C42",
+    sleep: "#9D84B7",
+    phase: "#E89BA4",
+    trend: "#66C2FF",
+  };
+
+  const borderColor = categoryColors[tip.category];
+
+  return (
+    <View style={[styles.coachingTipCard, { borderLeftColor: borderColor }]}>
+      <View style={styles.coachingTipContent}>
+        <View style={styles.coachingTipHeader}>
+          <Text style={styles.coachingTipIcon}>{tip.icon}</Text>
+          <Text style={styles.coachingTipTitle}>{tip.title}</Text>
+          <TouchableOpacity
+            onPress={() => onDismiss(tip.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={`Dismiss ${tip.title}`}
+            accessibilityRole="button"
+          >
+            <X size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.coachingTipMessage}>{tip.message}</Text>
+      </View>
+    </View>
+  );
+});
+
+CoachingTipCard.displayName = 'CoachingTipCard';
 
 function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light }) {
   const monthRef = useRef<TextInput>(null);
@@ -260,12 +305,22 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, t } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, t } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
+  const [dismissedCoachingTips, setDismissedCoachingTips] = useState<Set<string>>(new Set());
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const coachingTips = useMemo(() => {
+    const allTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
+    return allTips.filter((tip) => !dismissedCoachingTips.has(tip.id));
+  }, [scans, checkIns, currentPhase, userProfile, dismissedCoachingTips]);
+
+  const handleDismissCoachingTip = useCallback((tipId: string) => {
+    setDismissedCoachingTips((prev) => new Set([...prev, tipId]));
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !userProfile.hasCompletedOnboarding) {
@@ -628,11 +683,26 @@ export default function HomeScreen() {
         </TouchableOpacity>
       )}
 
+      {coachingTips.length > 0 && (
+        <View style={styles.coachingTipsSection}>
+          <Text style={styles.sectionTitle}>Daily Tips</Text>
+          {coachingTips.map((tip) => (
+            <CoachingTipCard
+              key={tip.id}
+              tip={tip}
+              colors={colors}
+              onDismiss={handleDismissCoachingTip}
+              styles={styles}
+            />
+          ))}
+        </View>
+      )}
+
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip]);
 
   if (isLoading) {
     return (
@@ -1036,6 +1106,45 @@ function createStyles(colors: typeof Colors.light) {
       color: "#FFFFFF",
       fontSize: 14,
       fontWeight: "600" as const,
+    },
+    coachingTipsSection: {
+      marginBottom: 24,
+    },
+    coachingTipCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 12,
+      borderLeftWidth: 4,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    coachingTipContent: {
+      flex: 1,
+    },
+    coachingTipHeader: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      marginBottom: 8,
+    },
+    coachingTipIcon: {
+      fontSize: 20,
+      marginRight: 12,
+    },
+    coachingTipTitle: {
+      fontSize: 15,
+      fontWeight: "600" as const,
+      color: colors.text,
+      flex: 1,
+    },
+    coachingTipMessage: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 19,
+      marginLeft: 32,
     },
   });
 }
