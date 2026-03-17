@@ -55,6 +55,8 @@ export async function requestHealthKitPermissions(): Promise<boolean> {
         AppleHealthKit.Constants?.Permissions?.HeartRate,
         AppleHealthKit.Constants?.Permissions?.StepCount,
         AppleHealthKit.Constants?.Permissions?.ActiveEnergyBurned,
+        AppleHealthKit.Constants?.Permissions?.HeartRateVariability,
+        AppleHealthKit.Constants?.Permissions?.BodyTemperature,
       ].filter(Boolean),
     },
   };
@@ -245,6 +247,80 @@ export async function fetchHeartRateData(): Promise<{ heartRate?: number; restin
   });
 }
 
+export async function fetchHRVData(): Promise<{ hrv?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const twoDaysAgo = new Date(now);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getHeartRateVariabilitySamples?.(
+        {
+          startDate: twoDaysAgo.toISOString(),
+          endDate: now.toISOString(),
+          ascending: false,
+          limit: 1,
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            logger.log('[HealthKit] No HRV data:', err);
+            resolve({});
+            return;
+          }
+
+          const latestHRV = results[0]?.value;
+          logger.log('[HealthKit] HRV:', latestHRV);
+          resolve({ hrv: latestHRV ? Math.round(latestHRV * 100) / 100 : undefined });
+        }
+      );
+    } catch {
+      logger.log('[HealthKit] HRV fetch error');
+      resolve({});
+    }
+  });
+}
+
+export async function fetchTemperatureData(): Promise<{ wristTemperature?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const threeDaysAgo = new Date(now);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getWristTemperatureSamples?.(
+        {
+          startDate: threeDaysAgo.toISOString(),
+          endDate: now.toISOString(),
+          ascending: false,
+          limit: 1,
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            logger.log('[HealthKit] No wrist temperature data:', err);
+            resolve({});
+            return;
+          }
+
+          const latestTemp = results[0]?.value;
+          logger.log('[HealthKit] Wrist temperature:', latestTemp);
+          resolve({ wristTemperature: latestTemp ? Math.round(latestTemp * 100) / 100 : undefined });
+        }
+      );
+    } catch {
+      logger.log('[HealthKit] Temperature fetch error');
+      resolve({});
+    }
+  });
+}
+
 export async function fetchStepsData(): Promise<{ steps?: number }> {
   if (!isHealthKitAvailable || !AppleHealthKit) {
     return {};
@@ -309,6 +385,22 @@ export async function fetchAllHealthData(enabledTypes: HealthDataType[]): Promis
     promises.push(
       fetchStepsData().then((stepsData) => {
         Object.assign(data, stepsData);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('hrv')) {
+    promises.push(
+      fetchHRVData().then((hrvData) => {
+        Object.assign(data, hrvData);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('temperature')) {
+    promises.push(
+      fetchTemperatureData().then((tempData) => {
+        Object.assign(data, tempData);
       })
     );
   }

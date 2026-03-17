@@ -34,6 +34,8 @@ import {
   Gift,
   Shield,
   FileText,
+  Zap,
+  Thermometer,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme, ThemeMode } from "@/contexts/ThemeContext";
@@ -380,8 +382,8 @@ export default function ProfileScreen() {
 
   const [showHealthModal, setShowHealthModal] = useState(false);
   const [selectedHealthTypes, setSelectedHealthTypes] = useState<HealthDataType[]>(healthConnection.enabledDataTypes || ['sleep', 'menstrualCycle', 'heartRate', 'steps']);
-  // TODO: Re-enable Apple Health integration post-launch.
-  const APPLE_HEALTH_ENABLED = false as boolean;
+  // Apple Health integration enabled for B-007
+  const APPLE_HEALTH_ENABLED = true as boolean;
   const insets = useSafeAreaInsets();
 
   const styles = useMemo(() => createProfileStyles(colors), [colors]);
@@ -1753,6 +1755,8 @@ export default function ProfileScreen() {
                   { id: 'heartRate' as HealthDataType, label: t.health.heartRate, icon: Heart, color: '#FF6B6B' },
                   { id: 'steps' as HealthDataType, label: t.health.steps, icon: Footprints, color: '#4CAF50' },
                   { id: 'activeEnergy' as HealthDataType, label: t.health.activeEnergy, icon: Flame, color: '#FF9800' },
+                  { id: 'hrv' as HealthDataType, label: t.health.hrv || 'Heart Rate Variability', icon: Zap, color: '#9C27B0' },
+                  { id: 'temperature' as HealthDataType, label: t.health.temperature || 'Wrist Temperature', icon: Thermometer, color: '#FF5722' },
                 ].map((item) => {
                   const isSelected = selectedHealthTypes.includes(item.id);
                   const IconComponent = item.icon;
@@ -1805,6 +1809,18 @@ export default function ProfileScreen() {
                       <View style={styles.healthDataRow}>
                         <Footprints size={16} color="#4CAF50" />
                         <Text style={styles.healthDataText}>{healthData?.steps?.toLocaleString()} {t.health.stepsToday}</Text>
+                      </View>
+                    )}
+                    {healthData?.hrv != null && (
+                      <View style={styles.healthDataRow}>
+                        <Zap size={16} color="#9C27B0" />
+                        <Text style={styles.healthDataText}>{t.health.hrv || 'HRV'}: {healthData?.hrv}</Text>
+                      </View>
+                    )}
+                    {healthData?.wristTemperature != null && (
+                      <View style={styles.healthDataRow}>
+                        <Thermometer size={16} color="#FF5722" />
+                        <Text style={styles.healthDataText}>{t.health.temperature || 'Wrist Temp'}: {healthData?.wristTemperature}°C</Text>
                       </View>
                     )}
                   </View>

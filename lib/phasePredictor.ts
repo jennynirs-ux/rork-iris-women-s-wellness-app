@@ -609,7 +609,8 @@ export function predictPhase(
   cycleHistory: CycleHistory[],
   baseline: PersonalBaseline | null,
   phaseBaselines: PhaseBaseline | null,
-  previousPhase: CyclePhase | null
+  previousPhase: CyclePhase | null,
+  healthData?: any
 ): PhaseEstimate {
   if (userProfile.birthControl !== "none" && userProfile.birthControl !== "iud_copper") {
     return {
@@ -745,6 +746,40 @@ export function predictPhase(
     evidences.push(scanEvidence);
     evidenceWeights.push(2.0 * scanConfidence);
     reasoningParts.push(`Eye scan data (${Math.round(scanConfidence * 100)}% confidence)`);
+  }
+
+  // Process HealthKit data: HRV and wrist temperature for improved accuracy
+  if (healthData) {
+    // HRV (Heart Rate Variability) — higher HRV typically indicates better recovery/lower stress
+    // Tends to be higher in follicular phase, lower in luteal
+    if (healthData.hrv != null) {
+      const hrvValue = healthData.hrv;
+      // Higher HRV (>40) suggests follicular, lower HRV (<30) suggests luteal
+      const hrvEvidence: PhaseProbabilities = {
+        menstrual: 0.2,
+        follicular: hrvValue > 40 ? 0.4 : (hrvValue > 30 ? 0.25 : 0.15),
+        ovulation: hrvValue > 35 ? 0.3 : 0.2,
+        luteal: hrvValue < 35 ? 0.35 : (hrvValue < 45 ? 0.25 : 0.15),
+      };
+      evidences.push(hrvEvidence);
+      evidenceWeights.push(1.5);
+      reasoningParts.push(`HRV: ${hrvValue} (indicates ${hrvValue > 35 ? 'good recovery' : 'lower recovery'})`);
+    }
+
+    // Wrist temperature — rises in luteal phase (progesterone-related)
+    if (healthData.wristTemperature != null) {
+      const tempValue = healthData.wristTemperature;
+      // Temperature baseline is typically ~36.5°C, rises ~0.5°C in luteal
+      const tempEvidence: PhaseProbabilities = {
+        menstrual: 0.2,
+        follicular: tempValue < 36.6 ? 0.35 : 0.2,
+        ovulation: 0.25,
+        luteal: tempValue > 36.8 ? 0.4 : (tempValue > 36.6 ? 0.3 : 0.15),
+      };
+      evidences.push(tempEvidence);
+      evidenceWeights.push(1.2);
+      reasoningParts.push(`Wrist Temp: ${tempValue}°C`);
+    }
   }
 
   const weightedEvidences = evidences.map((ev, idx) => {

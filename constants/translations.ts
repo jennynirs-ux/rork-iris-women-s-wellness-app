@@ -279,6 +279,8 @@ type Translations = {
     heartRate: string;
     steps: string;
     activeEnergy: string;
+    hrv: string;
+    temperature: string;
     sleepData: string;
     hoursSlept: string;
     menstrualData: string;
@@ -1310,6 +1312,8 @@ const en: Translations = {
     heartRate: 'Heart Rate',
     steps: 'Steps',
     activeEnergy: 'Active Energy',
+    hrv: 'Heart Rate Variability',
+    temperature: 'Wrist Temperature',
     sleepData: 'Sleep Data',
     hoursSlept: 'hours slept',
     menstrualData: 'Menstrual Data',
@@ -2341,6 +2345,8 @@ const sv: Translations = {
     heartRate: 'Puls',
     steps: 'Steg',
     activeEnergy: 'Aktiv energi',
+    hrv: 'Hjärtfrekvensvariabilitet',
+    temperature: 'Handledstemperatur',
     sleepData: 'Sömndata',
     hoursSlept: 'timmar sömn',
     menstrualData: 'Mensdata',
@@ -3372,6 +3378,8 @@ const de: Translations = {
     heartRate: 'Herzfrequenz',
     steps: 'Schritte',
     activeEnergy: 'Aktive Energie',
+    hrv: 'Herzfrequenzvariabilität',
+    temperature: 'Handgelenktemperatur',
     sleepData: 'Schlafdaten',
     hoursSlept: 'Stunden geschlafen',
     menstrualData: 'Menstruationsdaten',
@@ -4403,6 +4411,8 @@ const fr: Translations = {
     heartRate: 'Fréquence cardiaque',
     steps: 'Pas',
     activeEnergy: 'Énergie active',
+    hrv: "Variabilité de la fréquence cardiaque",
+    temperature: "Température du poignet",
     sleepData: 'Données de sommeil',
     hoursSlept: 'heures de sommeil',
     menstrualData: 'Données menstruelles',
@@ -5434,6 +5444,8 @@ const es: Translations = {
     heartRate: 'Frecuencia cardíaca',
     steps: 'Pasos',
     activeEnergy: 'Energía activa',
+    hrv: 'Variabilidad de frecuencia cardíaca',
+    temperature: 'Temperatura de muñeca',
     sleepData: 'Datos de sueño',
     hoursSlept: 'horas dormidas',
     menstrualData: 'Datos menstruales',
@@ -6465,6 +6477,8 @@ const it: Translations = {
     heartRate: 'Frequenza cardiaca',
     steps: 'Passi',
     activeEnergy: 'Energia attiva',
+    hrv: 'Variabilità della frequenza cardiaca',
+    temperature: 'Temperatura del polso',
     sleepData: 'Dati sul sonno',
     hoursSlept: 'ore dormite',
     menstrualData: 'Dati mestruali',
@@ -7496,6 +7510,8 @@ const nl: Translations = {
     heartRate: 'Hartslag',
     steps: 'Stappen',
     activeEnergy: 'Actieve energie',
+    hrv: 'Hartslagvariabiliteit',
+    temperature: 'Polstemperatuur',
     sleepData: 'Slaapgegevens',
     hoursSlept: 'uur geslapen',
     menstrualData: 'Menstruatiegegevens',
@@ -8527,6 +8543,8 @@ const pl: Translations = {
     heartRate: 'Tętno',
     steps: 'Kroki',
     activeEnergy: 'Aktywna energia',
+    hrv: 'Zmienność rytmu serca',
+    temperature: 'Temperatura nadgarstka',
     sleepData: 'Dane o śnie',
     hoursSlept: 'godzin snu',
     menstrualData: 'Dane menstruacyjne',
@@ -9558,6 +9576,8 @@ const pt: Translations = {
     heartRate: 'Frequência cardíaca',
     steps: 'Passos',
     activeEnergy: 'Energia ativa',
+    hrv: 'Variabilidade da frequência cardíaca',
+    temperature: 'Temperatura do pulso',
     sleepData: 'Dados de sono',
     hoursSlept: 'horas dormidas',
     menstrualData: 'Dados menstruais',

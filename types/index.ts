@@ -194,6 +194,8 @@ export interface HealthData {
   restingHeartRate?: number;
   steps?: number;
   activeEnergy?: number;
+  hrv?: number;
+  wristTemperature?: number;
   lastSyncDate?: string;
 }
 
@@ -204,7 +206,7 @@ export interface HealthConnectionState {
   lastSyncDate?: string;
 }
 
-export type HealthDataType = 'sleep' | 'menstrualCycle' | 'heartRate' | 'steps' | 'activeEnergy';
+export type HealthDataType = 'sleep' | 'menstrualCycle' | 'heartRate' | 'steps' | 'activeEnergy' | 'hrv' | 'temperature';
 
 export interface Referral {
   id: string;

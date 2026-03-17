@@ -10,6 +10,7 @@ import { getHealthKitAvailability, requestHealthKitPermissions, fetchAllHealthDa
 import { trackEvent } from "@/lib/analytics";
 import { UnitSystem } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
+import { updateWidgetData } from "@/lib/widgetData";
 
 function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -637,7 +638,8 @@ export const [AppContext, useApp] = createContextHook(() => {
         cycleHistory,
         baseline,
         phaseBaselines,
-        previousPhase
+        previousPhase,
+        healthData
       );
     } catch (err) {
       logger.error('[AppContext] Error computing phaseEstimate:', err);
@@ -648,7 +650,7 @@ export const [AppContext, useApp] = createContextHook(() => {
         reasoning: 'Error computing phase estimate',
       };
     }
-  }, [profileWithEffectiveStart, checkIns, scans, cycleHistory, baseline, phaseBaselines, previousPhase]);
+  }, [profileWithEffectiveStart, checkIns, scans, cycleHistory, baseline, phaseBaselines, previousPhase, healthData]);
 
   const currentPhase = useMemo(() => {
     // Use calendar-math phase to stay consistent with the Calendar tab.
@@ -1145,6 +1147,20 @@ export const [AppContext, useApp] = createContextHook(() => {
       };
     }
   }, [currentPhase, latestScan, todayHabits, todayCheckIn, t]);
+
+  // Update iOS widget data whenever phase, cycle day, or recommended focus changes
+  useEffect(() => {
+    if (userProfile.hasCompletedOnboarding && enrichedPhaseInfo) {
+      void updateWidgetData(
+        currentPhase,
+        enrichedPhaseInfo.cycleDay,
+        enrichedPhaseInfo.totalCycleDays,
+        todaySummary.recommendedFocus
+      ).catch((err) => {
+        logger.log('Failed to update widget data:', err);
+      });
+    }
+  }, [currentPhase, enrichedPhaseInfo, todaySummary.recommendedFocus, userProfile.hasCompletedOnboarding]);
 
   const isLoading = userQuery.isLoading || checkInsQuery.isLoading || scansQuery.isLoading || baselineQuery.isLoading || phaseBaselinesQuery.isLoading || cycleHistoryQuery.isLoading || previousPhaseQuery.isLoading || languageQuery.isLoading || unitsQuery.isLoading || phaseOverridesQuery.isLoading;
   const isHealthSyncing = syncHealthDataMutation.isPending;
