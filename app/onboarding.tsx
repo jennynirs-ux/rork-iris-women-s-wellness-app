@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle } from "lucide-react-native";
+import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, X } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -163,6 +163,7 @@ export default function OnboardingScreen() {
   const [deliveryType, setDeliveryType] = useState<"vaginal" | "cesarean" | "other">("vaginal");
 
   const [dataConsent, setDataConsent] = useState(false);
+  const [showScanModal, setShowScanModal] = useState(false);
 
   const isAnyPickerOpen = showDayPicker || showMonthPicker || showYearPicker || 
     showPeriodDayPicker || showPeriodMonthPicker || showPeriodYearPicker ||
@@ -276,7 +277,7 @@ export default function OnboardingScreen() {
     if (currentStep === 0) {
       await updateLanguage(selectedLanguage);
       setCurrentStep(currentStep + 1);
-    } else if (currentStep < 3) {
+    } else if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -535,6 +536,39 @@ export default function OnboardingScreen() {
   );
 
   const renderStep3 = () => (
+    <View style={styles.centeredStep}>
+      <View style={styles.iconContainer}>
+        <Eye size={64} color={colors.primary} strokeWidth={1.5} />
+      </View>
+      <Text style={styles.title}>{t.onboarding.firstScanTitle || "Let's try your first iris scan"}</Text>
+      <Text style={styles.body}>{t.onboarding.firstScanSubtitle || "We'll analyze your eye to generate your wellness profile"}</Text>
+
+      <View style={styles.scanIntroContainer}>
+        <View style={styles.scanInfoItem}>
+          <View style={styles.scanInfoBullet} />
+          <Text style={styles.scanInfoText}>{t.onboarding.scanBenefit1 || "Analyze your energy and stress levels"}</Text>
+        </View>
+        <View style={styles.scanInfoItem}>
+          <View style={styles.scanInfoBullet} />
+          <Text style={styles.scanInfoText}>{t.onboarding.scanBenefit2 || "Get personalized wellness insights"}</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={[styles.primaryButton, styles.scanButton]}
+        onPress={() => setShowScanModal(true)}
+      >
+        <Eye size={20} color={colors.card} />
+        <Text style={styles.scanButtonText}>{t.onboarding.startScan || "Start Scan"}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => setCurrentStep(currentStep + 1)}>
+        <Text style={styles.skipScanLink}>{t.onboarding.skipScan || "Skip for now"}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderStep4 = () => (
     <View style={styles.formStep}>
       <View style={styles.iconContainerSmall}>
         <Heart size={48} color={colors.primary} strokeWidth={1.5} />
@@ -1422,7 +1456,7 @@ export default function OnboardingScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.progressContainer}>
-          {[0, 1, 2, 3].map((step) => (
+          {[0, 1, 2, 3, 4].map((step) => (
             <View
               key={step}
               style={[
@@ -1434,7 +1468,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
         <Text style={styles.stepIndicatorText} accessibilityRole="text">
-          {`${currentStep + 1} / 4`}
+          {`${currentStep + 1} / 5`}
         </Text>
 
         <ScrollView
@@ -1449,22 +1483,23 @@ export default function OnboardingScreen() {
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
+          {currentStep === 4 && renderStep4()}
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity
             style={[
               styles.primaryButton,
-              currentStep === 3 && !canComplete && styles.primaryButtonDisabled,
+              currentStep === 4 && !canComplete && styles.primaryButtonDisabled,
             ]}
-            onPress={currentStep === 3 ? handleComplete : handleContinue}
-            disabled={currentStep === 3 && !canComplete}
+            onPress={currentStep === 4 ? handleComplete : handleContinue}
+            disabled={currentStep === 4 && !canComplete}
           >
             <Text style={styles.primaryButtonText}>
-              {currentStep === 3 ? t.onboarding.complete : t.onboarding.continue}
+              {currentStep === 4 ? t.onboarding.complete : t.onboarding.continue}
             </Text>
           </TouchableOpacity>
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <View style={styles.legalLinksRow}>
               <TouchableOpacity
                 onPress={() => setShowPrivacyModal(true)}
@@ -1549,6 +1584,79 @@ export default function OnboardingScreen() {
             </ScrollView>
           </View>
         </View>
+      </Modal>
+
+      <Modal
+        visible={showScanModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowScanModal(false)}
+      >
+        <SafeAreaView style={styles.scanModalContainer}>
+          <View style={styles.scanModalHeader}>
+            <TouchableOpacity
+              onPress={() => setShowScanModal(false)}
+              style={styles.scanModalCloseButton}
+            >
+              <X size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.scanModalTitle}>{t.onboarding.scanNow || "Iris Scan"}</Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView
+            style={styles.scanModalScroll}
+            contentContainerStyle={styles.scanModalContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.scanModalIconContainer}>
+              <Eye size={64} color={colors.primary} strokeWidth={1.5} />
+            </View>
+            <Text style={styles.scanModalBodyTitle}>{t.onboarding.readyToScan || "Ready to scan?"}</Text>
+            <Text style={styles.scanModalBodyText}>
+              {t.onboarding.scanInstructions || "Look directly at the camera and let us capture your eye. Make sure you have good lighting."}
+            </Text>
+
+            <View style={styles.scanTipsContainer}>
+              <View style={styles.scanTipItem}>
+                <View style={styles.scanTipIcon}>
+                  <Text style={styles.scanTipNumber}>1</Text>
+                </View>
+                <Text style={styles.scanTipText}>{t.onboarding.scanTip1 || "Find good lighting"}</Text>
+              </View>
+              <View style={styles.scanTipItem}>
+                <View style={styles.scanTipIcon}>
+                  <Text style={styles.scanTipNumber}>2</Text>
+                </View>
+                <Text style={styles.scanTipText}>{t.onboarding.scanTip2 || "Keep your face centered"}</Text>
+              </View>
+              <View style={styles.scanTipItem}>
+                <View style={styles.scanTipIcon}>
+                  <Text style={styles.scanTipNumber}>3</Text>
+                </View>
+                <Text style={styles.scanTipText}>{t.onboarding.scanTip3 || "Hold steady for analysis"}</Text>
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={styles.scanModalFooter}>
+            <TouchableOpacity
+              style={styles.scanModalButton}
+              onPress={() => {
+                setShowScanModal(false);
+                router.push("/scan" as any);
+              }}
+            >
+              <Text style={styles.scanModalButtonText}>{t.onboarding.startScanNow || "Start Scan"}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.scanModalCancelButton}
+              onPress={() => setShowScanModal(false)}
+            >
+              <Text style={styles.scanModalCancelButtonText}>{t.common.cancel || "Cancel"}</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
@@ -2189,5 +2297,151 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
     fontSize: 13,
     fontWeight: "500" as const,
     color: colors.error,
+  },
+  scanIntroContainer: {
+    marginBottom: 32,
+    paddingHorizontal: 8,
+  },
+  scanInfoItem: {
+    flexDirection: "row" as const,
+    alignItems: "flex-start" as const,
+    marginBottom: 12,
+  },
+  scanInfoBullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
+    marginRight: 12,
+    marginTop: 8,
+  },
+  scanInfoText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.textSecondary,
+  },
+  scanButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 8,
+    marginBottom: 16,
+  },
+  scanButtonText: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.card,
+  },
+  skipScanLink: {
+    fontSize: 15,
+    color: colors.primary,
+    textAlign: "center" as const,
+    textDecorationLine: "underline" as const,
+    fontWeight: "500" as const,
+  },
+  scanModalContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scanModalHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  scanModalCloseButton: {
+    padding: 8,
+  },
+  scanModalTitle: {
+    fontSize: 18,
+    fontWeight: "600" as const,
+    color: colors.text,
+  },
+  scanModalScroll: {
+    flex: 1,
+  },
+  scanModalContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+  scanModalIconContainer: {
+    alignItems: "center" as const,
+    marginBottom: 24,
+  },
+  scanModalBodyTitle: {
+    fontSize: 24,
+    fontWeight: "600" as const,
+    color: colors.text,
+    textAlign: "center" as const,
+    marginBottom: 12,
+  },
+  scanModalBodyText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.textSecondary,
+    textAlign: "center" as const,
+    marginBottom: 32,
+  },
+  scanTipsContainer: {
+    gap: 16,
+  },
+  scanTipItem: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 16,
+  },
+  scanTipIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  scanTipNumber: {
+    fontSize: 18,
+    fontWeight: "600" as const,
+    color: colors.card,
+  },
+  scanTipText: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  scanModalFooter: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingBottom: 24,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  scanModalButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  scanModalButtonText: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.card,
+  },
+  scanModalCancelButton: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  scanModalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.text,
   },
 }); }

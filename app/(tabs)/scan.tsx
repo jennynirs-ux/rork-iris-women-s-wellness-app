@@ -424,7 +424,7 @@ function ScanScreenInner() {
       }
     });
 
-    router.replace("/check-in" as any);
+    router.replace("/scan-result" as any);
   };
 
   const generateRecommendations = (

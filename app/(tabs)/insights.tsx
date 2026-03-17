@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
 import Colors from "@/constants/colors";
@@ -10,6 +10,7 @@ import { CyclePhase, DailyCheckIn, ScanResult } from "@/types";
 import { router } from "expo-router";
 import { getMarkerTranslation } from "@/lib/insightsTranslations";
 import { translateSymptoms } from "@/lib/symptomTranslation";
+import { LineChart } from "react-native-chart-kit";
 
 type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation' | 'fatigue' | 
   'cognitiveSharpness' | 'emotionalSensitivity' | 'socialEnergy' | 'moodVolatility' |
@@ -37,6 +38,50 @@ const calculateScanAverages = (scans: ScanResult[]) => {
     avgEnergy: scans.reduce((s, sc) => s + sc.energyScore, 0) / scans.length,
     avgInflammation: scans.reduce((s, sc) => s + sc.inflammation, 0) / scans.length,
   };
+};
+
+const groupScansByDate = (scans: ScanResult[]): Map<string, ScanResult[]> => {
+  const grouped = new Map<string, ScanResult[]>();
+  scans.forEach(scan => {
+    const dateStr = scan.date;
+    if (!grouped.has(dateStr)) {
+      grouped.set(dateStr, []);
+    }
+    grouped.get(dateStr)!.push(scan);
+  });
+  return grouped;
+};
+
+const getAveragedDataByDate = (grouped: Map<string, ScanResult[]>) => {
+  const averaged: { date: string; timestamp: number; stress: number; energy: number; recovery: number; hydration: number; inflammation: number; fatigue: number }[] = [];
+
+  const sortedEntries = Array.from(grouped.entries()).sort((a, b) => {
+    const dateA = new Date(a[0]);
+    const dateB = new Date(b[0]);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+  sortedEntries.forEach(([date, scansForDay]) => {
+    const avg = {
+      date,
+      timestamp: new Date(date).getTime(),
+      stress: scansForDay.reduce((s, sc) => s + sc.stressScore, 0) / scansForDay.length,
+      energy: scansForDay.reduce((s, sc) => s + sc.energyScore, 0) / scansForDay.length,
+      recovery: scansForDay.reduce((s, sc) => s + sc.recoveryScore, 0) / scansForDay.length,
+      hydration: scansForDay.reduce((s, sc) => s + sc.hydrationLevel, 0) / scansForDay.length,
+      inflammation: scansForDay.reduce((s, sc) => s + sc.inflammation, 0) / scansForDay.length,
+      fatigue: scansForDay.reduce((s, sc) => s + sc.fatigueLevel, 0) / scansForDay.length,
+    };
+    averaged.push(avg);
+  });
+
+  return averaged;
+};
+
+const getFilteredDataByDays = (data: { date: string; timestamp: number; stress: number; energy: number; recovery: number; hydration: number; inflammation: number; fatigue: number }[], days: number) => {
+  const now = Date.now();
+  const cutoff = now - (days * 24 * 60 * 60 * 1000);
+  return data.filter(d => d.timestamp >= cutoff);
 };
 
 const generateCheckInInsights = (
@@ -374,6 +419,7 @@ export default function InsightsScreen() {
   const [selectedMarker, setSelectedMarker] = useState<MarkerType | null>(null);
   const [phaseGuidanceExpanded, setPhaseGuidanceExpanded] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(false);
+  const [trendTimeRange, setTrendTimeRange] = useState<7 | 30 | 90>(7);
 
   const showMarkerInfo = useCallback((marker: MarkerType) => {
     setSelectedMarker(marker);
@@ -553,6 +599,96 @@ export default function InsightsScreen() {
       tearFilmQuality: (sum.tearFilmQuality / scans.length * 10).toFixed(1),
     };
   }, [scans]);
+
+  const trendData = useMemo(() => {
+    if (scans.length < 2) return null;
+
+    const grouped = groupScansByDate(scans);
+    const averaged = getAveragedDataByDate(grouped);
+    const filtered = getFilteredDataByDays(averaged, trendTimeRange);
+
+    if (filtered.length < 2) return null;
+
+    return filtered;
+  }, [scans, trendTimeRange]);
+
+  const screenWidth = Dimensions.get('window').width;
+  const chartWidth = screenWidth - 32; // padding
+
+  const physicalChartData = useMemo(() => {
+    if (!trendData) return null;
+
+    return {
+      labels: trendData.map(d => {
+        const date = new Date(d.date);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      }),
+      datasets: [
+        {
+          data: trendData.map(d => d.stress),
+          color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, // red for stress
+          strokeWidth: 2,
+          label: 'Stress'
+        },
+        {
+          data: trendData.map(d => d.energy),
+          color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`, // green for energy
+          strokeWidth: 2,
+          label: 'Energy'
+        },
+        {
+          data: trendData.map(d => d.recovery),
+          color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // blue for recovery
+          strokeWidth: 2,
+          label: 'Recovery'
+        }
+      ]
+    };
+  }, [trendData]);
+
+  const hydrationInflammationChartData = useMemo(() => {
+    if (!trendData) return null;
+
+    return {
+      labels: trendData.map(d => {
+        const date = new Date(d.date);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      }),
+      datasets: [
+        {
+          data: trendData.map(d => d.hydration),
+          color: (opacity = 1) => `rgba(164, 200, 232, ${opacity})`, // light blue for hydration
+          strokeWidth: 2,
+          label: 'Hydration'
+        },
+        {
+          data: trendData.map(d => d.inflammation),
+          color: (opacity = 1) => `rgba(232, 155, 164, ${opacity})`, // pink for inflammation
+          strokeWidth: 2,
+          label: 'Inflammation'
+        }
+      ]
+    };
+  }, [trendData]);
+
+  const fatigueChartData = useMemo(() => {
+    if (!trendData) return null;
+
+    return {
+      labels: trendData.map(d => {
+        const date = new Date(d.date);
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+      }),
+      datasets: [
+        {
+          data: trendData.map(d => d.fatigue),
+          color: (opacity = 1) => `rgba(244, 200, 150, ${opacity})`, // orange for fatigue
+          strokeWidth: 2,
+          label: 'Fatigue'
+        }
+      ]
+    };
+  }, [trendData]);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -789,6 +925,155 @@ export default function InsightsScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {trendData && trendData.length >= 2 && (
+            <View style={styles.trendsSection}>
+              <View style={styles.trendsSectionHeader}>
+                <View style={styles.trendsTitleRow}>
+                  <TrendingUp size={20} color={colors.primary} />
+                  <Text style={styles.trendsSectionTitle}>Trends</Text>
+                </View>
+                <View style={styles.timeRangeSelector}>
+                  {[7, 30, 90].map((days) => (
+                    <TouchableOpacity
+                      key={days}
+                      onPress={() => setTrendTimeRange(days as 7 | 30 | 90)}
+                      style={[
+                        styles.timeRangeButton,
+                        trendTimeRange === days && styles.timeRangeButtonActive
+                      ]}
+                    >
+                      <Text style={[
+                        styles.timeRangeButtonText,
+                        trendTimeRange === days && styles.timeRangeButtonTextActive
+                      ]}>
+                        {days}d
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Physical Scores</Text>
+                <LineChart
+                  data={physicalChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
+                    <Text style={styles.legendLabel}>Stress</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
+                    <Text style={styles.legendLabel}>Energy</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
+                    <Text style={styles.legendLabel}>Recovery</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Hydration & Inflammation</Text>
+                <LineChart
+                  data={hydrationInflammationChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#A4C8E8' }]} />
+                    <Text style={styles.legendLabel}>Hydration</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#E89BA4' }]} />
+                    <Text style={styles.legendLabel}>Inflammation</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Fatigue</Text>
+                <LineChart
+                  data={fatigueChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#F4C896' }]} />
+                    <Text style={styles.legendLabel}>Fatigue</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {scans.length > 0 && !trendData && (
+            <View style={styles.emptyStateCard}>
+              <TrendingUp size={40} color={colors.primary} />
+              <Text style={styles.emptyStateTitle}>Keep scanning to see trends</Text>
+              <Text style={styles.emptyStateText}>Collect at least 2 data points to visualize your health trends</Text>
+            </View>
+          )}
 
           {scans.length > 0 && (
             <>
@@ -2472,5 +2757,105 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: "#065F46",
     fontWeight: "500" as const,
     flex: 1,
+  },
+  trendsSection: {
+    marginBottom: 32,
+  },
+  trendsSectionHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+    marginBottom: 20,
+  },
+  trendsTitleRow: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 10,
+  },
+  trendsSectionTitle: {
+    fontSize: 18,
+    fontWeight: "600" as const,
+    color: colors.text,
+  },
+  timeRangeSelector: {
+    flexDirection: "row" as const,
+    gap: 8,
+  },
+  timeRangeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  timeRangeButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  timeRangeButtonText: {
+    fontSize: 12,
+    fontWeight: "500" as const,
+    color: colors.textSecondary,
+  },
+  timeRangeButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  chartContainer: {
+    marginBottom: 24,
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.text,
+    marginBottom: 16,
+  },
+  chart: {
+    borderRadius: 16,
+    marginRight: 0,
+  },
+  chartLegend: {
+    flexDirection: "row" as const,
+    justifyContent: "flex-start" as const,
+    gap: 16,
+    marginTop: 12,
+    flexWrap: "wrap" as const,
+  },
+  legendItem: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  emptyStateCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 32,
+    marginBottom: 24,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  emptyStateTitle: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: "center" as const,
   },
 }); }

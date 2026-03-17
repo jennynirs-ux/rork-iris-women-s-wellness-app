@@ -70,6 +70,19 @@ type Translations = {
     referralApplied: string;
     lastPeriodOptional: string;
     ifStillHavingPeriods: string;
+    firstScanTitle: string;
+    firstScanSubtitle: string;
+    scanBenefit1: string;
+    scanBenefit2: string;
+    startScan: string;
+    skipScan: string;
+    scanNow: string;
+    readyToScan: string;
+    scanInstructions: string;
+    scanTip1: string;
+    scanTip2: string;
+    scanTip3: string;
+    startScanNow: string;
   };
   profile: {
     title: string;
@@ -310,6 +323,7 @@ type Translations = {
     select: string;
     optional: string;
     somewhat: string;
+    cancel: string;
   };
   home: {
     todaysSummary: string;
@@ -1087,6 +1101,19 @@ const en: Translations = {
     referralApplied: 'Referral code applied successfully!',
     lastPeriodOptional: 'Last period start date (optional)',
     ifStillHavingPeriods: "If you're still having periods",
+    firstScanTitle: "Let's try your first iris scan",
+    firstScanSubtitle: "We'll analyze your eye to generate your wellness profile",
+    scanBenefit1: 'Analyze your energy and stress levels',
+    scanBenefit2: 'Get personalized wellness insights',
+    startScan: 'Start Scan',
+    skipScan: 'Skip for now',
+    scanNow: 'Iris Scan',
+    readyToScan: 'Ready to scan?',
+    scanInstructions: 'Look directly at the camera and let us capture your eye. Make sure you have good lighting.',
+    scanTip1: 'Find good lighting',
+    scanTip2: 'Keep your face centered',
+    scanTip3: 'Hold steady for analysis',
+    startScanNow: 'Start Scan',
   },
   profile: {
     title: 'Profile',
@@ -1327,6 +1354,7 @@ const en: Translations = {
     select: 'Select',
     optional: 'optional',
     somewhat: 'Somewhat',
+    cancel: 'Cancel',
   },
   tabs: {
     home: 'Home',
@@ -2104,6 +2132,19 @@ const sv: Translations = {
     referralApplied: 'Värvningskoden har tillämpats!',
     lastPeriodOptional: 'Senaste mensstart (valfritt)',
     ifStillHavingPeriods: 'Om du fortfarande har mens',
+    firstScanTitle: 'Låt oss prova din första irisscanning',
+    firstScanSubtitle: 'Vi analyserar ditt öga för att generera din välfärdsprofil',
+    scanBenefit1: 'Analysera dina energi- och stressnivåer',
+    scanBenefit2: 'Få personliga välfärdsinriktningar',
+    startScan: 'Starta scanning',
+    skipScan: 'Hoppa över för nu',
+    scanNow: 'Iris scanning',
+    readyToScan: 'Redo att scanna?',
+    scanInstructions: 'Titta direkt in i kameran och låt oss fånga ditt öga. Se till att du har bra belysning.',
+    scanTip1: 'Hitta bra belysning',
+    scanTip2: 'Håll ditt ansikte centrerat',
+    scanTip3: 'Håll stadigt för analys',
+    startScanNow: 'Starta scanning',
   },
   profile: {
     title: 'Profil',
@@ -2344,6 +2385,7 @@ const sv: Translations = {
     select: 'Välj',
     optional: 'valfritt',
     somewhat: 'Något',
+    cancel: 'Avbryt',
   },
   tabs: {
     home: 'Hem',
@@ -3121,6 +3163,19 @@ const de: Translations = {
     referralApplied: 'Empfehlungscode erfolgreich angewendet!',
     lastPeriodOptional: 'Letzter Periodenbeginn (optional)',
     ifStillHavingPeriods: 'Wenn du noch Perioden hast',
+    firstScanTitle: 'Lass uns deinen ersten Augen-Scan ausprobieren',
+    firstScanSubtitle: 'Wir analysieren dein Auge, um dein Wellness-Profil zu erstellen',
+    scanBenefit1: 'Analysiere deine Energie- und Stressniveaus',
+    scanBenefit2: 'Erhalte personalisierte Wellness-Erkenntnisse',
+    startScan: 'Scan starten',
+    skipScan: 'Vorerst überspringen',
+    scanNow: 'Augen-Scan',
+    readyToScan: 'Bereit zum Scannen?',
+    scanInstructions: 'Schau direkt in die Kamera und lass uns dein Auge erfassen. Stelle sicher, dass du gute Beleuchtung hast.',
+    scanTip1: 'Gute Beleuchtung finden',
+    scanTip2: 'Halte dein Gesicht zentriert',
+    scanTip3: 'Halte still für die Analyse',
+    startScanNow: 'Scan starten',
   },
   profile: {
     title: 'Profil',
@@ -3361,6 +3416,7 @@ const de: Translations = {
     select: 'Auswählen',
     optional: 'optional',
     somewhat: 'Etwas',
+    cancel: 'Abbrechen',
   },
   tabs: {
     home: 'Start',
@@ -4138,6 +4194,19 @@ const fr: Translations = {
     referralApplied: 'Code de parrainage appliqué avec succès !',
     lastPeriodOptional: 'Date de début des dernières règles (optionnel)',
     ifStillHavingPeriods: 'Si vous avez encore vos règles',
+    firstScanTitle: 'Essayons votre premier scan oculaire',
+    firstScanSubtitle: 'Nous analyserons votre oeil pour générer votre profil de bien-être',
+    scanBenefit1: 'Analyser vos niveaux d\'énergie et de stress',
+    scanBenefit2: 'Obtenir des informations personnalisées sur le bien-être',
+    startScan: 'Commencer le scan',
+    skipScan: 'Passer pour l\'instant',
+    scanNow: 'Scan oculaire',
+    readyToScan: 'Prêt à scanner ?',
+    scanInstructions: 'Regardez directement dans la caméra et laissez-nous capturer votre oeil. Assurez-vous d\'avoir un bon éclairage.',
+    scanTip1: 'Trouvez un bon éclairage',
+    scanTip2: 'Gardez votre visage centré',
+    scanTip3: 'Restez immobile pour l\'analyse',
+    startScanNow: 'Commencer le scan',
   },
   profile: {
     title: 'Profil',
@@ -4378,6 +4447,7 @@ const fr: Translations = {
     select: 'Sélectionner',
     optional: 'facultatif',
     somewhat: 'Un peu',
+    cancel: 'Annuler',
   },
   tabs: {
     home: 'Accueil',
@@ -5155,6 +5225,19 @@ const es: Translations = {
     referralApplied: '¡Código de referencia aplicado con éxito!',
     lastPeriodOptional: 'Fecha de inicio del último período (opcional)',
     ifStillHavingPeriods: 'Si aún tienes períodos',
+    firstScanTitle: 'Hagamos tu primer escaneo ocular',
+    firstScanSubtitle: 'Analizaremos tu ojo para generar tu perfil de bienestar',
+    scanBenefit1: 'Analiza tus niveles de energía y estrés',
+    scanBenefit2: 'Obtén información personalizada sobre bienestar',
+    startScan: 'Iniciar escaneo',
+    skipScan: 'Omitir por ahora',
+    scanNow: 'Escaneo ocular',
+    readyToScan: '¿Listo para escanear?',
+    scanInstructions: 'Mira directamente a la cámara y déjanos capturar tu ojo. Asegúrate de tener buena iluminación.',
+    scanTip1: 'Encuentra buena iluminación',
+    scanTip2: 'Mantén tu cara centrada',
+    scanTip3: 'Mantente quieto para el análisis',
+    startScanNow: 'Iniciar escaneo',
   },
   profile: {
     title: 'Perfil',
@@ -5395,6 +5478,7 @@ const es: Translations = {
     select: 'Seleccionar',
     optional: 'opcional',
     somewhat: 'Algo',
+    cancel: 'Cancelar',
   },
   tabs: {
     home: 'Inicio',
@@ -6172,6 +6256,19 @@ const it: Translations = {
     referralApplied: 'Codice di riferimento applicato con successo!',
     lastPeriodOptional: 'Data inizio ultimo ciclo (opzionale)',
     ifStillHavingPeriods: 'Se hai ancora il ciclo',
+    firstScanTitle: 'Proviamo la tua prima scansione oculare',
+    firstScanSubtitle: 'Analizzeremo il tuo occhio per generare il tuo profilo di benessere',
+    scanBenefit1: 'Analizza i tuoi livelli di energia e stress',
+    scanBenefit2: 'Ottieni intuizioni personalizzate sul benessere',
+    startScan: 'Avvia scansione',
+    skipScan: 'Salta per ora',
+    scanNow: 'Scansione oculare',
+    readyToScan: 'Pronto a scansionare?',
+    scanInstructions: 'Guarda direttamente la fotocamera e lasciaci catturare il tuo occhio. Assicurati di avere una buona illuminazione.',
+    scanTip1: 'Trova una buona illuminazione',
+    scanTip2: 'Mantieni il volto centrato',
+    scanTip3: 'Rimani fermo per l\'analisi',
+    startScanNow: 'Avvia scansione',
   },
   profile: {
     title: 'Profilo',
@@ -6412,6 +6509,7 @@ const it: Translations = {
     select: 'Seleziona',
     optional: 'facoltativo',
     somewhat: 'In parte',
+    cancel: 'Annulla',
   },
   tabs: {
     home: 'Home',
@@ -7189,6 +7287,19 @@ const nl: Translations = {
     referralApplied: 'Verwijzingscode succesvol toegepast!',
     lastPeriodOptional: 'Startdatum laatste menstruatie (optioneel)',
     ifStillHavingPeriods: 'Als je nog menstruatie hebt',
+    firstScanTitle: 'Laten we je eerste oogscan proberen',
+    firstScanSubtitle: 'We analyseren je oog om je welzijnsprofiel te genereren',
+    scanBenefit1: 'Analyseer je energie- en stressniveaus',
+    scanBenefit2: 'Ontvang gepersonaliseerde welzijnsinzichten',
+    startScan: 'Scan starten',
+    skipScan: 'Nu overslaan',
+    scanNow: 'Oogscan',
+    readyToScan: 'Klaar om te scannen?',
+    scanInstructions: 'Kijk recht in de camera en laat ons je oog vastleggen. Zorg voor goede verlichting.',
+    scanTip1: 'Zoek goede verlichting',
+    scanTip2: 'Houd je gezicht gecentreerd',
+    scanTip3: 'Blijf stilzitten voor analyse',
+    startScanNow: 'Scan starten',
   },
   profile: {
     title: 'Profiel',
@@ -7429,6 +7540,7 @@ const nl: Translations = {
     select: 'Selecteer',
     optional: 'optioneel',
     somewhat: 'Enigszins',
+    cancel: 'Annuleren',
   },
   tabs: {
     home: 'Home',
@@ -8206,6 +8318,19 @@ const pl: Translations = {
     referralApplied: 'Kod polecenia zastosowany pomyślnie!',
     lastPeriodOptional: 'Data rozpoczęcia ostatniego okresu (opcjonalnie)',
     ifStillHavingPeriods: 'Jeśli nadal masz okresy',
+    firstScanTitle: 'Spróbujmy Twojego pierwszego skanowania oczu',
+    firstScanSubtitle: 'Przeanalizujemy Twoje oko, aby wygenerować Twój profil wellness',
+    scanBenefit1: 'Przeanalizuj swoje poziomy energii i stresu',
+    scanBenefit2: 'Uzyskaj spersonalizowane spostrzeżenia o wellness',
+    startScan: 'Rozpocznij skanowanie',
+    skipScan: 'Pomiń na razie',
+    scanNow: 'Skanowanie oczu',
+    readyToScan: 'Gotowy do skanowania?',
+    scanInstructions: 'Spójrz prosto w kamerę i pozwól nam uchwycić Twoje oko. Upewnij się, że masz dobre oświetlenie.',
+    scanTip1: 'Znajdź dobre oświetlenie',
+    scanTip2: 'Trzymaj twarz wysrodkowaną',
+    scanTip3: 'Pozostań nieruchomy do analizy',
+    startScanNow: 'Rozpocznij skanowanie',
   },
   profile: {
     title: 'Profil',
@@ -8446,6 +8571,7 @@ const pl: Translations = {
     select: 'Wybierz',
     optional: 'opcjonalnie',
     somewhat: 'Trochę',
+    cancel: 'Anuluj',
   },
   tabs: {
     home: 'Strona główna',
@@ -9223,6 +9349,19 @@ const pt: Translations = {
     referralApplied: 'Código de indicação aplicado com sucesso!',
     lastPeriodOptional: 'Data de início da última menstruação (opcional)',
     ifStillHavingPeriods: 'Se ainda tem menstruação',
+    firstScanTitle: 'Vamos tentar sua primeira análise ocular',
+    firstScanSubtitle: 'Analisaremos seu olho para gerar seu perfil de bem-estar',
+    scanBenefit1: 'Analise seus níveis de energia e estresse',
+    scanBenefit2: 'Obtenha insights personalizados de bem-estar',
+    startScan: 'Iniciar verificação',
+    skipScan: 'Pular por enquanto',
+    scanNow: 'Verificação ocular',
+    readyToScan: 'Pronto para verificar?',
+    scanInstructions: 'Olhe diretamente para a câmera e deixe-nos capturar seu olho. Certifique-se de ter uma boa iluminação.',
+    scanTip1: 'Encontre uma boa iluminação',
+    scanTip2: 'Mantenha seu rosto centralizado',
+    scanTip3: 'Fique imóvel para análise',
+    startScanNow: 'Iniciar verificação',
   },
   profile: {
     title: 'Perfil',
@@ -9463,6 +9602,7 @@ const pt: Translations = {
     select: 'Selecionar',
     optional: 'opcional',
     somewhat: 'Um pouco',
+    cancel: 'Cancelar',
   },
   tabs: {
     home: 'Início',
