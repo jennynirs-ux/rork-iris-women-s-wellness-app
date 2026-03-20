@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { translateSymptoms } from "@/lib/symptomTranslation";
 
 import {
-  ChevronLeft,
+  ChevronLeft
   ChevronRight,
   Moon,
   Sprout,
@@ -506,6 +506,7 @@ export default function CalendarScreen() {
                         { backgroundColor: phaseInfo.color + '30' },
                         isDueDate && styles.dueDateDayContent,
                         today && styles.todayContent,
+              hasScan && styles.scanRingContent,
                         selected && styles.selectedContent,
                       ]}
                       accessibilityLabel={`${day}, ${phaseInfo.label}${isDueDate ? `, ${t.programs.dueDate}` : ''}`}
@@ -1139,7 +1140,12 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     borderWidth: 2,
     borderColor: colors.primary,
   },
-  selectedContent: {
+  scanRingContent: {
+      borderWidth: 2,
+      borderColor: colors.primary,
+      borderRadius: 10,
+    },
+    selectedContent: {
     backgroundColor: colors.primary + '30',
     borderWidth: 2,
     borderColor: colors.primary,
