@@ -10,6 +10,11 @@ const getBaseUrl = () => {
     return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   }
 
+    // Warn in dev if no base URL is configured
+    if (__DEV__) {
+          console.warn("[trpc] EXPO_PUBLIC_RORK_API_BASE_URL not set — API calls will use relative path");
+    }
+
   return "";
 };
 
