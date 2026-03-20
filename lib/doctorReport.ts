@@ -7,7 +7,7 @@ interface PatternAnalysis {
 }
 
 function getPhaseDisplayName(phase: CyclePhase): string {
-  const phaseNames: Record<CyclePhase, string> = {
+  const phaseNames: RecordCyclePhase, string> = {
     menstrual: "Menstrual",
     follicular: "Follicular",
     ovulation: "Ovulation",
@@ -501,7 +501,7 @@ export async function generateDoctorReport(
 
     return pdfUri.uri;
   } catch (error) {
-    console.error('Error generating doctor report PDF:', error);
+    // Error propagated to caller — no console logging of health data in production
     throw error;
   }
 }
