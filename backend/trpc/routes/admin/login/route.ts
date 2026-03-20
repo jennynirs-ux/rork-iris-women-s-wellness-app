@@ -6,7 +6,7 @@ import crypto from 'crypto';
 
 /**
  * Server-side admin credentials (moved from client bundle).
- * Password hashes for: admin, analyst, viewer
+ * Password hashes loaded from environment variables (ADMIN_HASH_SUPER, ADMIN_HASH_ANALYST, ADMIN_HASH_VIEWER)
  */
 const ADMIN_CREDENTIALS: Record<
   string,
@@ -14,17 +14,17 @@ const ADMIN_CREDENTIALS: Record<
 > = {
   admin: {
     passwordHash:
-      'b5856a3a214c0ae59a3f401ad96135cca50642eeeda1b9e93b48fed988f95505',
+      process.env.ADMIN_HASH_SUPER || '',
     role: 'super_admin',
   },
   analyst: {
     passwordHash:
-      'a87bd5c0f0c1d62b73129c386dcee04df4bd865ae6259311f01f148a72bf98f1',
+      process.env.ADMIN_HASH_ANALYST || '',
     role: 'analyst',
   },
   viewer: {
     passwordHash:
-      '35cbe0aaf4e558ac53847cf7b057f4a3a86a427e08935bffdf81d7b4ed7cd9f3',
+      process.env.ADMIN_HASH_VIEWER || '',
     role: 'viewer',
   },
 };
