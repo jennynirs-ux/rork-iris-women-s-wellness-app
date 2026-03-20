@@ -30,7 +30,7 @@ const IrisWidget: React.FC<{ size?: "small" | "medium" | "large" }> = ({
         const data = await getWidgetData();
         setWidgetData(data);
       } catch (error) {
-        console.error("Error loading widget data:", error);
+        // Silently fail — widget shows loading/fallback state
       } finally {
         setLoading(false);
       }
