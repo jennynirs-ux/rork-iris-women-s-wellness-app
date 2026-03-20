@@ -1,6 +1,6 @@
-import { publicProcedure } from "../../../create-context";
+import { adminProcedure } from "../../../create-context";
 import { analyticsStore } from "../store";
 
-export default publicProcedure.query(() => {
-  return analyticsStore.getAggregatedStats();
+export default adminProcedure.query(() => {
+    return analyticsStore.getAggregatedStats();
 });
