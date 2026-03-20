@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { DailyDataPoint } from '@/types/admin';
+import Colors from '@/constants/colors';
 
 interface AdminChartProps {
   data: DailyDataPoint[];
@@ -87,12 +88,12 @@ export default React.memo(function AdminChart({ data, dataKey, color, title, for
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1A1D2E',
+    backgroundColor: Colors.dark.surface,
     borderRadius: 16,
     padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#252838',
+    borderColor: Colors.dark.border,
   },
   header: {
     flexDirection: 'row' as const,
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: '#9CA3AF',
+    color: Colors.dark.textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
   },
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: '#252838',
+    backgroundColor: Colors.dark.border,
   },
   barsContainer: {
     flex: 1,
@@ -149,19 +150,19 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#252838',
+    borderTopColor: Colors.dark.border,
   },
   stat: {
     alignItems: 'center' as const,
   },
   statLabel: {
     fontSize: 11,
-    color: '#6B7280',
+    color: Colors.dark.textTertiary,
     marginBottom: 2,
   },
   statValue: {
     fontSize: 13,
     fontWeight: '600' as const,
-    color: '#D1D5DB',
+    color: Colors.dark.text,
   },
 });
