@@ -49,6 +49,7 @@ import { Habit } from "@/types";
 import Colors from "@/constants/colors";
 import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
 import { trpc } from "@/lib/trpc";
+import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
 
@@ -420,7 +421,7 @@ export default function HomeScreen() {
           setUserId(storedUserId);
         }
       } catch (err) {
-        console.error("Error loading user ID:", err);
+        logger.error("Error loading user ID:", err);
       }
     };
     loadUserId();
