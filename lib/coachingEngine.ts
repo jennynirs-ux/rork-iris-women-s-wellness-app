@@ -28,6 +28,9 @@ export function generateCoachingTips(
 
   // Use last 7 days of scans for analysis
   const recentScans = scans.slice(-7);
+  if (recentScans.length === 0) {
+    return [getDefaultPhaseTip(phase)];
+  }
   const latestScan = recentScans[recentScans.length - 1];
   const latestCheckIn = checkIns.length > 0 ? checkIns[checkIns.length - 1] : null;
 

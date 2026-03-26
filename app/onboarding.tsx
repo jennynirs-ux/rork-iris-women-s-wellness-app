@@ -120,7 +120,7 @@ export default function OnboardingScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(language);
   const [selectedLifeStage, setSelectedLifeStage] = useState<LifeStage>("regular");
-  const [selectedFocus, setSelectedFocus] = useState<MainFocus[]>([]);
+  const [selectedFocus] = useState<MainFocus[]>([]);
   const [name, setName] = useState("");
   const [birthDay, setBirthDay] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
@@ -282,7 +282,8 @@ export default function OnboardingScreen() {
     }
   };
 
-  const closeAllPickers = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _closeAllPickers = () => {
     setShowDayPicker(false);
     setShowMonthPicker(false);
     setShowYearPicker(false);

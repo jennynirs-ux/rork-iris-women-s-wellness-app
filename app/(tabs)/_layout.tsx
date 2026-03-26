@@ -6,6 +6,7 @@ import { useApp } from "@/contexts/AppContext";
 import { StyleSheet, View, Platform, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function TabLayout() {
   const { colors } = useTheme();
@@ -62,6 +63,7 @@ export default function TabLayout() {
   }), [colors, bottomPadding]);
 
   return (
+    <ErrorBoundary>
     <View style={{ flex: 1 }}>
       {isOffline && (
         <View style={dynamicStyles.offlineBanner}>
@@ -127,5 +129,6 @@ export default function TabLayout() {
       />
     </Tabs>
     </View>
+    </ErrorBoundary>
   );
 }

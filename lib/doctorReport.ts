@@ -7,7 +7,7 @@ interface PatternAnalysis {
 }
 
 function getPhaseDisplayName(phase: CyclePhase): string {
-  const phaseNames: RecordCyclePhase, string> = {
+  const phaseNames: Record<CyclePhase, string> = {
     menstrual: "Menstrual",
     follicular: "Follicular",
     ovulation: "Ovulation",
