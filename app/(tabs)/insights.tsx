@@ -112,7 +112,7 @@ const generateCheckInInsights = (
     });
   }
 
-  if (todayCheckIn.hadAlcohol && (latestScan.hydrationLevel < 5 || latestScan.physiologicalStates.dehydrationTendency > 6)) {
+  if (todayCheckIn.hadAlcohol && (latestScan.hydrationLevel < 5 || latestScan.physiologicalStates?.dehydrationTendency > 6)) {
     insights.push({
       icon: Wine,
       color: "#A4C8E8",
@@ -130,7 +130,7 @@ const generateCheckInInsights = (
     });
   }
 
-  if (todayCheckIn.stressLevel && todayCheckIn.stressLevel > 7 && latestScan.emotionalMentalState.emotionalSensitivity > 6) {
+  if (todayCheckIn.stressLevel && todayCheckIn.stressLevel > 7 && latestScan.emotionalMentalState?.emotionalSensitivity > 6) {
     insights.push({
       icon: Brain,
       color: "#F4C8D4",
@@ -148,7 +148,7 @@ const generateCheckInInsights = (
     });
   }
 
-  if (todayCheckIn.sleep < 5 && latestScan.emotionalMentalState.cognitiveSharpness < 5) {
+  if (todayCheckIn.sleep < 5 && latestScan.emotionalMentalState?.cognitiveSharpness < 5) {
     insights.push({
       icon: Brain,
       color: "#96E8D4",

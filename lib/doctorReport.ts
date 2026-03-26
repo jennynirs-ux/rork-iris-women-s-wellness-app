@@ -104,14 +104,14 @@ function calculateCheckInAverages(checkIns: DailyCheckIn[]): {
     return { mood: 0, energy: 0, sleep: 0 };
   }
 
-  const moodValues = checkIns.map(ci => ci.mood);
-  const energyValues = checkIns.map(ci => ci.energy);
-  const sleepValues = checkIns.map(ci => ci.sleep);
+  const moodValues = checkIns.map(ci => ci.mood ?? 0);
+  const energyValues = checkIns.map(ci => ci.energy ?? 0);
+  const sleepValues = checkIns.map(ci => ci.sleep ?? 0);
 
   return {
-    mood: Math.round(moodValues.reduce((a, b) => a + b) / moodValues.length),
-    energy: Math.round(energyValues.reduce((a, b) => a + b) / energyValues.length),
-    sleep: Math.round(sleepValues.reduce((a, b) => a + b) / sleepValues.length),
+    mood: Math.round(moodValues.reduce((a, b) => a + b, 0) / (moodValues.length || 1)),
+    energy: Math.round(energyValues.reduce((a, b) => a + b, 0) / (energyValues.length || 1)),
+    sleep: Math.round(sleepValues.reduce((a, b) => a + b, 0) / (sleepValues.length || 1)),
   };
 }
 

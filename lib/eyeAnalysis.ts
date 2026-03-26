@@ -1019,6 +1019,9 @@ export function computeWellnessScores(
   checkIn: CheckInContext | null,
   cyclePhaseFactor: number,
 ): WellnessScoresFromEyes {
+  if (!eyeAnalysis) {
+    return { energyScore: 5, stressScore: 5, recoveryScore: 5, hydrationLevel: 5, fatigueLevel: 5, inflammation: 5, hormonalState: 'follicular' as any, emotionalMentalState: { cognitiveSharpness: 5, emotionalSensitivity: 5, mentalClarity: 5 }, physiologicalStates: { dehydrationTendency: 5, inflammationTendency: 5, fatigueDepth: 5 } } as WellnessScoresFromEyes;
+  }
   const {
     brightness, redness, pupilDarkRatio, symmetry, clarity,
     scleraYellowness, underEyeDarkness, eyeOpenness, tearFilmQuality,

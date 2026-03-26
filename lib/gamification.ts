@@ -50,8 +50,9 @@ export async function calculateStreaks(
   let scanStreak = 0;
   let checkInStreak = 0;
 
+  const MAX_STREAK_LOOKBACK = 365;
   let currentDate = new Date();
-  while (true) {
+  for (let i = 0; i < MAX_STREAK_LOOKBACK; i++) {
     const dateStr = getLocalDateString(currentDate);
     const hasScan = scans.some((s) => s.date === dateStr);
     if (hasScan) {
@@ -63,7 +64,7 @@ export async function calculateStreaks(
   }
 
   currentDate = new Date();
-  while (true) {
+  for (let i = 0; i < MAX_STREAK_LOOKBACK; i++) {
     const dateStr = getLocalDateString(currentDate);
     const hasCheckIn = checkIns.some((c) => c.date === dateStr);
     if (hasCheckIn) {
@@ -303,7 +304,7 @@ export function getMonthlyComparison(
     const previousAvgStress =
       previousScans.reduce((sum, s) => sum + s.stressScore, 0) /
       previousScans.length;
-    const stressChange =
+    const stressChange = previousAvgStress === 0 ? 0 :
       ((previousAvgStress - currentAvgStress) / previousAvgStress) * 100;
     comparisons.push({
       metric: "Stress",
@@ -320,7 +321,7 @@ export function getMonthlyComparison(
     const previousAvgEnergy =
       previousScans.reduce((sum, s) => sum + s.energyScore, 0) /
       previousScans.length;
-    const energyChange =
+    const energyChange = previousAvgEnergy === 0 ? 0 :
       ((currentAvgEnergy - previousAvgEnergy) / previousAvgEnergy) * 100;
     comparisons.push({
       metric: "Energy",
@@ -337,7 +338,7 @@ export function getMonthlyComparison(
     const previousAvgRecovery =
       previousScans.reduce((sum, s) => sum + s.recoveryScore, 0) /
       previousScans.length;
-    const recoveryChange =
+    const recoveryChange = previousAvgRecovery === 0 ? 0 :
       ((currentAvgRecovery - previousAvgRecovery) / previousAvgRecovery) * 100;
     comparisons.push({
       metric: "Recovery",
