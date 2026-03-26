@@ -623,25 +623,26 @@ export default function InsightsScreen() {
       { stress: 0, energy: 0, recovery: 0, hydration: 0, inflammation: 0, fatigue: 0, cognitiveSharpness: 0, emotionalSensitivity: 0, socialEnergy: 0, moodVolatility: 0, pupilDiameter: 0, pupilSymmetry: 0, dehydrationTendency: 0, inflammatoryStress: 0, scleraYellowness: 0, underEyeDarkness: 0, eyeOpenness: 0, tearFilmQuality: 0 }
     );
 
+    const len = scans.length || 1;
     return {
-      stress: Math.round(sum.stress / scans.length),
-      energy: Math.round(sum.energy / scans.length),
-      recovery: Math.round(sum.recovery / scans.length),
-      hydration: Math.round(sum.hydration / scans.length),
-      inflammation: Math.round(sum.inflammation / scans.length),
-      fatigue: Math.round(sum.fatigue / scans.length),
-      cognitiveSharpness: (sum.cognitiveSharpness / scans.length).toFixed(1),
-      emotionalSensitivity: (sum.emotionalSensitivity / scans.length).toFixed(1),
-      socialEnergy: (sum.socialEnergy / scans.length).toFixed(1),
-      moodVolatility: (sum.moodVolatility / scans.length).toFixed(1),
-      pupilDiameter: (sum.pupilDiameter / scans.length).toFixed(1),
-      pupilSymmetry: (sum.pupilSymmetry / scans.length).toFixed(2),
-      dehydrationTendency: (sum.dehydrationTendency / scans.length).toFixed(1),
-      inflammatoryStress: (sum.inflammatoryStress / scans.length).toFixed(1),
-      scleraYellowness: (sum.scleraYellowness / scans.length * 10).toFixed(1),
-      underEyeDarkness: (sum.underEyeDarkness / scans.length * 10).toFixed(1),
-      eyeOpenness: (sum.eyeOpenness / scans.length * 10).toFixed(1),
-      tearFilmQuality: (sum.tearFilmQuality / scans.length * 10).toFixed(1),
+      stress: Math.round(sum.stress / len),
+      energy: Math.round(sum.energy / len),
+      recovery: Math.round(sum.recovery / len),
+      hydration: Math.round(sum.hydration / len),
+      inflammation: Math.round(sum.inflammation / len),
+      fatigue: Math.round(sum.fatigue / len),
+      cognitiveSharpness: (sum.cognitiveSharpness / len).toFixed(1),
+      emotionalSensitivity: (sum.emotionalSensitivity / len).toFixed(1),
+      socialEnergy: (sum.socialEnergy / len).toFixed(1),
+      moodVolatility: (sum.moodVolatility / len).toFixed(1),
+      pupilDiameter: (sum.pupilDiameter / len).toFixed(1),
+      pupilSymmetry: (sum.pupilSymmetry / len).toFixed(2),
+      dehydrationTendency: (sum.dehydrationTendency / len).toFixed(1),
+      inflammatoryStress: (sum.inflammatoryStress / len).toFixed(1),
+      scleraYellowness: (sum.scleraYellowness / len * 10).toFixed(1),
+      underEyeDarkness: (sum.underEyeDarkness / len * 10).toFixed(1),
+      eyeOpenness: (sum.eyeOpenness / len * 10).toFixed(1),
+      tearFilmQuality: (sum.tearFilmQuality / len * 10).toFixed(1),
     };
   }, [scans]);
 
@@ -1266,17 +1267,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.focusClarity}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState.cognitiveSharpness.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.cognitiveSharpness.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.cognitiveSharpness}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState.cognitiveSharpness || 0, true, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState.cognitiveSharpness || 0, true, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState.cognitiveSharpness || 0, true, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: "#96E8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: "#96E8D4" }]} />
                   </View>
                 </View>
 
@@ -1295,17 +1296,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.stressResponse}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState.emotionalSensitivity.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.emotionalSensitivity.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.emotionalSensitivity}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState.emotionalSensitivity || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState.emotionalSensitivity || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState.emotionalSensitivity || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: "#F4C8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: "#F4C8D4" }]} />
                   </View>
                 </View>
 
@@ -1324,17 +1325,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.connectionReadiness}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState.socialEnergy.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.socialEnergy.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.socialEnergy}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState.socialEnergy || 0, true, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState.socialEnergy || 0, true, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState.socialEnergy || 0, true, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState.socialEnergy || 0) / 10) * 100}%`, backgroundColor: "#E8B4D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.socialEnergy || 0) / 10) * 100}%`, backgroundColor: "#E8B4D4" }]} />
                   </View>
                 </View>
 
@@ -1353,17 +1354,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.emotionalStability}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState.moodVolatilityRisk.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.moodVolatilityRisk.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.moodVolatility}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState.moodVolatilityRisk || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState.moodVolatilityRisk || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState.moodVolatilityRisk || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
                   </View>
                 </View>
               </View>
@@ -1387,17 +1388,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.fluidBalanceIndicator}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates.dehydrationTendency.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.dehydrationTendency.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.dehydrationTendency}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates.dehydrationTendency || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates.dehydrationTendency || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates.dehydrationTendency || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates.dehydrationTendency || 0) / 10) * 100}%`, backgroundColor: "#B4E4F4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.dehydrationTendency || 0) / 10) * 100}%`, backgroundColor: "#B4E4F4" }]} />
                   </View>
                 </View>
 
@@ -1416,17 +1417,17 @@ export default function InsightsScreen() {
                       <Text style={styles.detailDescription}>{t.insights.systemicInflammation}</Text>
                     </View>
                     <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates.inflammatoryStress.toFixed(1) || 0}/10</Text>
+                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.inflammatoryStress.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammatoryStress}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates.inflammatoryStress || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates.inflammatoryStress || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates.inflammatoryStress || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
                   </View>
                 </View>
               </View>
@@ -1445,7 +1446,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.pupilSize}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{latestScan?.rawOpticalSignals.pupilDiameter.toFixed(1) || 0}/10</Text>
+                    <Text style={styles.opticalStatsValue}>{latestScan?.rawOpticalSignals?.pupilDiameter.toFixed(1) || 0}/10</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.pupilDiameter}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('symmetry')} activeOpacity={0.7}>
@@ -1456,7 +1457,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.symmetry}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{((latestScan?.rawOpticalSignals.pupilSymmetry || 0) * 100).toFixed(0)}%</Text>
+                    <Text style={styles.opticalStatsValue}>{((latestScan?.rawOpticalSignals?.pupilSymmetry || 0) * 100).toFixed(0)}%</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {(Number(averages.pupilSymmetry) * 100).toFixed(0)}%</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('scleraYellowness')} activeOpacity={0.7}>
@@ -1467,7 +1468,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.scleraClarity ?? 'Sclera Clarity'}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{((1 - (latestScan?.rawOpticalSignals.scleraBrightness ? latestScan.rawOpticalSignals.scleraBrightness / 255 : 0.5)) * 10).toFixed(1)}/10</Text>
+                    <Text style={styles.opticalStatsValue}>{((1 - (latestScan?.rawOpticalSignals?.scleraBrightness ? latestScan.rawOpticalSignals.scleraBrightness / 255 : 0.5)) * 10).toFixed(1)}/10</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.scleraYellowness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('underEyeDarkness')} activeOpacity={0.7}>
@@ -1478,7 +1479,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.underEyeVitality ?? 'Under-Eye Vitality'}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{((latestScan?.physiologicalStates.sleepDebtLikelihood || 0.3) * 10).toFixed(1)}/10</Text>
+                    <Text style={styles.opticalStatsValue}>{((latestScan?.physiologicalStates?.sleepDebtLikelihood || 0.3) * 10).toFixed(1)}/10</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.underEyeDarkness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('eyeOpenness')} activeOpacity={0.7}>
@@ -1489,7 +1490,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.eyeAlertness ?? 'Eye Alertness'}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{((latestScan?.physiologicalStates.calmVsAlert || 0.5) * 10).toFixed(1)}/10</Text>
+                    <Text style={styles.opticalStatsValue}>{((latestScan?.physiologicalStates?.calmVsAlert || 0.5) * 10).toFixed(1)}/10</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.eyeOpenness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('tearFilmQuality')} activeOpacity={0.7}>
@@ -1500,7 +1501,7 @@ export default function InsightsScreen() {
                       <Text style={styles.opticalStatsLabel}>{t.insights.eyeMoisture ?? 'Eye Moisture'}</Text>
                       <Info size={10} color={colors.textSecondary} />
                     </View>
-                    <Text style={styles.opticalStatsValue}>{((latestScan?.rawOpticalSignals.tearFilmReflectivity || 0.5) * 10).toFixed(1)}/10</Text>
+                    <Text style={styles.opticalStatsValue}>{((latestScan?.rawOpticalSignals?.tearFilmReflectivity || 0.5) * 10).toFixed(1)}/10</Text>
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.tearFilmQuality}/10</Text>
                   </TouchableOpacity>
                 </View>

@@ -536,7 +536,8 @@ function getScanEvidence(
     lutealScore += 0.1;
   }
 
-  const total = menstrualScore + follicularScore + ovulationScore + lutealScore + 1;
+  const rawTotal = menstrualScore + follicularScore + ovulationScore + lutealScore + 1;
+  const total = isNaN(rawTotal) || rawTotal === 0 ? 2 : rawTotal;
 
   return {
     evidence: {

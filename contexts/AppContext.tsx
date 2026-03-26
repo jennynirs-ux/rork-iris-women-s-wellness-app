@@ -71,11 +71,12 @@ const calculateScanAverages = (scans: ScanResult[]): {
   highInflammationCount: number;
   lowEnergyCount: number;
 } => {
-  const avgFatigue = scans.reduce((sum, s) => sum + s.fatigueLevel, 0) / scans.length;
-  const avgStress = scans.reduce((sum, s) => sum + s.stressScore, 0) / scans.length;
-  const avgInflammation = scans.reduce((sum, s) => sum + s.inflammation, 0) / scans.length;
-  const avgRecovery = scans.reduce((sum, s) => sum + s.recoveryScore, 0) / scans.length;
-  const avgEnergy = scans.reduce((sum, s) => sum + s.energyScore, 0) / scans.length;
+  const len = scans.length || 1;
+  const avgFatigue = scans.reduce((sum, s) => sum + s.fatigueLevel, 0) / len;
+  const avgStress = scans.reduce((sum, s) => sum + s.stressScore, 0) / len;
+  const avgInflammation = scans.reduce((sum, s) => sum + s.inflammation, 0) / len;
+  const avgRecovery = scans.reduce((sum, s) => sum + s.recoveryScore, 0) / len;
+  const avgEnergy = scans.reduce((sum, s) => sum + s.energyScore, 0) / len;
   const highFatigueCount = scans.filter(s => s.fatigueLevel > 7).length;
   const highInflammationCount = scans.filter(s => s.inflammation > 6).length;
   const lowEnergyCount = scans.filter(s => s.energyScore < 4).length;

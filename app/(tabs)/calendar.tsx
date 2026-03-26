@@ -558,7 +558,7 @@ export default function CalendarScreen() {
             const checkIn = dayCheckIns.length > 0
               ? dayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
               : null;
-            const dayScans = scans.filter(s => s.date.split('T')[0] === dateStr);
+            const dayScans = scans.filter(s => s.date?.split('T')[0] === dateStr);
             const scan = dayScans.length > 0
               ? dayScans.sort((a, b) => b.timestamp - a.timestamp)[0]
               : null;

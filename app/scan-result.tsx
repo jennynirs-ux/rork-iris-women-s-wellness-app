@@ -142,12 +142,12 @@ function ScanResultScreenInner() {
   }
 
   const scores = [
-    { label: 'Energy', value: latestScan.energyScore, type: 'good-high' as const },
-    { label: 'Stress', value: latestScan.stressScore, type: 'good-low' as const },
-    { label: 'Recovery', value: latestScan.recoveryScore, type: 'good-high' as const },
-    { label: 'Hydration', value: latestScan.hydrationLevel, type: 'good-high' as const },
-    { label: 'Fatigue', value: latestScan.fatigueLevel, type: 'good-low' as const },
-    { label: 'Inflammation', value: latestScan.inflammation, type: 'good-low' as const },
+    { label: 'Energy', value: latestScan.energyScore ?? 5, type: 'good-high' as const },
+    { label: 'Stress', value: latestScan.stressScore ?? 5, type: 'good-low' as const },
+    { label: 'Recovery', value: latestScan.recoveryScore ?? 5, type: 'good-high' as const },
+    { label: 'Hydration', value: latestScan.hydrationLevel ?? 5, type: 'good-high' as const },
+    { label: 'Fatigue', value: latestScan.fatigueLevel ?? 5, type: 'good-low' as const },
+    { label: 'Inflammation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
   ];
 
   return (
