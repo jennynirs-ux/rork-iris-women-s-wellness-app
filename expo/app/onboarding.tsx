@@ -121,6 +121,9 @@ export default function OnboardingScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(language);
   const [selectedLifeStage, setSelectedLifeStage] = useState<LifeStage>("regular");
   const [selectedFocus, setSelectedFocus] = useState<MainFocus[]>([]);
+  const [cycleRegularity, setCycleRegularity] = useState<'regular' | 'irregular' | 'not_sure'>('regular');
+  const [typicalCycleLength, setTypicalCycleLength] = useState('28');
+  const [selectedBirthControl, setSelectedBirthControl] = useState('none');
   const [name, setName] = useState("");
   const [birthDay, setBirthDay] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
@@ -273,11 +276,14 @@ export default function OnboardingScreen() {
     }
   };
 
+  const TOTAL_STEPS = 7;
+  const LAST_STEP = TOTAL_STEPS - 1;
+
   const handleContinue = async () => {
     if (currentStep === 0) {
       await updateLanguage(selectedLanguage);
       setCurrentStep(currentStep + 1);
-    } else if (currentStep < 4) {
+    } else if (currentStep < LAST_STEP) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -363,6 +369,9 @@ export default function OnboardingScreen() {
       height: parseInt(height) || 0,
       lifeStage: selectedLifeStage,
       mainFocus: selectedFocus,
+      cycleLength: parseInt(typicalCycleLength) || 28,
+      cycleRegularity: cycleRegularity as any,
+      birthControlType: selectedBirthControl as any,
       lastPeriodDate: lastPeriodISO,
       pregnancyDueDate: selectedLifeStage === "pregnancy" ? dueDateISO : undefined,
       weeksPregnant: selectedLifeStage === "pregnancy" && weeksPregnant ? parseInt(weeksPregnant) : undefined,
@@ -1456,6 +1465,150 @@ export default function OnboardingScreen() {
     </View>
   );
 
+  const CYCLE_REGULARITY_OPTIONS = [
+    { value: 'regular', label: t.onboarding?.cycleRegular || 'Regular', icon: 'CheckCircle' },
+    { value: 'irregular', label: t.onboarding?.cycleIrregular || 'Irregular', icon: 'AlertCircle' },
+    { value: 'not_sure', label: t.onboarding?.cycleNotSure || 'Not sure', icon: 'HelpCircle' },
+  ];
+
+  const BIRTH_CONTROL_OPTIONS = [
+    { value: 'none', label: t.onboarding?.bcNone || 'None' },
+    { value: 'pill', label: t.onboarding?.bcPill || 'Pill' },
+    { value: 'iud_hormonal', label: t.onboarding?.bcIudHormonal || 'Hormonal IUD' },
+    { value: 'iud_copper', label: t.onboarding?.bcIudCopper || 'Copper IUD' },
+    { value: 'implant', label: t.onboarding?.bcImplant || 'Implant' },
+    { value: 'ring', label: t.onboarding?.bcRing || 'Ring' },
+    { value: 'patch', label: t.onboarding?.bcPatch || 'Patch' },
+    { value: 'other', label: t.onboarding?.bcOther || 'Other' },
+  ];
+
+  const FOCUS_OPTIONS: { value: string; label: string; icon: string }[] = [
+    { value: 'energy', label: t.onboarding?.focusEnergy || 'Energy & Vitality', icon: 'Zap' },
+    { value: 'stress', label: t.onboarding?.focusStress || 'Stress & Recovery', icon: 'Heart' },
+    { value: 'fitness', label: t.onboarding?.focusFitness || 'Fitness & Strength', icon: 'Dumbbell' },
+    { value: 'hormonal', label: t.onboarding?.focusHormonal || 'Cycle Awareness', icon: 'RefreshCw' },
+    { value: 'skin', label: t.onboarding?.focusSkin || 'Skin & Self-Care', icon: 'Sparkles' },
+    { value: 'body', label: t.onboarding?.focusBody || 'Body Awareness', icon: 'Eye' },
+  ];
+
+  const renderStep5 = () => (
+    <View style={styles.centeredStep}>
+      <Text style={styles.title}>{t.onboarding?.cycleDetailsTitle || 'Your Cycle'}</Text>
+      <Text style={styles.body}>{t.onboarding?.cycleDetailsSubtitle || 'Help us personalize your experience'}</Text>
+
+      <Text style={[styles.label, { marginTop: 24 }]}>{t.onboarding?.cycleRegularityLabel || 'How regular is your cycle?'}</Text>
+      <View style={{ gap: 8, width: '100%', marginTop: 8 }}>
+        {CYCLE_REGULARITY_OPTIONS.map((opt) => (
+          <TouchableOpacity
+            key={opt.value}
+            style={[
+              styles.optionCard,
+              cycleRegularity === opt.value && styles.optionCardSelected,
+            ]}
+            onPress={() => setCycleRegularity(opt.value as any)}
+          >
+            <Text style={[
+              styles.optionCardText,
+              cycleRegularity === opt.value && styles.optionCardTextSelected,
+            ]}>{opt.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {cycleRegularity === 'regular' && (
+        <View style={{ width: '100%', marginTop: 20 }}>
+          <Text style={styles.label}>{t.onboarding?.typicalLength || 'Typical cycle length'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
+            <TouchableOpacity
+              style={styles.counterButton}
+              onPress={() => setTypicalCycleLength(String(Math.max(18, (parseInt(typicalCycleLength) || 28) - 1)))}
+            >
+              <Text style={styles.counterButtonText}>-</Text>
+            </TouchableOpacity>
+            <Text style={[styles.title, { fontSize: 28, minWidth: 60, textAlign: 'center' }]}>
+              {typicalCycleLength}
+            </Text>
+            <TouchableOpacity
+              style={styles.counterButton}
+              onPress={() => setTypicalCycleLength(String(Math.min(45, (parseInt(typicalCycleLength) || 28) + 1)))}
+            >
+              <Text style={styles.counterButtonText}>+</Text>
+            </TouchableOpacity>
+            <Text style={styles.body}>{t.onboarding?.days || 'days'}</Text>
+          </View>
+        </View>
+      )}
+
+      <Text style={[styles.label, { marginTop: 24 }]}>{t.onboarding?.birthControlLabel || 'Birth control'}</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+        {BIRTH_CONTROL_OPTIONS.map((opt) => (
+          <TouchableOpacity
+            key={opt.value}
+            style={[
+              styles.chipOption,
+              selectedBirthControl === opt.value && styles.chipOptionSelected,
+            ]}
+            onPress={() => setSelectedBirthControl(opt.value)}
+          >
+            <Text style={[
+              styles.chipOptionText,
+              selectedBirthControl === opt.value && styles.chipOptionTextSelected,
+            ]}>{opt.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const toggleFocus = (value: string) => {
+    if (selectedFocus.includes(value as any)) {
+      setSelectedFocus(selectedFocus.filter(f => f !== value));
+    } else if (selectedFocus.length < 3) {
+      setSelectedFocus([...selectedFocus, value as any]);
+    }
+  };
+
+  const renderStep6 = () => (
+    <View style={styles.centeredStep}>
+      <Text style={styles.title}>{t.onboarding?.focusTitle || 'Your Wellness Focus'}</Text>
+      <Text style={styles.body}>{t.onboarding?.focusSubtitle || 'What matters most to you? Choose up to 3.'}</Text>
+
+      <View style={{ gap: 12, width: '100%', marginTop: 24 }}>
+        {FOCUS_OPTIONS.map((opt) => (
+          <TouchableOpacity
+            key={opt.value}
+            style={[
+              styles.optionCard,
+              selectedFocus.includes(opt.value as any) && styles.optionCardSelected,
+              { flexDirection: 'row', alignItems: 'center', gap: 12 },
+            ]}
+            onPress={() => toggleFocus(opt.value)}
+          >
+            <View style={[
+              styles.focusIconContainer,
+              selectedFocus.includes(opt.value as any) && { backgroundColor: colors.primary + '20' },
+            ]}>
+              <Text style={{ fontSize: 20 }}>{opt.icon === 'Zap' ? '⚡' : opt.icon === 'Heart' ? '❤️' : opt.icon === 'Dumbbell' ? '💪' : opt.icon === 'RefreshCw' ? '🔄' : opt.icon === 'Sparkles' ? '✨' : '👁️'}</Text>
+            </View>
+            <Text style={[
+              styles.optionCardText,
+              selectedFocus.includes(opt.value as any) && styles.optionCardTextSelected,
+            ]}>{opt.label}</Text>
+            {selectedFocus.includes(opt.value as any) && (
+              <View style={{ marginLeft: 'auto' }}>
+                <Text style={{ color: colors.primary, fontWeight: '600' }}>✓</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={[styles.body, { marginTop: 16, fontSize: 13 }]}>
+        {selectedFocus.length}/3 {t.onboarding?.selected || 'selected'}
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <KeyboardAvoidingView
@@ -1463,7 +1616,7 @@ export default function OnboardingScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.progressContainer}>
-          {[0, 1, 2, 3, 4].map((step) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i).map((step) => (
             <View
               key={step}
               style={[
@@ -1475,7 +1628,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
         <Text style={styles.stepIndicatorText} accessibilityRole="text">
-          {`${currentStep + 1} / 5`}
+          {`${currentStep + 1} / ${TOTAL_STEPS}`}
         </Text>
 
         <ScrollView
@@ -1491,22 +1644,24 @@ export default function OnboardingScreen() {
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
           {currentStep === 4 && renderStep4()}
+          {currentStep === 5 && renderStep5()}
+          {currentStep === 6 && renderStep6()}
         </ScrollView>
 
         <View style={styles.footer}>
           <TouchableOpacity
             style={[
               styles.primaryButton,
-              currentStep === 4 && !canComplete && styles.primaryButtonDisabled,
+              currentStep === LAST_STEP && !canComplete && styles.primaryButtonDisabled,
             ]}
-            onPress={currentStep === 4 ? handleComplete : handleContinue}
-            disabled={currentStep === 4 && !canComplete}
+            onPress={currentStep === LAST_STEP ? handleComplete : handleContinue}
+            disabled={currentStep === LAST_STEP && !canComplete}
           >
             <Text style={styles.primaryButtonText}>
-              {currentStep === 4 ? t.onboarding.complete : t.onboarding.continue}
+              {currentStep === LAST_STEP ? t.onboarding.complete : t.onboarding.continue}
             </Text>
           </TouchableOpacity>
-          {currentStep === 4 && (
+          {currentStep === LAST_STEP && (
             <View style={styles.legalLinksRow}>
               <TouchableOpacity
                 onPress={() => setShowPrivacyModal(true)}
@@ -2469,5 +2624,61 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
     fontSize: 16,
     fontWeight: "600" as const,
     color: colors.text,
+  },
+  optionCardSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  optionCardText: {
+    fontSize: 15,
+    color: colors.text,
+    fontWeight: "500" as const,
+  },
+  optionCardTextSelected: {
+    color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  chipOption: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipOptionSelected: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  chipOptionText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  chipOptionTextSelected: {
+    color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  counterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  counterButtonText: {
+    fontSize: 20,
+    color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  focusIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   },
 }); }
