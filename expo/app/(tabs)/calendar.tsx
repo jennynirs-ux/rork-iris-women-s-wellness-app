@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { translateSymptoms } from "@/lib/symptomTranslation";
 
 import {
-  ChevronLeft
+  ChevronLeft,
   ChevronRight,
   Moon,
   Sprout,
