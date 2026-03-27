@@ -71,11 +71,12 @@ const calculateScanAverages = (scans: ScanResult[]): {
   highInflammationCount: number;
   lowEnergyCount: number;
 } => {
-  const avgFatigue = scans.reduce((sum, s) => sum + s.fatigueLevel, 0) / scans.length;
-  const avgStress = scans.reduce((sum, s) => sum + s.stressScore, 0) / scans.length;
-  const avgInflammation = scans.reduce((sum, s) => sum + s.inflammation, 0) / scans.length;
-  const avgRecovery = scans.reduce((sum, s) => sum + s.recoveryScore, 0) / scans.length;
-  const avgEnergy = scans.reduce((sum, s) => sum + s.energyScore, 0) / scans.length;
+  const len = scans.length || 1;
+  const avgFatigue = scans.reduce((sum, s) => sum + s.fatigueLevel, 0) / len;
+  const avgStress = scans.reduce((sum, s) => sum + s.stressScore, 0) / len;
+  const avgInflammation = scans.reduce((sum, s) => sum + s.inflammation, 0) / len;
+  const avgRecovery = scans.reduce((sum, s) => sum + s.recoveryScore, 0) / len;
+  const avgEnergy = scans.reduce((sum, s) => sum + s.energyScore, 0) / len;
   const highFatigueCount = scans.filter(s => s.fatigueLevel > 7).length;
   const highInflammationCount = scans.filter(s => s.inflammation > 6).length;
   const lowEnergyCount = scans.filter(s => s.energyScore < 4).length;
@@ -204,78 +205,98 @@ export const [AppContext, useApp] = createContextHook(() => {
   const baselineQuery = useQuery({
     queryKey: ["baseline"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_BASELINE);
-      return stored ? JSON.parse(stored) : null;
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_BASELINE);
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
     },
   });
 
   const phaseBaselinesQuery = useQuery({
     queryKey: ["phaseBaselines"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_BASELINES);
-      return stored ? JSON.parse(stored) : null;
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_BASELINES);
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
     },
   });
 
   const dismissedSuggestionQuery = useQuery({
     queryKey: ["dismissedSuggestion"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED_SUGGESTION);
-      return stored || null;
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_DISMISSED_SUGGESTION);
+        return stored || null;
+      } catch { return null; }
     },
   });
 
   const healthConnectionQuery = useQuery({
     queryKey: ["healthConnection"],
     queryFn: async () => {
-      return await loadHealthConnection();
+      try {
+        return await loadHealthConnection();
+      } catch { return null; }
     },
   });
 
   const healthDataQuery = useQuery({
     queryKey: ["healthData"],
     queryFn: async () => {
-      return await loadHealthData();
+      try {
+        return await loadHealthData();
+      } catch { return null; }
     },
   });
 
   const languageQuery = useQuery({
     queryKey: ["language"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_LANGUAGE);
-      return (stored as Language) || 'en';
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_LANGUAGE);
+        return (stored as Language) || 'en';
+      } catch { return 'en' as Language; }
     },
   });
 
   const unitsQuery = useQuery({
     queryKey: ["units"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_UNITS);
-      return (stored as UnitSystem) || 'metric';
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_UNITS);
+        return (stored as UnitSystem) || 'metric';
+      } catch { return 'metric' as UnitSystem; }
     },
   });
 
   const previousPhaseQuery = useQuery({
     queryKey: ["previousPhase"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_PREVIOUS_PHASE);
-      return stored ? JSON.parse(stored) : null;
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_PREVIOUS_PHASE);
+        return stored ? JSON.parse(stored) : null;
+      } catch { return null; }
     },
   });
 
   const cycleHistoryQuery = useQuery({
     queryKey: ["cycleHistory"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_CYCLE_HISTORY);
-      return stored ? JSON.parse(stored) : [];
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_CYCLE_HISTORY);
+        return stored ? JSON.parse(stored) : [];
+      } catch { return []; }
     },
   });
 
   const phaseOverridesQuery = useQuery({
     queryKey: ["phaseOverrides"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_OVERRIDES);
-      return stored ? JSON.parse(stored) : {};
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_PHASE_OVERRIDES);
+        return stored ? JSON.parse(stored) : {};
+      } catch { return {}; }
     },
   });
 

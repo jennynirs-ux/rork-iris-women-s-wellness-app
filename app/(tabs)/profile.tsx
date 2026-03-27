@@ -301,7 +301,8 @@ function createWheelStyles(colors: typeof Colors.light) { return StyleSheet.crea
   },
 }); }
 
-function getGoals(t: any): { id: Goal; label: string }[] {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _getGoals(t: any): { id: Goal; label: string }[] {
   return [
     { id: "energy", label: t.profile.goalEnergy },
     { id: "weight_loss", label: t.profile.goalWeightLoss },
@@ -391,7 +392,7 @@ export default function ProfileScreen() {
 
   // Partner mode states
   const [showPartnerModal, setShowPartnerModal] = useState(false);
-  const [partnerCode, setPartnerCode] = useState(userProfile.partnerCode || '');
+  const [partnerCode] = useState(userProfile.partnerCode || '');
   const [partnerInputCode, setPartnerInputCode] = useState('');
 
   const styles = useMemo(() => createProfileStyles(colors), [colors]);
@@ -452,7 +453,8 @@ export default function ProfileScreen() {
     setShowDateModal(true);
   };
 
-  const toggleGoal = (goal: Goal) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _toggleGoal = (goal: Goal) => {
     const goals = editedProfile.goals.includes(goal)
       ? editedProfile.goals.filter((g) => g !== goal)
       : [...editedProfile.goals, goal];
@@ -2148,7 +2150,7 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>Enter Partner's Code</Text>
+                  <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>Enter Partner&apos;s Code</Text>
                   <TextInput
                     style={[styles.partnerInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                     placeholder="IRIS-XXXXXX"

@@ -11,7 +11,7 @@ function groupByDate(checkIns: DailyCheckIn[], scans: ScanResult[], days: number
     const dateStr = date.toISOString().split('T')[0];
 
     const dayCheckIns = checkIns.filter(c => c.date === dateStr);
-    const dayScans = scans.filter(s => s.date.split('T')[0] === dateStr);
+    const dayScans = scans.filter(s => s.date?.split('T')[0] === dateStr);
 
     data.push({
       date: dateStr,
@@ -70,7 +70,7 @@ function computeEngagement(checkIns: DailyCheckIn[], scans: ScanResult[], days: 
 
   const allDates = new Set<string>();
   checkIns.forEach(c => allDates.add(c.date));
-  scans.forEach(s => allDates.add(s.date.split('T')[0]));
+  scans.forEach(s => allDates.add(s.date?.split('T')[0]));
 
   const sortedDates = Array.from(allDates).sort();
   const firstActive = sortedDates[0] || new Date().toISOString().split('T')[0];
@@ -349,7 +349,7 @@ function computeScanTrends(scans: ScanResult[]): ScanTrend[] {
     return {
       metric: m.key,
       values: sorted.slice(-14).map(s => m.getter(s)),
-      dates: sorted.slice(-14).map(s => s.date.split('T')[0]),
+      dates: sorted.slice(-14).map(s => s.date?.split('T')[0]),
       trend,
       currentAvg: Math.round(recentAvg * 10) / 10,
       previousAvg: Math.round(earlierAvg * 10) / 10,
@@ -453,7 +453,7 @@ function computeUserJourney(
 function computeRetentionCohorts(checkIns: DailyCheckIn[], scans: ScanResult[]): RetentionCohort[] {
   const allDates = new Set<string>();
   checkIns.forEach(c => allDates.add(c.date));
-  scans.forEach(s => allDates.add(s.date.split('T')[0]));
+  scans.forEach(s => allDates.add(s.date?.split('T')[0]));
 
   if (allDates.size === 0) return [];
 
@@ -548,7 +548,7 @@ export function getAdminDashboardData(range: DateRange, input?: RealDataInput): 
 
   const today = new Date().toISOString().split('T')[0];
   const todayCheckIns = checkIns.filter(c => c.date === today).length;
-  const todayScans = scans.filter(s => s.date.split('T')[0] === today).length;
+  const todayScans = scans.filter(s => s.date?.split('T')[0] === today).length;
 
   const last7Days = now - 7 * 24 * 60 * 60 * 1000;
   const weekCheckIns = checkIns.filter(c => (c.timestamp || new Date(c.date).getTime()) >= last7Days).length;

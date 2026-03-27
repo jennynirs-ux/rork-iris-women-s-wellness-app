@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { translateSymptoms } from "@/lib/symptomTranslation";
 
 import {
-  ChevronLeft
+  ChevronLeft,
   ChevronRight,
   Moon,
   Sprout,
@@ -67,6 +67,7 @@ type LifeStagePhaseKey = keyof typeof LIFE_STAGE_INFO;
 
 function calculateCyclePhase(lastPeriodDate: string, cycleLength: number, date: Date): CyclePhase {
   const lastPeriod = new Date(lastPeriodDate);
+  if (isNaN(lastPeriod.getTime())) return 'follicular';
   const daysSinceLastPeriod = Math.floor((date.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
   // Don't clamp to 1 — let getPhaseForCycleDay handle negative days via modulo
   const cycleDay = daysSinceLastPeriod + 1;
@@ -272,7 +273,7 @@ export default function CalendarScreen() {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
     const dateStr = getLocalDateString(date);
 
-    const hasScan = scans.some(s => s.date.split('T')[0] === dateStr);
+    const hasScan = scans.some(s => s.date?.split('T')[0] === dateStr);
     const dayCheckIns = checkIns.filter(c => c.date === dateStr);
     const checkIn = dayCheckIns.length > 0
       ? dayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
@@ -331,7 +332,7 @@ export default function CalendarScreen() {
     const today = getLocalDateString(new Date());
 
     if (dateStr === today) {
-      const hasScan = scans.some(s => s.date.split('T')[0] === dateStr);
+      const hasScan = scans.some(s => s.date?.split('T')[0] === dateStr);
       const hasCheckIn = checkIns.some(c => c.date === dateStr);
 
       if (!hasScan || !hasCheckIn) {
@@ -557,7 +558,7 @@ export default function CalendarScreen() {
             const checkIn = dayCheckIns.length > 0
               ? dayCheckIns.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))[0]
               : null;
-            const dayScans = scans.filter(s => s.date.split('T')[0] === dateStr);
+            const dayScans = scans.filter(s => s.date?.split('T')[0] === dateStr);
             const scan = dayScans.length > 0
               ? dayScans.sort((a, b) => b.timestamp - a.timestamp)[0]
               : null;

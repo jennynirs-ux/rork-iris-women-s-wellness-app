@@ -2,7 +2,7 @@
   "expo": {
     "name": "IRIS Women’s Wellness App",
     "slug": "iris-womens-wellness-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "iris-wellness",
@@ -16,9 +16,11 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "se.mojjo.iris-wellness",
+      "buildNumber": "2",
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+        "NSCameraUsageDescription": "IRIS uses your camera to perform on-device iris analysis for wellness tracking. Photos are processed locally and never uploaded.",
+        "NSHealthShareUsageDescription": "IRIS reads heart rate variability, wrist temperature, and sleep data to enhance your wellness insights. This data stays on your device.",
+        "NSHealthUpdateUsageDescription": "IRIS does not write data to Apple Health."
       }
     },
     "android": {
@@ -28,8 +30,7 @@
       },
       "package": "se.mojjo.iris_wellness",
       "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO"
+        "CAMERA"
       ]
     },
     "web": {
@@ -47,9 +48,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
+          "cameraPermission": "IRIS uses your camera to perform on-device iris analysis for wellness tracking. Photos are processed locally and never uploaded.",
+          "recordAudioAndroid": false
         }
       ],
       [

@@ -67,10 +67,12 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
   const referralQuery = useQuery({
     queryKey: ["referralState"],
     queryFn: async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY_REFERRAL);
-      if (stored) {
-        return JSON.parse(stored) as ReferralState;
-      }
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_REFERRAL);
+        if (stored) {
+          return JSON.parse(stored) as ReferralState;
+        }
+      } catch { /* corrupted data, reset */ }
       const initial = getInitialReferralState();
       await AsyncStorage.setItem(STORAGE_KEY_REFERRAL, JSON.stringify(initial));
       return initial;

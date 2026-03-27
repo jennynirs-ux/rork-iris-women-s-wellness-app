@@ -80,6 +80,11 @@ export const [SyncContext, useSync] = createContextHook(() => {
         throw new Error("No sync ID. Create one first.");
       }
 
+      // GDPR: only sync if user has given explicit data consent
+      if (!userProfile.dataConsent) {
+        throw new Error("Data consent not granted. Enable data sharing in Profile → Settings.");
+      }
+
       const baselineStr = await AsyncStorage.getItem("iris_baseline");
       const phaseBaselinesStr = await AsyncStorage.getItem("iris_phase_baselines");
       const cycleHistoryStr = await AsyncStorage.getItem("iris_cycle_history");

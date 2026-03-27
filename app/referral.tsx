@@ -92,7 +92,7 @@ export default function ReferralScreen() {
         useNativeDriver: true,
       }),
       Animated.timing(progressAnim, {
-        toValue: referralStats.progressToNextFreeMonth / referralGoal,
+        toValue: referralGoal > 0 ? referralStats.progressToNextFreeMonth / referralGoal : 0,
         duration: 800,
         useNativeDriver: false,
       }),

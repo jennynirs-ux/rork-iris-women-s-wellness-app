@@ -89,6 +89,7 @@ function ScanScreenInner() {
       }
       isCheckingFaceRef.current = true;
       try {
+        if (!cameraRef.current) { isCheckingFaceRef.current = false; scheduleCheck(); return; }
         const snap = await cameraRef.current.takePictureAsync({
           quality: 0.1,
           base64: true,
@@ -122,7 +123,6 @@ function ScanScreenInner() {
         faceCheckTimerRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraReady, stage]);
 
   useEffect(() => {

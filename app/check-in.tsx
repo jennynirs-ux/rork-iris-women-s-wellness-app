@@ -734,7 +734,7 @@ export default function CheckInScreen() {
               <View style={styles.hotFlashCounterContainer}>
                 <TouchableOpacity
                   style={styles.counterButton}
-                  onPress={() => setHotFlashCount(Math.max(0, parseInt(hotFlashCount || '0') - 1).toString())}
+                  onPress={() => { const n = Number(hotFlashCount) || 0; setHotFlashCount(Math.max(0, n - 1).toString()); }}
                   accessibilityLabel="Decrease hot flash count"
                   accessibilityRole="button"
                 >
@@ -744,8 +744,8 @@ export default function CheckInScreen() {
                   style={styles.counterInput}
                   value={hotFlashCount}
                   onChangeText={(text) => {
-                    const num = parseInt(text) || 0;
-                    if (num >= 0 && num <= 10) setHotFlashCount(num.toString());
+                    const num = Number(text) || 0;
+                    if (num >= 0 && num <= 10) setHotFlashCount(Math.floor(num).toString());
                   }}
                   keyboardType="numeric"
                   maxLength={2}
@@ -753,7 +753,7 @@ export default function CheckInScreen() {
                 />
                 <TouchableOpacity
                   style={styles.counterButton}
-                  onPress={() => setHotFlashCount(Math.min(10, parseInt(hotFlashCount || '0') + 1).toString())}
+                  onPress={() => { const n = Number(hotFlashCount) || 0; setHotFlashCount(Math.min(10, n + 1).toString()); }}
                   accessibilityLabel="Increase hot flash count"
                   accessibilityRole="button"
                 >
