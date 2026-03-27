@@ -28,6 +28,9 @@ export function generateCoachingTips(
 
   // Use last 7 days of scans for analysis
   const recentScans = scans.slice(-7);
+  if (recentScans.length === 0) {
+    return [getDefaultPhaseTip(phase)];
+  }
   const latestScan = recentScans[recentScans.length - 1];
   const latestCheckIn = checkIns.length > 0 ? checkIns[checkIns.length - 1] : null;
 
@@ -89,10 +92,10 @@ function checkStressRules(
   if (latestScan.stressScore > 7) {
     tips.push({
       id: "stress-elevated-today",
-      icon: "😰",
-      title: "Stress Alert",
+      icon: "AlertCircle",
+      title: "Stress Tip",
       message:
-        "Your stress is elevated today. Try 5 minutes of deep breathing or a short walk.",
+        "Your stress score is higher today. Try 5 minutes of deep breathing or a short walk.",
       category: "stress",
       priority: 2,
     });
@@ -103,7 +106,7 @@ function checkStressRules(
   if (consecutiveHighStress >= 3) {
     tips.push({
       id: "stress-prolonged-high",
-      icon: "⚠️",
+      icon: "AlertCircle",
       title: "Stress Trending High",
       message: `Your stress has been high for ${consecutiveHighStress} days. Consider reducing caffeine and prioritizing sleep tonight.`,
       category: "stress",
@@ -115,7 +118,7 @@ function checkStressRules(
   if (latestScan.stressScore > 7 && phase === "luteal") {
     tips.push({
       id: "stress-luteal",
-      icon: "🌙",
+      icon: "Moon",
       title: "Luteal Phase Stress",
       message:
         "Stress tends to peak in the luteal phase. This is normal — be extra gentle with yourself.",
@@ -154,7 +157,7 @@ function checkEnergyRules(
   if (latestScan.energyScore < 4) {
     tips.push({
       id: "energy-low",
-      icon: "🔋",
+      icon: "Battery",
       title: "Low Energy",
       message:
         "Your energy is low. A 10-minute walk or protein-rich snack could help.",
@@ -167,7 +170,7 @@ function checkEnergyRules(
   if (latestScan.energyScore < 4 && latestCheckIn && latestCheckIn.sleep < 4) {
     tips.push({
       id: "energy-sleep-low",
-      icon: "💤",
+      icon: "Moon",
       title: "Energy + Sleep Recovery",
       message:
         "Low energy + poor sleep — tonight, try going to bed 30 minutes earlier.",
@@ -183,7 +186,7 @@ function checkEnergyRules(
   ) {
     tips.push({
       id: "energy-peak",
-      icon: "⚡",
+      icon: "Zap",
       title: "Energy Peak",
       message:
         "Your energy is peaking — great time for intense workouts or challenging tasks.",
@@ -209,7 +212,7 @@ function checkRecoveryRules(
   if (latestScan.recoveryScore < 4) {
     tips.push({
       id: "recovery-low",
-      icon: "🛌",
+      icon: "BedDouble",
       title: "Recovery Needed",
       message:
         "Your body needs more recovery time. Prioritize rest and hydration today.",
@@ -223,7 +226,7 @@ function checkRecoveryRules(
   if (consecutiveLowRecovery >= 3) {
     tips.push({
       id: "recovery-prolonged-low",
-      icon: "😴",
+      icon: "Moon",
       title: "Extended Recovery Deficit",
       message: `Recovery has been low for ${consecutiveLowRecovery} days. Consider a rest day and anti-inflammatory foods.`,
       category: "recovery",
@@ -263,8 +266,8 @@ function checkHydrationRules(
   if (latestScan.hydrationLevel < 4) {
     tips.push({
       id: "hydration-low",
-      icon: "💧",
-      title: "Hydration Alert",
+      icon: "Droplets",
+      title: "Hydration Tip",
       message: "You may be dehydrated. Aim for 8 glasses of water today.",
       category: "hydration",
       priority: 3,
@@ -279,7 +282,7 @@ function checkHydrationRules(
   ) {
     tips.push({
       id: "hydration-caffeine",
-      icon: "☕",
+      icon: "Coffee",
       title: "Caffeine + Hydration",
       message:
         "Caffeine + low hydration — balance each coffee with an extra glass of water.",
@@ -305,10 +308,10 @@ function checkInflammationRules(
   if (latestScan.inflammation > 7) {
     tips.push({
       id: "inflammation-elevated",
-      icon: "🔥",
-      title: "Inflammation Alert",
+      icon: "Flame",
+      title: "Inflammation Tip",
       message:
-        "Inflammation is elevated. Try adding omega-3 rich foods and reducing sugar.",
+        "Your inflammation score is higher today. Try adding omega-3 rich foods and reducing sugar.",
       category: "inflammation",
       priority: 2,
     });
@@ -318,7 +321,7 @@ function checkInflammationRules(
   if (latestScan.inflammation > 7 && phase === "luteal") {
     tips.push({
       id: "inflammation-luteal",
-      icon: "🌿",
+      icon: "Leaf",
       title: "Luteal Anti-Inflammatory",
       message:
         "Luteal phase + high inflammation — anti-inflammatory foods like turmeric and leafy greens can help.",
@@ -344,7 +347,7 @@ function checkPhaseRules(
   if (phase === "menstrual") {
     tips.push({
       id: "phase-menstrual",
-      icon: "🩸",
+      icon: "Droplets",
       title: "Menstrual Phase",
       message:
         "During menstruation, focus on iron-rich foods and gentle movement.",
@@ -357,7 +360,7 @@ function checkPhaseRules(
   if (phase === "ovulation") {
     tips.push({
       id: "phase-ovulation",
-      icon: "🌟",
+      icon: "Star",
       title: "Ovulation Window",
       message:
         "You're in your ovulation window — energy and mood tend to peak now.",
@@ -380,8 +383,8 @@ function checkSleepRules(latestCheckIn: DailyCheckIn | null): CoachingTip[] {
   if (latestCheckIn && latestCheckIn.sleep < 3) {
     tips.push({
       id: "sleep-very-low",
-      icon: "🌙",
-      title: "Sleep Quality Alert",
+      icon: "Moon",
+      title: "Sleep Quality Tip",
       message:
         "Your sleep quality was very low. Avoid screens 1 hour before bed tonight.",
       category: "sleep",
@@ -413,7 +416,7 @@ function checkTrendRules(recentScans: ScanResult[]): CoachingTip[] {
   ) {
     tips.push({
       id: "trend-energy-improving",
-      icon: "📈",
+      icon: "TrendingUp",
       title: "Energy Improving",
       message:
         "Your energy is trending up — keep doing what you're doing!",
@@ -429,7 +432,7 @@ function checkTrendRules(recentScans: ScanResult[]): CoachingTip[] {
   ) {
     tips.push({
       id: "trend-stress-decreasing",
-      icon: "✅",
+      icon: "CheckCircle",
       title: "Stress Improving",
       message: "Great news — your stress levels are coming down.",
       category: "trend",
@@ -448,7 +451,7 @@ function getDefaultPhaseTip(phase: CyclePhase): CoachingTip {
   const defaultTips: Record<CyclePhase, CoachingTip> = {
     menstrual: {
       id: "default-menstrual",
-      icon: "🩸",
+      icon: "Droplets",
       title: "Menstrual Phase",
       message: "Rest and self-care are important right now. Listen to your body.",
       category: "phase",
@@ -456,7 +459,7 @@ function getDefaultPhaseTip(phase: CyclePhase): CoachingTip {
     },
     follicular: {
       id: "default-follicular",
-      icon: "🌱",
+      icon: "Sprout",
       title: "Follicular Phase",
       message:
         "This is a great time to start new projects and explore new activities.",
@@ -465,7 +468,7 @@ function getDefaultPhaseTip(phase: CyclePhase): CoachingTip {
     },
     ovulation: {
       id: "default-ovulation",
-      icon: "🌟",
+      icon: "Star",
       title: "Ovulation",
       message:
         "You're at peak energy and confidence. Use this time for important tasks.",
@@ -474,7 +477,7 @@ function getDefaultPhaseTip(phase: CyclePhase): CoachingTip {
     },
     luteal: {
       id: "default-luteal",
-      icon: "🌙",
+      icon: "Moon",
       title: "Luteal Phase",
       message: "Honor your need for rest and introspection during this phase.",
       category: "phase",
