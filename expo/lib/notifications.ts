@@ -112,7 +112,7 @@ export async function scheduleMenstrualPhaseNotification(
     await Notifications.scheduleNotificationAsync({
       identifier: NOTIFICATION_IDENTIFIER,
       content: {
-        title: '🩸 Period Reminder',
+        title: 'Period Reminder',
         body: `Your period is expected to start in about ${daysUntilPeriod} day${daysUntilPeriod !== 1 ? 's' : ''}. Prepare essentials and track any early symptoms.`,
         data: { type: 'menstrual_reminder' },
       },
@@ -276,7 +276,7 @@ export async function scheduleCheckInReminder(): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: NOTIFICATION_CHECKIN_REMINDER,
       content: {
-        title: '📝 Daily Check-in',
+        title: 'Daily Check-in',
         body: 'How are you feeling today? Log your symptoms and mood.',
         data: { type: 'checkin_reminder' },
       },
@@ -326,7 +326,7 @@ export async function scheduleScanReminder(): Promise<void> {
     await Notifications.scheduleNotificationAsync({
       identifier: NOTIFICATION_SCAN_REMINDER,
       content: {
-        title: '👁️ Weekly Iris Scan',
+        title: 'Weekly Iris Scan',
         body: 'Take your weekly iris scan to track your eye wellness.',
         data: { type: 'scan_reminder' },
       },
@@ -380,7 +380,7 @@ export async function scheduleHydrationReminders(): Promise<void> {
       await Notifications.scheduleNotificationAsync({
         identifier,
         content: {
-          title: '💧 Hydration Reminder',
+          title: 'Hydration Reminder',
           body: 'Stay hydrated! Drink some water.',
           data: { type: 'hydration_reminder' },
         },
