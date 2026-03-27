@@ -15,11 +15,11 @@ Your wellness, visible in your eyes. IRIS uses on-device iris analysis to track 
 
 Your eyes reveal more than you think.
 
-IRIS is a privacy-first wellness tracker that uses your phone camera to analyze your iris and deliver personalized health insights — all processed on your device. No photos are stored. No data leaves your phone unless you choose to share it.
+IRIS is a privacy-first wellness tracker that uses your phone camera to analyze your iris and deliver personalized wellness insights — all processed on your device. No photos are stored. No data leaves your phone unless you choose to share it.
 
 WHAT MAKES IRIS DIFFERENT
 
-Unlike traditional period trackers, IRIS combines optical biomarkers from your eyes with daily check-ins and Apple Health data to build a complete picture of your wellness across your entire cycle.
+Unlike traditional period trackers, IRIS combines visual wellness patterns from your eyes with daily check-ins and Apple Health data to build a complete picture of your wellness across your entire cycle.
 
 YOUR DAILY WELLNESS IN 10 SECONDS
 Scan your eye. Get six key wellness scores: energy, stress, recovery, hydration, fatigue, and inflammation. Track trends over 7, 30, and 90 days.
@@ -50,7 +50,7 @@ ALSO INCLUDES
 - Community tips from other women in your phase
 - Available in 9 languages
 
-IRIS is a wellness tool, not a medical device. Insights are for personal awareness and should not replace professional medical advice.
+IMPORTANT: IRIS is a wellness tool only, not a medical device. Wellness scores are estimates for personal awareness and are not medical diagnoses, assessments, or treatment recommendations. Always consult a qualified healthcare provider for medical concerns.
 
 ### Keywords (100 chars, comma-separated)
 ```

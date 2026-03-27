@@ -532,9 +532,9 @@ export default function InsightsScreen() {
 
         pregnancyIndicators.push({ label: 'High fatigue pattern', detected: avgFatigue > 6 });
         pregnancyIndicators.push({ label: 'Low energy pattern', detected: avgEnergy < 5 });
-        pregnancyIndicators.push({ label: 'Elevated inflammation', detected: avgInflammation > 5 });
+        pregnancyIndicators.push({ label: 'Higher inflammation scores', detected: avgInflammation > 5 });
 
-        periIndicators.push({ label: 'Elevated stress pattern', detected: avgStress > 6 });
+        periIndicators.push({ label: 'Higher stress scores', detected: avgStress > 6 });
         periIndicators.push({ label: 'Low recovery pattern', detected: avgRecovery < 5 });
 
         const energies = recentScans.map(s => s.energyScore);
@@ -1150,7 +1150,7 @@ export default function InsightsScreen() {
             <View style={styles.emptyStateCard}>
               <TrendingUp size={40} color={colors.primary} />
               <Text style={styles.emptyStateTitle}>Keep scanning to see trends</Text>
-              <Text style={styles.emptyStateText}>Collect at least 2 data points to visualize your health trends</Text>
+              <Text style={styles.emptyStateText}>Collect at least 2 data points to visualize your wellness trends</Text>
             </View>
           )}
 
@@ -1524,7 +1524,7 @@ export default function InsightsScreen() {
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Pregnancy Indicators</Text>
-                      <Text style={styles.patternCount}>{patternAnalysis.pregnancyDetected}/{patternAnalysis.pregnancyTotal} markers detected</Text>
+                      <Text style={styles.patternCount}>{patternAnalysis.pregnancyDetected}/{patternAnalysis.pregnancyTotal} patterns noted</Text>
                     </View>
                     {patternAnalysis.hasAcceptedPregnancy ? (
                       <View style={styles.acceptedBadge}>
@@ -1577,7 +1577,7 @@ export default function InsightsScreen() {
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Perimenopause Indicators</Text>
-                      <Text style={styles.patternCount}>{patternAnalysis.periDetected}/{patternAnalysis.periTotal} markers detected</Text>
+                      <Text style={styles.patternCount}>{patternAnalysis.periDetected}/{patternAnalysis.periTotal} patterns noted</Text>
                     </View>
                     {patternAnalysis.hasAcceptedPeri ? (
                       <View style={styles.acceptedBadge}>

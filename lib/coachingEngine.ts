@@ -93,9 +93,9 @@ function checkStressRules(
     tips.push({
       id: "stress-elevated-today",
       icon: "😰",
-      title: "Stress Alert",
+      title: "Stress Tip",
       message:
-        "Your stress is elevated today. Try 5 minutes of deep breathing or a short walk.",
+        "Your stress score is higher today. Try 5 minutes of deep breathing or a short walk.",
       category: "stress",
       priority: 2,
     });
@@ -267,7 +267,7 @@ function checkHydrationRules(
     tips.push({
       id: "hydration-low",
       icon: "💧",
-      title: "Hydration Alert",
+      title: "Hydration Tip",
       message: "You may be dehydrated. Aim for 8 glasses of water today.",
       category: "hydration",
       priority: 3,
@@ -309,9 +309,9 @@ function checkInflammationRules(
     tips.push({
       id: "inflammation-elevated",
       icon: "🔥",
-      title: "Inflammation Alert",
+      title: "Inflammation Tip",
       message:
-        "Inflammation is elevated. Try adding omega-3 rich foods and reducing sugar.",
+        "Your inflammation score is higher today. Try adding omega-3 rich foods and reducing sugar.",
       category: "inflammation",
       priority: 2,
     });
@@ -384,7 +384,7 @@ function checkSleepRules(latestCheckIn: DailyCheckIn | null): CoachingTip[] {
     tips.push({
       id: "sleep-very-low",
       icon: "🌙",
-      title: "Sleep Quality Alert",
+      title: "Sleep Quality Tip",
       message:
         "Your sleep quality was very low. Avoid screens 1 hour before bed tonight.",
       category: "sleep",

@@ -31,7 +31,7 @@ const getInterpretation = (label: string, value: number): string => {
     case 'Energy':
       return value >= 7 ? 'Strong energy today' : value >= 4 ? 'Moderate energy' : 'Consider rest';
     case 'Stress':
-      return value <= 3 ? 'Stress is low' : value <= 6 ? 'Moderate stress levels' : 'Stress is elevated — consider a break';
+      return value <= 3 ? 'Stress is low' : value <= 6 ? 'Moderate stress levels' : 'Stress score is higher — consider a break';
     case 'Recovery':
       return value >= 7 ? 'Well recovered' : value >= 4 ? 'Moderate recovery' : 'Recovery needed';
     case 'Hydration':
@@ -39,7 +39,7 @@ const getInterpretation = (label: string, value: number): string => {
     case 'Fatigue':
       return value <= 3 ? 'Feeling energized' : value <= 6 ? 'Some fatigue present' : 'High fatigue — prioritize rest';
     case 'Inflammation':
-      return value <= 3 ? 'Low inflammation' : value <= 6 ? 'Moderate inflammation' : 'Elevated inflammation — watch diet';
+      return value <= 3 ? 'Low inflammation' : value <= 6 ? 'Moderate inflammation' : 'Higher score — consider comfort foods';
     default:
       return '';
   }
