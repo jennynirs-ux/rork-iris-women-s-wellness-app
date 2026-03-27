@@ -125,7 +125,7 @@ export function calculateMilestones(
   const hasFirstScan = scans.length > 0;
   milestones.push({
     id: "first_scan",
-    icon: "📸",
+    icon: "Camera",
     title: "First Scan",
     description: "Completed your first eye scan",
     unlocked: hasFirstScan,
@@ -147,7 +147,7 @@ export function calculateMilestones(
 
   milestones.push({
     id: "week_warrior",
-    icon: "🔥",
+    icon: "Flame",
     title: "Week Warrior",
     description: "7-day scan streak",
     unlocked: sevenDayStreak,
@@ -168,7 +168,7 @@ export function calculateMilestones(
 
   milestones.push({
     id: "consistency_queen",
-    icon: "👑",
+    icon: "Crown",
     title: "Consistency Queen",
     description: "14-day scan streak",
     unlocked: fourteenDayStreak,
@@ -189,7 +189,7 @@ export function calculateMilestones(
 
   milestones.push({
     id: "monthly_master",
-    icon: "⭐",
+    icon: "Star",
     title: "Monthly Master",
     description: "30-day scan streak",
     unlocked: thirtyDayStreak,
@@ -210,7 +210,7 @@ export function calculateMilestones(
 
   milestones.push({
     id: "checkin_champion",
-    icon: "✅",
+    icon: "CheckCircle",
     title: "Check-in Champion",
     description: "7-day check-in streak",
     unlocked: sevenDayCheckInStreak,
@@ -220,7 +220,7 @@ export function calculateMilestones(
   const thirtyCheckInsTotal = checkIns.length >= 30;
   milestones.push({
     id: "self_aware",
-    icon: "🧠",
+    icon: "Brain",
     title: "Self-Aware",
     description: "30 check-ins total",
     unlocked: thirtyCheckInsTotal,
@@ -230,7 +230,7 @@ export function calculateMilestones(
   const fiftyScansTotal = scans.length >= 50;
   milestones.push({
     id: "data_pioneer",
-    icon: "📊",
+    icon: "BarChart3",
     title: "Data Pioneer",
     description: "50 scans total",
     unlocked: fiftyScansTotal,
@@ -244,7 +244,7 @@ export function calculateMilestones(
   const allPhasesUnlocked = phasesWithScans.size === 4;
   milestones.push({
     id: "wellness_explorer",
-    icon: "🌍",
+    icon: "Globe",
     title: "Wellness Explorer",
     description: "Completed scans in all 4 cycle phases",
     unlocked: allPhasesUnlocked,
@@ -260,7 +260,7 @@ export function calculateMilestones(
     oldestDate && getDaysDifference(oldestDate, today) >= 30;
   milestones.push({
     id: "trend_setter",
-    icon: "📈",
+    icon: "TrendingUp",
     title: "Trend Setter",
     description: "Using the app for 30+ days",
     unlocked: !!thirtyPlusDays,
@@ -270,7 +270,7 @@ export function calculateMilestones(
   const hasGeneratedDoctorReport = (userProfile as any).hasGeneratedDoctorReport ?? false;
   milestones.push({
     id: "health_advocate",
-    icon: "👨‍⚕️",
+    icon: "Stethoscope",
     title: "Health Advocate",
     description: "Generated a doctor report",
     unlocked: hasGeneratedDoctorReport,

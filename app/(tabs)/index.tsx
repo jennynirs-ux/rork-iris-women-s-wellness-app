@@ -38,6 +38,7 @@ import {
   Send,
   ThumbsUp,
   Flag,
+  Flame,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import CircularProgress from "@/components/CircularProgress";
@@ -817,9 +818,12 @@ export default function HomeScreen() {
 
       {streakData && streakData.scanStreak > 0 && (
         <View style={styles.streakCard}>
-          <Text style={styles.streakText}>
-            🔥 {streakData.scanStreak}-day scan streak!
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Flame size={18} color="#FF6B6B" />
+            <Text style={styles.streakText}>
+              {streakData.scanStreak}-day scan streak!
+            </Text>
+          </View>
         </View>
       )}
 

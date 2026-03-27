@@ -184,7 +184,7 @@ const generateCheckInInsights = (
     });
   }
 
-  if (todayCheckIn.mood < 4 && latestScan.emotionalMentalState.moodVolatilityRisk > 6 && currentPhase === 'luteal') {
+  if (todayCheckIn.mood < 4 && latestScan.emotionalMentalState?.moodVolatilityRisk > 6 && currentPhase === 'luteal') {
     insights.push({
       icon: Heart,
       color: "#F4B896",
@@ -607,18 +607,18 @@ export default function InsightsScreen() {
         hydration: acc.hydration + scan.hydrationLevel,
         inflammation: acc.inflammation + scan.inflammation,
         fatigue: acc.fatigue + scan.fatigueLevel,
-        cognitiveSharpness: acc.cognitiveSharpness + scan.emotionalMentalState.cognitiveSharpness,
-        emotionalSensitivity: acc.emotionalSensitivity + scan.emotionalMentalState.emotionalSensitivity,
-        socialEnergy: acc.socialEnergy + scan.emotionalMentalState.socialEnergy,
-        moodVolatility: acc.moodVolatility + scan.emotionalMentalState.moodVolatilityRisk,
-        pupilDiameter: acc.pupilDiameter + scan.rawOpticalSignals.pupilDiameter,
-        pupilSymmetry: acc.pupilSymmetry + scan.rawOpticalSignals.pupilSymmetry,
-        dehydrationTendency: acc.dehydrationTendency + scan.physiologicalStates.dehydrationTendency,
-        inflammatoryStress: acc.inflammatoryStress + scan.physiologicalStates.inflammatoryStress,
-        scleraYellowness: acc.scleraYellowness + (1 - (scan.rawOpticalSignals.scleraBrightness / 255)),
-        underEyeDarkness: acc.underEyeDarkness + scan.physiologicalStates.sleepDebtLikelihood,
-        eyeOpenness: acc.eyeOpenness + scan.physiologicalStates.calmVsAlert,
-        tearFilmQuality: acc.tearFilmQuality + scan.rawOpticalSignals.tearFilmReflectivity,
+        cognitiveSharpness: acc.cognitiveSharpness + (scan.emotionalMentalState?.cognitiveSharpness ?? 0),
+        emotionalSensitivity: acc.emotionalSensitivity + (scan.emotionalMentalState?.emotionalSensitivity ?? 0),
+        socialEnergy: acc.socialEnergy + (scan.emotionalMentalState?.socialEnergy ?? 0),
+        moodVolatility: acc.moodVolatility + (scan.emotionalMentalState?.moodVolatilityRisk ?? 0),
+        pupilDiameter: acc.pupilDiameter + (scan.rawOpticalSignals?.pupilDiameter ?? 0),
+        pupilSymmetry: acc.pupilSymmetry + (scan.rawOpticalSignals?.pupilSymmetry ?? 0),
+        dehydrationTendency: acc.dehydrationTendency + (scan.physiologicalStates?.dehydrationTendency ?? 0),
+        inflammatoryStress: acc.inflammatoryStress + (scan.physiologicalStates?.inflammatoryStress ?? 0),
+        scleraYellowness: acc.scleraYellowness + (1 - ((scan.rawOpticalSignals?.scleraBrightness ?? 127) / 255)),
+        underEyeDarkness: acc.underEyeDarkness + (scan.physiologicalStates?.sleepDebtLikelihood ?? 0),
+        eyeOpenness: acc.eyeOpenness + (scan.physiologicalStates?.calmVsAlert ?? 0),
+        tearFilmQuality: acc.tearFilmQuality + (scan.rawOpticalSignals?.tearFilmReflectivity ?? 0),
       }),
       { stress: 0, energy: 0, recovery: 0, hydration: 0, inflammation: 0, fatigue: 0, cognitiveSharpness: 0, emotionalSensitivity: 0, socialEnergy: 0, moodVolatility: 0, pupilDiameter: 0, pupilSymmetry: 0, dehydrationTendency: 0, inflammatoryStress: 0, scleraYellowness: 0, underEyeDarkness: 0, eyeOpenness: 0, tearFilmQuality: 0 }
     );
