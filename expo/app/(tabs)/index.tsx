@@ -53,12 +53,19 @@ import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
 
-const PHASE_INFO = {
-  menstrual: { color: "#E89BA4", icon: Moon },
-  follicular: { color: "#8BC9A3", icon: Sprout },
-  ovulation: { color: "#F4C896", icon: Sparkles },
-  luteal: { color: "#B8A4E8", icon: Flower2 },
+const PHASE_ICONS = {
+  menstrual: Moon,
+  follicular: Sprout,
+  ovulation: Sparkles,
+  luteal: Flower2,
 };
+
+const getPhaseColors = (colors: typeof Colors.light) => ({
+  menstrual: colors.phaseMenstrual,
+  follicular: colors.phaseFollicular,
+  ovulation: colors.phaseOvulation,
+  luteal: colors.phaseLuteal,
+});
 
 const HABIT_ICONS = {
   hydration: Droplets,
@@ -71,16 +78,16 @@ const HABIT_ICONS = {
   pelvicfloor: Activity,
 };
 
-const HABIT_COLORS = {
-  hydration: "#A4C8E8",
-  movement: "#F4A896",
-  nutrition: "#8BC9A3",
-  recovery: "#B8A4E8",
-  skincare: "#F4C8D4",
-  mindfulness: "#96E8D4",
-  selfcheck: "#E89BA4",
-  pelvicfloor: "#F4C896",
-};
+const getHabitColors = (colors: typeof Colors.light) => ({
+  hydration: colors.habitHydration,
+  movement: colors.habitMovement,
+  nutrition: colors.habitNutrition,
+  recovery: colors.habitRecovery,
+  skincare: colors.habitSkincare,
+  mindfulness: colors.habitMindfulness,
+  selfcheck: colors.phaseMenstrual,
+  pelvicfloor: colors.phaseOvulation,
+});
 
 const COMMUNITY_CATEGORY_ICONS = {
   nutrition: Apple,
@@ -90,13 +97,13 @@ const COMMUNITY_CATEGORY_ICONS = {
   sleep: Moon,
 };
 
-const COMMUNITY_CATEGORY_COLORS = {
-  nutrition: "#8BC9A3",
-  exercise: "#F4A896",
-  selfcare: "#F4C8D4",
-  mindfulness: "#96E8D4",
-  sleep: "#B8A4E8",
-};
+const getCommunityColors = (colors: typeof Colors.light) => ({
+  nutrition: colors.phaseFollicular,
+  exercise: colors.habitMovement,
+  selfcare: colors.habitSkincare,
+  mindfulness: colors.habitNutrition,
+  sleep: colors.phaseLuteal,
+});
 
 interface CommunityTip {
   id: string;
@@ -117,7 +124,7 @@ interface HabitCardProps {
 
 const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps) => {
   const IconComponent = HABIT_ICONS[habit.category];
-  const habitColor = HABIT_COLORS[habit.category];
+  const habitColor = getHabitColors(colors)[habit.category];
 
   return (
     <TouchableOpacity
@@ -202,7 +209,7 @@ interface CommunityTipCardProps {
 
 const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, isLiked }: CommunityTipCardProps) => {
   const IconComponent = COMMUNITY_CATEGORY_ICONS[tip.category];
-  const categoryColor = COMMUNITY_CATEGORY_COLORS[tip.category];
+  const categoryColor = getCommunityColors(colors)[tip.category];
 
   return (
     <View style={[styles.communityTipCard, { borderLeftColor: categoryColor }]}>
@@ -685,9 +692,11 @@ export default function HomeScreen() {
     if (override === 'menopause') {
       return { color: enrichedPhaseInfo.phaseColor, icon: Sparkles, label: enrichedPhaseInfo.phaseName };
     }
-    const info = PHASE_INFO[enrichedPhaseInfo.phase];
-    return { color: info.color, icon: info.icon, label: enrichedPhaseInfo.phaseName };
-  }, [enrichedPhaseInfo]);
+    const phaseColors = getPhaseColors(colors);
+    const phaseColor = phaseColors[enrichedPhaseInfo.phase];
+    const phaseIcon = PHASE_ICONS[enrichedPhaseInfo.phase];
+    return { color: phaseColor, icon: phaseIcon, label: enrichedPhaseInfo.phaseName };
+  }, [enrichedPhaseInfo, colors]);
 
   const handleHabitPress = useCallback((habitId: string, completed: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -819,7 +828,7 @@ export default function HomeScreen() {
       {streakData && streakData.scanStreak > 0 && (
         <View style={styles.streakCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Flame size={18} color="#FF6B6B" />
+            <Flame size={18} color={colors.statusAttention} />
             <Text style={styles.streakText}>
               {streakData.scanStreak}-day scan streak!
             </Text>
@@ -832,12 +841,12 @@ export default function HomeScreen() {
           <View style={styles.suggestionIconRow}>
             <View style={[
               styles.suggestionIcon,
-              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? '#F4C8D420' : '#B8A4E820' },
+              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? colors.phaseMenstrual + '20' : colors.phaseLuteal + '20' },
             ]}>
               {lifeStageSuggestion.type === 'pregnancy' ? (
-                <Baby size={22} color="#E89BA4" />
+                <Baby size={22} color={colors.phaseMenstrual} />
               ) : (
-                <Thermometer size={22} color="#B8A4E8" />
+                <Thermometer size={22} color={colors.phaseLuteal} />
               )}
             </View>
             <TouchableOpacity
@@ -857,7 +866,7 @@ export default function HomeScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
-            <ArrowRight size={14} color="#FFFFFF" />
+            <ArrowRight size={14} color={colors.card} />
           </TouchableOpacity>
         </View>
       )}
@@ -881,7 +890,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.ritualButton}>
             <Text style={styles.ritualButtonText}>Start</Text>
-            <ArrowRight size={16} color="#FFFFFF" />
+            <ArrowRight size={16} color={colors.card} />
           </View>
         </TouchableOpacity>
       )}
@@ -939,7 +948,7 @@ export default function HomeScreen() {
                 accessibilityLabel="Share a tip"
                 accessibilityRole="button"
               >
-                <Send size={16} color="#FFFFFF" />
+                <Send size={16} color={colors.card} />
                 <Text style={styles.communityShareButtonText}>Share a tip</Text>
               </TouchableOpacity>
             </View>
@@ -1082,7 +1091,7 @@ export default function HomeScreen() {
                       <Text
                         style={[
                           styles.categoryButtonText,
-                          communityTipCategory === cat && { color: "#FFFFFF" },
+                          communityTipCategory === cat && { color: colors.card },
                         ]}
                       >
                         {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -1243,7 +1252,7 @@ function createStyles(colors: typeof Colors.light) {
       marginTop: 16,
       marginBottom: 4,
       borderLeftWidth: 4,
-      borderLeftColor: "#FF6B6B",
+      borderLeftColor: colors.statusAttention,
     },
     streakText: {
       fontSize: 16,
@@ -1390,7 +1399,7 @@ function createStyles(colors: typeof Colors.light) {
       alignSelf: "flex-start" as const,
     },
     suggestionButtonText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1401,7 +1410,7 @@ function createStyles(colors: typeof Colors.light) {
       alignItems: "center" as const,
     },
     saveButtonText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 16,
       fontWeight: "600" as const,
     },
@@ -1455,7 +1464,7 @@ function createStyles(colors: typeof Colors.light) {
       gap: 4,
     },
     ritualButtonText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1593,7 +1602,7 @@ function createStyles(colors: typeof Colors.light) {
       marginBottom: 8,
     },
     communityShareButtonText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1655,7 +1664,7 @@ function createStyles(colors: typeof Colors.light) {
       opacity: 0.5,
     },
     submitTipButtonText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 16,
       fontWeight: "600" as const,
     },

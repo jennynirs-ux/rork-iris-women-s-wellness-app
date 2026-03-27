@@ -35,6 +35,27 @@ const Colors = {
     recoveryMedium: "#8BC9A3",
     recoveryLow: "#8BC9A3",
     recoveryFill: "#EBF3EA",
+
+    phaseMenstrual: "#E89BA4",
+    phaseFollicular: "#8BC9A3",
+    phaseOvulation: "#F4C896",
+    phaseLuteal: "#B8A4E8",
+
+    habitHydration: "#A4C8E8",
+    habitMovement: "#F4A896",
+    habitNutrition: "#96E8D4",
+    habitRecovery: "#D4B4F4",
+    habitSkincare: "#F4D4A4",
+    habitMindfulness: "#A4E8F4",
+
+    statusGood: "#10B981",
+    statusModerate: "#F59E0B",
+    statusAttention: "#EF4444",
+    statusGoodBg: "#ECFDF5",
+    statusModerateBg: "#FFFBEB",
+    statusAttentionBg: "#FEF2F2",
+
+    chartLine: "#E89BA4",
   },
   dark: {
     primary: "#C4B2F0",
@@ -72,6 +93,27 @@ const Colors = {
     recoveryMedium: "#6DAF88",
     recoveryLow: "#6DAF88",
     recoveryFill: "#1A2E22",
+
+    phaseMenstrual: "#C47A83",
+    phaseFollicular: "#6BA883",
+    phaseOvulation: "#D4A876",
+    phaseLuteal: "#9884C8",
+
+    habitHydration: "#84A8C8",
+    habitMovement: "#D48876",
+    habitNutrition: "#76C8B4",
+    habitRecovery: "#B494D4",
+    habitSkincare: "#D4B484",
+    habitMindfulness: "#84C8D4",
+
+    statusGood: "#34D399",
+    statusModerate: "#FBBF24",
+    statusAttention: "#F87171",
+    statusGoodBg: "#064E3B",
+    statusModerateBg: "#78350F",
+    statusAttentionBg: "#7F1D1D",
+
+    chartLine: "#C47A83",
   },
 };
 

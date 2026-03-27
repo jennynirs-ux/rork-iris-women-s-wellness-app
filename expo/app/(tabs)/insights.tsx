@@ -17,15 +17,21 @@ type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation
   'dehydrationTendency' | 'inflammatoryStress' | 'pupilSize' | 'symmetry' |
   'scleraYellowness' | 'underEyeDarkness' | 'eyeOpenness' | 'tearFilmQuality';
 
-const getMetricStatus = (value: number, higherIsBetter: boolean, t: any): { label: string; color: string; bgColor: string } => {
+const getMetricStatus = (value: number, higherIsBetter: boolean, t: any, themeColors?: typeof Colors.light): { label: string; color: string; bgColor: string } => {
+  const good = themeColors?.statusGood ?? '#10B981';
+  const goodBg = themeColors?.statusGoodBg ?? '#ECFDF5';
+  const moderate = themeColors?.statusModerate ?? '#F59E0B';
+  const moderateBg = themeColors?.statusModerateBg ?? '#FFFBEB';
+  const attention = themeColors?.statusAttention ?? '#EF4444';
+  const attentionBg = themeColors?.statusAttentionBg ?? '#FEF2F2';
   if (higherIsBetter) {
-    if (value >= 7) return { label: t.insights.statusGood, color: '#10B981', bgColor: '#D1FAE5' };
-    if (value >= 4) return { label: t.insights.statusModerate, color: '#F59E0B', bgColor: '#FEF3C7' };
-    return { label: t.insights.statusAttention, color: '#EF4444', bgColor: '#FEE2E2' };
+    if (value >= 7) return { label: t.insights.statusGood, color: good, bgColor: goodBg };
+    if (value >= 4) return { label: t.insights.statusModerate, color: moderate, bgColor: moderateBg };
+    return { label: t.insights.statusAttention, color: attention, bgColor: attentionBg };
   } else {
-    if (value <= 3.9) return { label: t.insights.statusGood, color: '#10B981', bgColor: '#D1FAE5' };
-    if (value <= 6.9) return { label: t.insights.statusModerate, color: '#F59E0B', bgColor: '#FEF3C7' };
-    return { label: t.insights.statusAttention, color: '#EF4444', bgColor: '#FEE2E2' };
+    if (value <= 3.9) return { label: t.insights.statusGood, color: good, bgColor: goodBg };
+    if (value <= 6.9) return { label: t.insights.statusModerate, color: moderate, bgColor: moderateBg };
+    return { label: t.insights.statusAttention, color: attention, bgColor: attentionBg };
   }
 };
 
@@ -243,7 +249,7 @@ const calculateVasomotorMetrics = (checkIns: DailyCheckIn[], t: any) => {
 
 
 
-const getPhaseGuidance = (phase: CyclePhase, t: any) => {
+const getPhaseGuidance = (phase: CyclePhase, t: any, themeColors?: typeof Colors.light) => {
   switch (phase) {
     case "menstrual":
       return {
@@ -262,7 +268,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.menstrualImprove5
         ],
         icon: Moon,
-        color: "#E89BA4"
+        color: themeColors?.phaseMenstrual ?? "#E89BA4"
       };
     case "follicular":
       return {
@@ -281,7 +287,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.follicularImprove5
         ],
         icon: Sprout,
-        color: "#8BC9A3"
+        color: themeColors?.phaseFollicular ?? "#8BC9A3"
       };
     case "ovulation":
       return {
@@ -300,7 +306,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.ovulationImprove5
         ],
         icon: Sparkles,
-        color: "#F4C896"
+        color: themeColors?.phaseOvulation ?? "#F4C896"
       };
     case "luteal":
       return {
@@ -321,7 +327,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.lutealImprove6
         ],
         icon: Flower2,
-        color: "#B8A4E8"
+        color: themeColors?.phaseLuteal ?? "#B8A4E8"
       };
   }
 };
@@ -474,11 +480,11 @@ export default function InsightsScreen() {
   const phaseGuidance = useMemo(() => {
     if (lifeStageOverride) {
       const lsGuidance = getLifeStageGuidance(lifeStageOverride, userProfile.weeksPregnant || 0, t);
-      return lsGuidance || { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: '#E89BA4', phaseName: '' };
+      return lsGuidance || { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: colors.phaseMenstrual, phaseName: '' };
     }
-    const guidance = getPhaseGuidance(currentPhase, t);
-    return guidance ? { ...guidance, phaseName: t.phases[currentPhase] } : { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: '#E89BA4', phaseName: '' };
-  }, [currentPhase, t, lifeStageOverride, userProfile.weeksPregnant]);
+    const guidance = getPhaseGuidance(currentPhase, t, colors);
+    return guidance ? { ...guidance, phaseName: t.phases[currentPhase] } : { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: colors.phaseMenstrual, phaseName: '' };
+  }, [currentPhase, t, lifeStageOverride, userProfile.weeksPregnant, colors]);
   const markerInfo = selectedMarker ? getMarkerTranslation(selectedMarker, language, currentPhase, todayCheckIn, latestScan) : null;
 
   const checkInInsights = useMemo(() => {
@@ -1161,8 +1167,8 @@ export default function InsightsScreen() {
                 <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
                 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#A4C8E8" + "20" }]}>
-                    <Droplets size={20} color="#A4C8E8" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitHydration + "20" }]}>
+                    <Droplets size={20} color={colors.habitHydration} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1177,21 +1183,21 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.hydrationLevel || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.hydration}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.hydrationLevel || 0, true, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.hydrationLevel || 0, true, t).color }]}>
-                          {getMetricStatus(latestScan?.hydrationLevel || 0, true, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.hydrationLevel || 0) / 10) * 100}%`, backgroundColor: "#A4C8E8" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.hydrationLevel || 0) / 10) * 100}%`, backgroundColor: colors.habitHydration }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#E89BA4" + "20" }]}>
-                    <AlertCircle size={20} color="#E89BA4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.phaseMenstrual + "20" }]}>
+                    <AlertCircle size={20} color={colors.phaseMenstrual} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1206,15 +1212,15 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.inflammation || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammation}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.inflammation || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.inflammation || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.inflammation || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.inflammation || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.inflammation || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.inflammation || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.inflammation || 0) / 10) * 100}%`, backgroundColor: "#E89BA4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.inflammation || 0) / 10) * 100}%`, backgroundColor: colors.phaseMenstrual }]} />
                   </View>
                 </View>
 
@@ -1235,9 +1241,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.fatigueLevel || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.fatigue}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.fatigueLevel || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.fatigueLevel || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.fatigueLevel || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1269,9 +1275,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.cognitiveSharpness.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.cognitiveSharpness}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1298,9 +1304,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.emotionalSensitivity.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.emotionalSensitivity}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1327,9 +1333,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.socialEnergy.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.socialEnergy}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1356,9 +1362,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.moodVolatilityRisk.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.moodVolatility}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1390,9 +1396,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.dehydrationTendency.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.dehydrationTendency}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
@@ -1419,9 +1425,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.inflammatoryStress.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammatoryStress}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).label}
                         </Text>
                       </View>
                     </View>
