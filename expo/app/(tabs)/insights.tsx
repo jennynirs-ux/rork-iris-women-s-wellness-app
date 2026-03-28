@@ -3,6 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable,
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
 import Colors from "@/constants/colors";
+
+// Convert hex color to react-native-chart-kit callback format
+function hexToChartColor(hex: string): (opacity: number) => string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (opacity = 1) => `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import CircularProgress from "@/components/CircularProgress";
@@ -659,34 +667,36 @@ export default function InsightsScreen() {
   }, [scans, trendTimeRange]);
 
   const screenWidth = Dimensions.get('window').width;
-  const chartWidth = screenWidth - 32; // padding
+  const chartWidth = screenWidth - 64; // padding + card margins
+  const labelInterval = trendTimeRange <= 7 ? 1 : trendTimeRange <= 30 ? 5 : 15;
 
   const physicalChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.stress),
-          color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, // red for stress
+          color: hexToChartColor(colors.stressHigh),
           strokeWidth: 2,
-          label: 'Stress'
+          label: t.home?.stress || 'Stress'
         },
         {
           data: trendData.map(d => d.energy),
-          color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`, // green for energy
+          color: hexToChartColor(colors.energyHigh),
           strokeWidth: 2,
-          label: 'Energy'
+          label: t.home?.energy || 'Energy'
         },
         {
           data: trendData.map(d => d.recovery),
-          color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // blue for recovery
+          color: hexToChartColor(colors.recoveryHigh),
           strokeWidth: 2,
-          label: 'Recovery'
+          label: t.home?.recovery || 'Recovery'
         }
       ]
     };
@@ -696,45 +706,47 @@ export default function InsightsScreen() {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.hydration),
-          color: (opacity = 1) => `rgba(164, 200, 232, ${opacity})`, // light blue for hydration
+          color: hexToChartColor(colors.habitHydration),
           strokeWidth: 2,
-          label: 'Hydration'
+          label: t.home?.hydration || 'Hydration'
         },
         {
           data: trendData.map(d => d.inflammation),
-          color: (opacity = 1) => `rgba(232, 155, 164, ${opacity})`, // pink for inflammation
+          color: hexToChartColor(colors.phaseMenstrual),
           strokeWidth: 2,
-          label: 'Inflammation'
+          label: t.insights?.inflammation || 'Inflammation'
         }
       ]
     };
-  }, [trendData]);
+  }, [trendData, colors, labelInterval, t]);
 
   const fatigueChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.fatigue),
-          color: (opacity = 1) => `rgba(244, 200, 150, ${opacity})`, // orange for fatigue
+          color: hexToChartColor(colors.phaseOvulation),
           strokeWidth: 2,
-          label: 'Fatigue'
+          label: t.insights?.fatigue || t.insights?.chartFatigue || 'Fatigue'
         }
       ]
     };
-  }, [trendData]);
+  }, [trendData, colors, labelInterval, t]);
 
   if (scans.length === 0) {
     return (
@@ -1084,16 +1096,16 @@ export default function InsightsScreen() {
                 />
                 <View style={styles.chartLegend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
-                    <Text style={styles.legendLabel}>Stress</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.stressHigh }]} />
+                    <Text style={styles.legendLabel}>{t.home?.stress || 'Stress'}</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
-                    <Text style={styles.legendLabel}>Energy</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.energyHigh }]} />
+                    <Text style={styles.legendLabel}>{t.home?.energy || 'Energy'}</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
-                    <Text style={styles.legendLabel}>Recovery</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.recoveryHigh }]} />
+                    <Text style={styles.legendLabel}>{t.home?.recovery || 'Recovery'}</Text>
                   </View>
                 </View>
               </View>
@@ -1125,12 +1137,12 @@ export default function InsightsScreen() {
                 />
                 <View style={styles.chartLegend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#A4C8E8' }]} />
-                    <Text style={styles.legendLabel}>Hydration</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.habitHydration }]} />
+                    <Text style={styles.legendLabel}>{t.home?.hydration || 'Hydration'}</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#E89BA4' }]} />
-                    <Text style={styles.legendLabel}>Inflammation</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.phaseMenstrual }]} />
+                    <Text style={styles.legendLabel}>{t.insights?.inflammation || 'Inflammation'}</Text>
                   </View>
                 </View>
               </View>
@@ -1162,8 +1174,8 @@ export default function InsightsScreen() {
                 />
                 <View style={styles.chartLegend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#F4C896' }]} />
-                    <Text style={styles.legendLabel}>Fatigue</Text>
+                    <View style={[styles.legendDot, { backgroundColor: colors.phaseOvulation }]} />
+                    <Text style={styles.legendLabel}>{t.insights?.fatigue || 'Fatigue'}</Text>
                   </View>
                 </View>
               </View>
