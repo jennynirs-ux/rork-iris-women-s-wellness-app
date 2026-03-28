@@ -32,6 +32,7 @@ import {
   Clock,
   Edit3,
   RotateCcw,
+  ClipboardCheck,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -239,6 +240,11 @@ export default function CalendarScreen() {
     return getLocalDateString(due);
   }, [isPregnancy, userProfile.pregnancyDueDate]);
 
+  const isCurrentMonth = useMemo(() => {
+    const now = new Date();
+    return selectedMonth.getMonth() === now.getMonth() && selectedMonth.getFullYear() === now.getFullYear();
+  }, [selectedMonth]);
+
   const goToPreviousMonth = () => {
     setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1));
   };
@@ -246,6 +252,12 @@ export default function CalendarScreen() {
   const goToNextMonth = () => {
     setSelectedMonth(new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 1));
   };
+
+  const goToToday = useCallback(() => {
+    const now = new Date();
+    setSelectedMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDate(null);
+  }, []);
 
   const calendarDays = useMemo(() => {
     const year = selectedMonth.getFullYear();
@@ -795,6 +807,24 @@ export default function CalendarScreen() {
                     <Text style={styles.noDataText}>{t.programs.noDataForDay}</Text>
                   </View>
                 )}
+
+                {(() => {
+                  const todayStr = getLocalDateString(new Date());
+                  const isSelectedToday = dateStr === todayStr;
+                  if (isSelectedToday && !checkIn) {
+                    return (
+                      <TouchableOpacity
+                        style={styles.checkInCta}
+                        onPress={() => router.push('/check-in' as any)}
+                        activeOpacity={0.8}
+                      >
+                        <ClipboardCheck size={20} color="#fff" />
+                        <Text style={styles.checkInCtaText}>{t.programs.completeTodaysCheckIn}</Text>
+                      </TouchableOpacity>
+                    );
+                  }
+                  return null;
+                })()}
               </View>
             );
           })()}
@@ -888,6 +918,17 @@ export default function CalendarScreen() {
             </View>
           </View>
         </ScrollView>
+
+        {!isCurrentMonth && (
+          <TouchableOpacity
+            style={styles.todayPill}
+            onPress={goToToday}
+            activeOpacity={0.85}
+          >
+            <Calendar size={14} color="#fff" />
+            <Text style={styles.todayPillText}>{t.programs.todayButton}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -1494,5 +1535,42 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 10,
     fontWeight: "600" as const,
     textAlign: "center" as const,
+  },
+  todayPill: {
+    position: "absolute" as const,
+    bottom: 80,
+    alignSelf: "center" as const,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  todayPillText: {
+    fontSize: 14,
+    fontWeight: "600" as const,
+    color: "#fff",
+  },
+  checkInCta: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginTop: 16,
+  },
+  checkInCtaText: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    color: "#fff",
   },
 }); }

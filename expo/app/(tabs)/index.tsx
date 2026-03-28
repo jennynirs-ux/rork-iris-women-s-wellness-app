@@ -245,7 +245,7 @@ const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, is
 
 CommunityTipCard.displayName = 'CommunityTipCard';
 
-function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light }) {
+function WebDatePicker({ date, onChange, colors, t }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light; t: any }) {
   const monthRef = useRef<TextInput>(null);
   const dayRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
@@ -345,7 +345,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
   return (
     <View style={wdpStyles.container}>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>Month</Text>
+        <Text style={wdpStyles.label}>{t.home.month}</Text>
         <TextInput
           ref={monthRef}
           style={wdpStyles.input}
@@ -361,7 +361,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
         <Text style={wdpStyles.separator}>/</Text>
       </View>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>Day</Text>
+        <Text style={wdpStyles.label}>{t.home.day}</Text>
         <TextInput
           ref={dayRef}
           style={wdpStyles.input}
@@ -377,7 +377,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
         <Text style={wdpStyles.separator}>/</Text>
       </View>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>Year</Text>
+        <Text style={wdpStyles.label}>{t.home.year}</Text>
         <TextInput
           ref={yearRef}
           style={[wdpStyles.input, wdpStyles.yearInput]}
@@ -762,6 +762,65 @@ export default function HomeScreen() {
     return { completed, total };
   }, [todayHabits]);
 
+  const weeklyDigest = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+
+    const recentScans = scans.filter(s => s.date >= sevenDaysAgoStr);
+    const scanCount = recentScans.length;
+    if (scanCount < 2) return null;
+
+    const recentCheckIns = checkIns.filter(c => c.date >= sevenDaysAgoStr);
+    const checkInCount = recentCheckIns.length;
+
+    const avgEnergy = recentScans.reduce((sum, s) => sum + (s.energyScore ?? 5), 0) / scanCount;
+    const avgStress = recentScans.reduce((sum, s) => sum + (s.stressScore ?? 5), 0) / scanCount;
+    const avgRecovery = recentScans.reduce((sum, s) => sum + (s.recoveryScore ?? 5), 0) / scanCount;
+
+    // Determine trend by comparing first-half vs second-half averages
+    const midpoint = Math.floor(scanCount / 2);
+    const firstHalf = recentScans.slice(0, midpoint);
+    const secondHalf = recentScans.slice(midpoint);
+
+    const avgFirst = firstHalf.length > 0
+      ? (firstHalf.reduce((s, sc) => s + (sc.energyScore ?? 5) + (sc.recoveryScore ?? 5) - (sc.stressScore ?? 5), 0) / firstHalf.length)
+      : 0;
+    const avgSecond = secondHalf.length > 0
+      ? (secondHalf.reduce((s, sc) => s + (sc.energyScore ?? 5) + (sc.recoveryScore ?? 5) - (sc.stressScore ?? 5), 0) / secondHalf.length)
+      : 0;
+
+    const diff = avgSecond - avgFirst;
+    let trend: 'improving' | 'stable' | 'declining' = 'stable';
+    if (diff > 1) trend = 'improving';
+    else if (diff < -1) trend = 'declining';
+
+    // Find best improving metric
+    const firstEnergy = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.energyScore ?? 5), 0) / firstHalf.length : avgEnergy;
+    const secondEnergy = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.energyScore ?? 5), 0) / secondHalf.length : avgEnergy;
+    const firstStress = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.stressScore ?? 5), 0) / firstHalf.length : avgStress;
+    const secondStress = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.stressScore ?? 5), 0) / secondHalf.length : avgStress;
+    const firstRecovery = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.recoveryScore ?? 5), 0) / firstHalf.length : avgRecovery;
+    const secondRecovery = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.recoveryScore ?? 5), 0) / secondHalf.length : avgRecovery;
+
+    const improvements = [
+      { metric: 'energy', delta: secondEnergy - firstEnergy },
+      { metric: 'stress', delta: firstStress - secondStress }, // lower stress is better
+      { metric: 'recovery', delta: secondRecovery - firstRecovery },
+    ];
+    const bestMetric = improvements.reduce((best, curr) => curr.delta > best.delta ? curr : best, improvements[0]);
+
+    return {
+      avgEnergy: Math.round(avgEnergy * 10) / 10,
+      avgStress: Math.round(avgStress * 10) / 10,
+      avgRecovery: Math.round(avgRecovery * 10) / 10,
+      scanCount,
+      checkInCount,
+      bestMetric: bestMetric.metric,
+      trend,
+    };
+  }, [scans, checkIns]);
+
   const renderHeaderComponent = useCallback(() => (
     <View>
       {/* FIX 2: Personalized Greeting */}
@@ -865,12 +924,12 @@ export default function HomeScreen() {
             <Text style={styles.phaseName}>{lifeStagePhase.label}</Text>
             {phaseEstimate.confidence === 'low' && (
               <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
-                Estimated — log more data for accuracy
+                {t.home.estimatedLowConfidence}
               </Text>
             )}
             {phaseEstimate.confidence === 'medium' && (
               <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
-                Approximate — based on limited data
+                {t.home.approximateMediumConfidence}
               </Text>
             )}
           </View>
@@ -942,7 +1001,7 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Flame size={18} color="#FF6B6B" />
             <Text style={styles.streakText}>
-              {streakData.scanStreak}-day scan streak!
+              {streakData.scanStreak}-day {t.home.scanStreak}
             </Text>
           </View>
         </View>
@@ -977,7 +1036,7 @@ export default function HomeScreen() {
             accessibilityLabel="Update life stage"
             accessibilityRole="button"
           >
-            <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
+            <Text style={styles.suggestionButtonText}>{t.home.updateLifeStage}</Text>
             <ArrowRight size={14} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -1001,15 +1060,58 @@ export default function HomeScreen() {
             <Text style={styles.ritualSubtext}>{t.home.startYourDay}</Text>
           </View>
           <View style={styles.ritualButton}>
-            <Text style={styles.ritualButtonText}>Start</Text>
+            <Text style={styles.ritualButtonText}>{t.home.start}</Text>
             <ArrowRight size={16} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
       )}
 
+      {weeklyDigest && (
+        <View style={styles.weeklyDigestCard}>
+          <Text style={styles.weeklyDigestTitle}>
+            {t.home?.weekInReview || 'Your Week in Review'}
+          </Text>
+          <Text style={styles.weeklyDigestSubtitle}>
+            {(t.home?.weekScansCheckIns || '{scans} scans, {checkIns} check-ins this week')
+              .replace('{scans}', String(weeklyDigest.scanCount))
+              .replace('{checkIns}', String(weeklyDigest.checkInCount))}
+          </Text>
+          <View style={styles.weeklyDigestMetrics}>
+            <View style={styles.weeklyDigestMetricRow}>
+              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.energy || 'Energy'}</Text>
+              <View style={styles.weeklyDigestBarTrack}>
+                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgEnergy / 10) * 100}%`, backgroundColor: '#8BC9A3' }]} />
+              </View>
+              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgEnergy}</Text>
+            </View>
+            <View style={styles.weeklyDigestMetricRow}>
+              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.stress || 'Stress'}</Text>
+              <View style={styles.weeklyDigestBarTrack}>
+                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgStress / 10) * 100}%`, backgroundColor: '#E89BA4' }]} />
+              </View>
+              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgStress}</Text>
+            </View>
+            <View style={styles.weeklyDigestMetricRow}>
+              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.recovery || 'Recovery'}</Text>
+              <View style={styles.weeklyDigestBarTrack}>
+                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgRecovery / 10) * 100}%`, backgroundColor: '#B8A4E8' }]} />
+              </View>
+              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgRecovery}</Text>
+            </View>
+          </View>
+          <Text style={styles.weeklyDigestSummary}>
+            {weeklyDigest.trend === 'improving'
+              ? (t.home?.weekImproved || 'Your {metric} improved this week').replace('{metric}', weeklyDigest.bestMetric)
+              : weeklyDigest.trend === 'declining'
+                ? (t.home?.weekDeclining || 'Some scores dipped \u2014 be extra gentle with yourself')
+                : (t.home?.weekSteady || 'Steady week \u2014 keep it up!')}
+          </Text>
+        </View>
+      )}
+
       {coachingTips.length > 0 && (
         <View style={styles.coachingTipsSection}>
-          <Text style={styles.sectionTitle}>Daily Tips</Text>
+          <Text style={styles.sectionTitle}>{t.home.dailyTips}</Text>
           {coachingTips.map((tip) => (
             <CoachingTipCard
               key={tip.id}
@@ -1031,7 +1133,7 @@ export default function HomeScreen() {
             accessibilityLabel="Toggle community feed"
             accessibilityRole="button"
           >
-            <Text style={styles.sectionTitle}>From the Community</Text>
+            <Text style={styles.sectionTitle}>{t.home.fromCommunity}</Text>
             {communityCollapsed ? (
               <ChevronDown size={20} color={colors.text} />
             ) : (
@@ -1061,7 +1163,7 @@ export default function HomeScreen() {
                 accessibilityRole="button"
               >
                 <Send size={16} color="#FFFFFF" />
-                <Text style={styles.communityShareButtonText}>Share a tip</Text>
+                <Text style={styles.communityShareButtonText}>{t.home.shareTip}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1072,7 +1174,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, greeting, enrichedPhaseInfo, isNewUser, progressScanDone, progressCheckInDone, habitsProgress, todayStr]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, greeting, enrichedPhaseInfo, isNewUser, progressScanDone, progressCheckInDone, habitsProgress, todayStr, weeklyDigest]);
 
   if (isLoading) {
     return (
@@ -1126,12 +1228,12 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
               <Text style={styles.modalDescription}>
-                Select the first day of your last period to adjust your cycle tracking. Day {enrichedPhaseInfo.cycleDay} of {enrichedPhaseInfo.totalCycleDays} — {enrichedPhaseInfo.phaseName}
+                {t.home.selectPeriodDescription} Day {enrichedPhaseInfo.cycleDay} / {enrichedPhaseInfo.totalCycleDays} — {enrichedPhaseInfo.phaseName}
               </Text>
 
               <View style={styles.datePickerContainer}>
                 {Platform.OS === "web" ? (
-                  <WebDatePicker date={tempDate} onChange={setTempDate} colors={colors} />
+                  <WebDatePicker date={tempDate} onChange={setTempDate} colors={colors} t={t} />
                 ) : (
                   <DateTimePicker
                     value={tempDate}
@@ -1172,7 +1274,7 @@ export default function HomeScreen() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Share a Tip</Text>
+                <Text style={styles.modalTitle}>{t.home.shareTipTitle}</Text>
                 <TouchableOpacity
                   onPress={() => setShowCommunityModal(false)}
                   accessibilityLabel="Close"
@@ -1183,11 +1285,11 @@ export default function HomeScreen() {
               </View>
 
               <Text style={styles.modalDescription}>
-                Share a helpful tip with others in your {currentPhase} phase. Keep it 10-280 characters.
+                {t.home.shareTipDescription}
               </Text>
 
               <View style={styles.communityModalForm}>
-                <Text style={styles.formLabel}>Category</Text>
+                <Text style={styles.formLabel}>{t.home.category}</Text>
                 <View style={styles.categorySelector}>
                   {(["nutrition", "exercise", "selfcare", "mindfulness", "sleep"] as const).map((cat) => (
                     <TouchableOpacity
@@ -1212,10 +1314,10 @@ export default function HomeScreen() {
                   ))}
                 </View>
 
-                <Text style={styles.formLabel}>Your Tip</Text>
+                <Text style={styles.formLabel}>{t.home.yourTip}</Text>
                 <TextInput
                   style={styles.communityTipInput}
-                  placeholder="Share your wisdom..."
+                  placeholder={t.home.shareWisdomPlaceholder}
                   placeholderTextColor={colors.textTertiary}
                   value={communityTipText}
                   onChangeText={setCommunityTipText}
@@ -1238,7 +1340,7 @@ export default function HomeScreen() {
                   accessibilityRole="button"
                 >
                   <Text style={styles.submitTipButtonText}>
-                    {submitTipMutation.isPending ? "Submitting..." : "Submit Tip"}
+                    {submitTipMutation.isPending ? t.home.submitting : t.home.submitTip}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1880,6 +1982,66 @@ function createStyles(colors: typeof Colors.light) {
       color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "600" as const,
+    },
+    weeklyDigestCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 16,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    weeklyDigestTitle: {
+      fontSize: 16,
+      fontWeight: "700" as const,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    weeklyDigestSubtitle: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    weeklyDigestMetrics: {
+      gap: 8,
+      marginBottom: 12,
+    },
+    weeklyDigestMetricRow: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 8,
+    },
+    weeklyDigestMetricLabel: {
+      fontSize: 12,
+      fontWeight: "500" as const,
+      color: colors.textSecondary,
+      width: 60,
+    },
+    weeklyDigestBarTrack: {
+      flex: 1,
+      height: 6,
+      backgroundColor: colors.surface,
+      borderRadius: 3,
+      overflow: "hidden" as const,
+    },
+    weeklyDigestBarFill: {
+      height: 6,
+      borderRadius: 3,
+    },
+    weeklyDigestMetricValue: {
+      fontSize: 12,
+      fontWeight: "600" as const,
+      color: colors.text,
+      width: 28,
+      textAlign: "right" as const,
+    },
+    weeklyDigestSummary: {
+      fontSize: 13,
+      color: colors.text,
+      fontStyle: "italic" as const,
     },
   });
 }
