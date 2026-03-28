@@ -8,6 +8,7 @@ import {
   Modal,
   Platform,
   TextInput,
+  RefreshControl,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -63,6 +64,7 @@ import { Habit } from "@/types";
 import Colors from "@/constants/colors";
 import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
 import { trpc } from "@/lib/trpc";
+import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
@@ -428,6 +430,13 @@ export default function HomeScreen() {
   const [userId, setUserId] = useState<string | null>(null);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+  }, [queryClient]);
 
   // Get user ID from storage
   useEffect(() => {
@@ -1023,12 +1032,23 @@ export default function HomeScreen() {
     </View>
   ), [communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, colors, styles]);
 
+  const SkeletonCard = useCallback(({ width = '100%' as string | number, height = 80 }: { width?: string | number; height?: number }) => (
+    <View style={[styles.skeletonCard, { width, height }]}>
+      <View style={styles.skeletonShimmer} />
+    </View>
+  ), [styles]);
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
-        <View style={styles.loadingContainer}>
-          <Eye size={48} color={colors.primary} />
-          <Text style={styles.loadingText}>IRIS</Text>
+        <View style={{ paddingHorizontal: 20, paddingTop: 24 }}>
+          <SkeletonCard width="60%" height={28} />
+          <View style={{ height: 8 }} />
+          <SkeletonCard width="40%" height={16} />
+          <View style={{ height: 24 }} />
+          <SkeletonCard height={160} />
+          <SkeletonCard height={72} />
+          <SkeletonCard height={72} />
         </View>
       </SafeAreaView>
     );
@@ -1096,6 +1116,13 @@ export default function HomeScreen() {
           ListFooterComponent={renderFooterComponent}
           contentContainerStyle={styles.flatListContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+            />
+          }
         />
 
         <Modal
@@ -1330,6 +1357,17 @@ function createStyles(colors: typeof Colors.light) {
       fontWeight: "700" as const,
       color: colors.primary,
       letterSpacing: 2,
+    },
+    skeletonCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      marginBottom: 12,
+      overflow: "hidden" as const,
+    },
+    skeletonShimmer: {
+      flex: 1,
+      backgroundColor: colors.borderLight,
+      opacity: 0.5,
     },
     summaryCard: {
       backgroundColor: colors.card,
