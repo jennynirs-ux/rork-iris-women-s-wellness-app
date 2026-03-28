@@ -95,7 +95,7 @@ function checkStressRules(
       icon: "AlertCircle",
       title: "Stress Tip",
       message:
-        "Your stress score is higher today. Try 5 minutes of deep breathing or a short walk.",
+        "Your stress score appears higher today. Try 5 minutes of deep breathing or a short walk.",
       category: "stress",
       priority: 2,
     });
@@ -311,7 +311,7 @@ function checkInflammationRules(
       icon: "Flame",
       title: "Inflammation Tip",
       message:
-        "Your inflammation score is higher today. Try adding omega-3 rich foods and reducing sugar.",
+        "Your inflammation estimate appears higher today. Try adding omega-3 rich foods and reducing sugar.",
       category: "inflammation",
       priority: 2,
     });

@@ -12,28 +12,20 @@ import { getMarkerTranslation } from "@/lib/insightsTranslations";
 import { translateSymptoms } from "@/lib/symptomTranslation";
 import { LineChart } from "react-native-chart-kit";
 
-type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation' | 'fatigue' |
+type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation' | 'fatigue' | 
   'cognitiveSharpness' | 'emotionalSensitivity' | 'socialEnergy' | 'moodVolatility' |
   'dehydrationTendency' | 'inflammatoryStress' | 'pupilSize' | 'symmetry' |
   'scleraYellowness' | 'underEyeDarkness' | 'eyeOpenness' | 'tearFilmQuality';
 
-/** Convert a hex color like "#E89BA4" to an rgba callback for react-native-chart-kit */
-const hexToChartColor = (hex: string) => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return (opacity = 1) => `rgba(${r}, ${g}, ${b}, ${opacity})`;
-};
-
-const getMetricStatus = (value: number, higherIsBetter: boolean, t: any, themeColors: typeof Colors.light): { label: string; color: string; bgColor: string } => {
+const getMetricStatus = (value: number, higherIsBetter: boolean, t: any): { label: string; color: string; bgColor: string } => {
   if (higherIsBetter) {
-    if (value >= 7) return { label: t.insights.statusGood, color: themeColors.statusGood, bgColor: themeColors.statusGoodBg };
-    if (value >= 4) return { label: t.insights.statusModerate, color: themeColors.statusModerate, bgColor: themeColors.statusModerateBg };
-    return { label: t.insights.statusAttention, color: themeColors.statusAttention, bgColor: themeColors.statusAttentionBg };
+    if (value >= 7) return { label: t.insights.statusGood, color: '#10B981', bgColor: '#D1FAE5' };
+    if (value >= 4) return { label: t.insights.statusModerate, color: '#F59E0B', bgColor: '#FEF3C7' };
+    return { label: t.insights.statusAttention, color: '#EF4444', bgColor: '#FEE2E2' };
   } else {
-    if (value <= 3.9) return { label: t.insights.statusGood, color: themeColors.statusGood, bgColor: themeColors.statusGoodBg };
-    if (value <= 6.9) return { label: t.insights.statusModerate, color: themeColors.statusModerate, bgColor: themeColors.statusModerateBg };
-    return { label: t.insights.statusAttention, color: themeColors.statusAttention, bgColor: themeColors.statusAttentionBg };
+    if (value <= 3.9) return { label: t.insights.statusGood, color: '#10B981', bgColor: '#D1FAE5' };
+    if (value <= 6.9) return { label: t.insights.statusModerate, color: '#F59E0B', bgColor: '#FEF3C7' };
+    return { label: t.insights.statusAttention, color: '#EF4444', bgColor: '#FEE2E2' };
   }
 };
 
@@ -462,37 +454,6 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
   }
 };
 
-function generateTrendNarrative(
-  data: number[],
-  metricName: string,
-  isGoodHigh: boolean,
-  t: any
-): string {
-  if (data.length < 2) return '';
-  const recent = data.slice(-3);
-  const earlier = data.slice(0, 3);
-  const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
-  const earlierAvg = earlier.reduce((a, b) => a + b, 0) / earlier.length;
-  const change = recentAvg - earlierAvg;
-  const pctChange = Math.abs(Math.round((change / (earlierAvg || 1)) * 100));
-
-  if (Math.abs(change) < 0.5) {
-    return (t.insights?.trendSteady ?? 'Your {metric} has been steady').replace('{metric}', metricName);
-  }
-  const direction = change > 0
-    ? (t.insights?.trendRising ?? 'rising')
-    : (t.insights?.trendDropping ?? 'dropping');
-  const sentiment = (change > 0 === isGoodHigh)
-    ? ` ${t.insights?.trendNicely ?? 'nicely'}`
-    : '';
-  const template = t.insights?.trendChange ?? 'Your {metric} has been {direction}{sentiment} — {pct}% over this period';
-  return template
-    .replace('{metric}', metricName)
-    .replace('{direction}', direction)
-    .replace('{sentiment}', sentiment)
-    .replace('{pct}', String(pctChange));
-}
-
 export default function InsightsScreen() {
   const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language } = useApp();
   const lifeStageOverride = phaseEstimate.lifeStageOverride;
@@ -504,9 +465,6 @@ export default function InsightsScreen() {
   const [phaseGuidanceExpanded, setPhaseGuidanceExpanded] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(false);
   const [trendTimeRange, setTrendTimeRange] = useState<7 | 30 | 90>(7);
-  const [showPhysicalDetails, setShowPhysicalDetails] = useState(false);
-  const [showMentalDetails, setShowMentalDetails] = useState(false);
-  const [showPhysiologicalDetails, setShowPhysiologicalDetails] = useState(false);
 
   const showMarkerInfo = useCallback((marker: MarkerType) => {
     setSelectedMarker(marker);
@@ -701,111 +659,82 @@ export default function InsightsScreen() {
   }, [scans, trendTimeRange]);
 
   const screenWidth = Dimensions.get('window').width;
-  const chartWidth = screenWidth - 64; // padding + card margins
-
-  // Show only every Nth label to avoid clutter on 30d/90d
-  const labelInterval = trendTimeRange <= 7 ? 1 : trendTimeRange <= 30 ? 5 : 15;
+  const chartWidth = screenWidth - 32; // padding
 
   const physicalChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map((d, i) => {
-        if (i % labelInterval !== 0) return '';
+      labels: trendData.map(d => {
         const date = new Date(d.date);
-        return `${date.getDate()}/${date.getMonth() + 1}`;
+        return `${date.getMonth() + 1}/${date.getDate()}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.stress),
-          color: hexToChartColor(colors.stressHigh),
+          color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`, // red for stress
           strokeWidth: 2,
-          label: t.home?.stress || 'Stress'
+          label: 'Stress'
         },
         {
           data: trendData.map(d => d.energy),
-          color: hexToChartColor(colors.energyHigh),
+          color: (opacity = 1) => `rgba(34, 197, 94, ${opacity})`, // green for energy
           strokeWidth: 2,
-          label: t.home?.energy || 'Energy'
+          label: 'Energy'
         },
         {
           data: trendData.map(d => d.recovery),
-          color: hexToChartColor(colors.recoveryHigh),
+          color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`, // blue for recovery
           strokeWidth: 2,
-          label: t.home?.recovery || 'Recovery'
+          label: 'Recovery'
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
+  }, [trendData]);
 
   const hydrationInflammationChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map((d, i) => {
-        if (i % labelInterval !== 0) return '';
+      labels: trendData.map(d => {
         const date = new Date(d.date);
-        return `${date.getDate()}/${date.getMonth() + 1}`;
+        return `${date.getMonth() + 1}/${date.getDate()}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.hydration),
-          color: hexToChartColor(colors.habitHydration),
+          color: (opacity = 1) => `rgba(164, 200, 232, ${opacity})`, // light blue for hydration
           strokeWidth: 2,
-          label: t.home?.hydration || t.insights?.dehydrationTendency || 'Hydration'
+          label: 'Hydration'
         },
         {
           data: trendData.map(d => d.inflammation),
-          color: hexToChartColor(colors.habitMovement),
+          color: (opacity = 1) => `rgba(232, 155, 164, ${opacity})`, // pink for inflammation
           strokeWidth: 2,
-          label: t.insights?.inflammation || 'Inflammation'
+          label: 'Inflammation'
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
+  }, [trendData]);
 
   const fatigueChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map((d, i) => {
-        if (i % labelInterval !== 0) return '';
+      labels: trendData.map(d => {
         const date = new Date(d.date);
-        return `${date.getDate()}/${date.getMonth() + 1}`;
+        return `${date.getMonth() + 1}/${date.getDate()}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.fatigue),
-          color: hexToChartColor(colors.habitRecovery),
+          color: (opacity = 1) => `rgba(244, 200, 150, ${opacity})`, // orange for fatigue
           strokeWidth: 2,
-          label: t.insights?.fatigue || t.insights?.chartFatigue || 'Fatigue'
+          label: 'Fatigue'
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
-
-  const trendNarratives = useMemo(() => {
-    if (!trendData || trendData.length < 2) return null;
-    const stressData = trendData.map(d => d.stress);
-    const energyData = trendData.map(d => d.energy);
-    const recoveryData = trendData.map(d => d.recovery);
-    const hydrationData = trendData.map(d => d.hydration);
-    const inflammationData = trendData.map(d => d.inflammation);
-    const fatigueData = trendData.map(d => d.fatigue);
-
-    return {
-      physical: [
-        generateTrendNarrative(stressData, t.home.stress, false, t),
-        generateTrendNarrative(energyData, t.home.energy, true, t),
-        generateTrendNarrative(recoveryData, t.home.recovery, true, t),
-      ].filter(Boolean).join('. ') || null,
-      hydrationInflammation: [
-        generateTrendNarrative(hydrationData, t.habits?.hydration ?? 'Hydration', true, t),
-        generateTrendNarrative(inflammationData, t.insights?.inflammation ?? 'Inflammation', false, t),
-      ].filter(Boolean).join('. ') || null,
-      fatigue: generateTrendNarrative(fatigueData, t.insights?.fatigue ?? 'Fatigue', false, t) || null,
-    };
-  }, [trendData, t]);
+  }, [trendData]);
 
   if (scans.length === 0) {
     return (
@@ -855,256 +784,6 @@ export default function InsightsScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {latestScan && (
-            <View style={styles.todayResultCard}>
-              <Text style={styles.todayResultTitle}>{t.insights.scanMetrics}</Text>
-              <View style={styles.todayScoresRow}>
-                <View style={styles.todayScoreItem}>
-                  <CircularProgress
-                    size={70}
-                    strokeWidth={4}
-                    progress={(todaySummary.stressScore / 10) * 100}
-                    progressColor={colors.stressHigh}
-                    trackColor={colors.borderLight}
-                    fillColor={colors.stressFill}
-                  >
-                    <Zap size={24} color={colors.stressHigh} />
-                  </CircularProgress>
-                  <View style={styles.metricLabelRow}>
-                    <Text style={styles.todayScoreLabel}>{t.home.stress}</Text>
-                    <TouchableOpacity onPress={() => showMarkerInfo('stress')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                      <Info size={14} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.todayScoreValue}>{todaySummary.stressScore}<Text style={styles.scoreMax}>/10</Text></Text>
-                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.stress}</Text>
-                </View>
-                <View style={styles.todayScoreItem}>
-                  <CircularProgress
-                    size={70}
-                    strokeWidth={4}
-                    progress={(todaySummary.energyScore / 10) * 100}
-                    progressColor={colors.energyHigh}
-                    trackColor={colors.borderLight}
-                    fillColor={colors.energyFill}
-                  >
-                    <Battery size={24} color={colors.energyHigh} />
-                  </CircularProgress>
-                  <View style={styles.metricLabelRow}>
-                    <Text style={styles.todayScoreLabel}>{t.home.energy}</Text>
-                    <TouchableOpacity onPress={() => showMarkerInfo('energy')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                      <Info size={14} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.todayScoreValue}>{todaySummary.energyScore}<Text style={styles.scoreMax}>/10</Text></Text>
-                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.energy}</Text>
-                </View>
-                <View style={styles.todayScoreItem}>
-                  <CircularProgress
-                    size={70}
-                    strokeWidth={4}
-                    progress={(todaySummary.recoveryScore / 10) * 100}
-                    progressColor={colors.recoveryHigh}
-                    trackColor={colors.borderLight}
-                    fillColor={colors.recoveryFill}
-                  >
-                    <Heart size={24} color={colors.recoveryHigh} />
-                  </CircularProgress>
-                  <View style={styles.metricLabelRow}>
-                    <Text style={styles.todayScoreLabel}>{t.home.recovery}</Text>
-                    <TouchableOpacity onPress={() => showMarkerInfo('recovery')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                      <Info size={14} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.todayScoreValue}>{todaySummary.recoveryScore}<Text style={styles.scoreMax}>/10</Text></Text>
-                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.recovery}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {trendData && trendData.length >= 2 && (
-            <View style={styles.trendsSection}>
-              <View style={styles.trendsSectionHeader}>
-                <View style={styles.trendsTitleRow}>
-                  <TrendingUp size={20} color={colors.primary} />
-                  <Text style={styles.trendsSectionTitle}>{t.insights.chartTrends}</Text>
-                </View>
-                <View style={styles.timeRangeSelector}>
-                  {[7, 30, 90].map((days) => (
-                    <TouchableOpacity
-                      key={days}
-                      onPress={() => setTrendTimeRange(days as 7 | 30 | 90)}
-                      style={[
-                        styles.timeRangeButton,
-                        trendTimeRange === days && styles.timeRangeButtonActive
-                      ]}
-                    >
-                      <Text style={[
-                        styles.timeRangeButtonText,
-                        trendTimeRange === days && styles.timeRangeButtonTextActive
-                      ]}>
-                        {days}d
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.chartContainer}>
-                <Text style={styles.chartTitle}>{t.insights.chartPhysicalScores}</Text>
-                {trendNarratives?.physical && (
-                  <Text style={styles.trendNarrative}>{trendNarratives.physical}</Text>
-                )}
-                <LineChart
-                  data={physicalChartData!}
-                  width={chartWidth}
-                  height={200}
-                  chartConfig={{
-                    backgroundGradientFrom: colors.card,
-                    backgroundGradientTo: colors.card,
-                    color: hexToChartColor(colors.border),
-                    strokeWidth: 2,
-                    barPercentage: 0.5,
-                    useShadowColorFromDataset: false,
-                    decimalPlaces: 0,
-                    propsForLabels: {
-                      fontSize: 10,
-                      fill: colors.textSecondary,
-                    }
-                  }}
-                  style={styles.chart}
-                  withVerticalLines={false}
-                  withHorizontalLines={true}
-                  withOuterLines={true}
-                  bezier
-                  segments={4}
-                />
-                <View style={styles.chartLegend}>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.stressHigh }]} />
-                    <Text style={styles.legendLabel}>{t.home.stress}</Text>
-                  </View>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.energyHigh }]} />
-                    <Text style={styles.legendLabel}>{t.home.energy}</Text>
-                  </View>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.recoveryHigh }]} />
-                    <Text style={styles.legendLabel}>{t.home.recovery}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.chartContainer}>
-                <Text style={styles.chartTitle}>{t.insights.chartHydrationInflammation}</Text>
-                {trendNarratives?.hydrationInflammation && (
-                  <Text style={styles.trendNarrative}>{trendNarratives.hydrationInflammation}</Text>
-                )}
-                <LineChart
-                  data={hydrationInflammationChartData!}
-                  width={chartWidth}
-                  height={200}
-                  chartConfig={{
-                    backgroundGradientFrom: colors.card,
-                    backgroundGradientTo: colors.card,
-                    color: hexToChartColor(colors.border),
-                    strokeWidth: 2,
-                    barPercentage: 0.5,
-                    useShadowColorFromDataset: false,
-                    decimalPlaces: 0,
-                    propsForLabels: {
-                      fontSize: 10,
-                      fill: colors.textSecondary,
-                    }
-                  }}
-                  style={styles.chart}
-                  withVerticalLines={false}
-                  withHorizontalLines={true}
-                  withOuterLines={true}
-                  bezier
-                  segments={4}
-                />
-                <View style={styles.chartLegend}>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.habitHydration }]} />
-                    <Text style={styles.legendLabel}>{t.habits?.hydration ?? t.insights.dehydrationTendency}</Text>
-                  </View>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.habitMovement }]} />
-                    <Text style={styles.legendLabel}>{t.insights.inflammation}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.chartContainer}>
-                <Text style={styles.chartTitle}>{t.insights.chartFatigue}</Text>
-                {trendNarratives?.fatigue && (
-                  <Text style={styles.trendNarrative}>{trendNarratives.fatigue}</Text>
-                )}
-                <LineChart
-                  data={fatigueChartData!}
-                  width={chartWidth}
-                  height={200}
-                  chartConfig={{
-                    backgroundGradientFrom: colors.card,
-                    backgroundGradientTo: colors.card,
-                    color: hexToChartColor(colors.border),
-                    strokeWidth: 2,
-                    barPercentage: 0.5,
-                    useShadowColorFromDataset: false,
-                    decimalPlaces: 0,
-                    propsForLabels: {
-                      fontSize: 10,
-                      fill: colors.textSecondary,
-                    }
-                  }}
-                  style={styles.chart}
-                  withVerticalLines={false}
-                  withHorizontalLines={true}
-                  withOuterLines={true}
-                  bezier
-                  segments={4}
-                />
-                <View style={styles.chartLegend}>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.habitRecovery }]} />
-                    <Text style={styles.legendLabel}>{t.insights.fatigue}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {scans.length > 0 && !trendData && (
-            <View style={styles.emptyStateCard}>
-              <TrendingUp size={40} color={colors.primary} />
-              <Text style={styles.emptyStateTitle}>{t.insights.keepScanningTitle}</Text>
-              <Text style={styles.emptyStateText}>{t.insights.keepScanningText}</Text>
-            </View>
-          )}
-
-          {checkInInsights.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t.insights.yourInsightsToday}</Text>
-              <Text style={styles.sectionSubtitle}>{t.insights.howChoicesConnect}</Text>
-              {checkInInsights.map((insight, index) => {
-                const IconComponent = insight.icon;
-                return (
-                  <View key={index} style={styles.contextInsightCard}>
-                    <View style={[styles.contextInsightIcon, { backgroundColor: insight.color + "20" }]}>
-                      <IconComponent size={20} color={insight.color} />
-                    </View>
-                    <View style={styles.contextInsightContent}>
-                      <Text style={styles.contextInsightTitle}>{insight.title}</Text>
-                      <Text style={styles.contextInsightMessage}>{insight.message}</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-
           {todayCheckIn && (
             <View style={styles.checkInSummaryCard}>
               <Text style={styles.checkInSummaryTitle}>{t.insights.checkInInsights}</Text>
@@ -1174,12 +853,101 @@ export default function InsightsScreen() {
             </View>
           )}
 
+          {latestScan && (
+            <View style={styles.todayResultCard}>
+              <Text style={styles.todayResultTitle}>{t.insights.scanMetrics}</Text>
+              <View style={styles.todayScoresRow}>
+                <View style={styles.todayScoreItem}>
+                  <CircularProgress
+                    size={70}
+                    strokeWidth={4}
+                    progress={(todaySummary.stressScore / 10) * 100}
+                    progressColor={colors.stressHigh}
+                    trackColor={colors.borderLight}
+                    fillColor={colors.stressFill}
+                  >
+                    <Zap size={24} color={colors.stressHigh} />
+                  </CircularProgress>
+                  <View style={styles.metricLabelRow}>
+                    <Text style={styles.todayScoreLabel}>{t.home.stress}</Text>
+                    <TouchableOpacity onPress={() => showMarkerInfo('stress')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                      <Info size={14} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.todayScoreValue}>{todaySummary.stressScore}<Text style={styles.scoreMax}>/10</Text></Text>
+                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.stress}</Text>
+                </View>
+                <View style={styles.todayScoreItem}>
+                  <CircularProgress
+                    size={70}
+                    strokeWidth={4}
+                    progress={(todaySummary.energyScore / 10) * 100}
+                    progressColor={colors.energyHigh}
+                    trackColor={colors.borderLight}
+                    fillColor={colors.energyFill}
+                  >
+                    <Battery size={24} color={colors.energyHigh} />
+                  </CircularProgress>
+                  <View style={styles.metricLabelRow}>
+                    <Text style={styles.todayScoreLabel}>{t.home.energy}</Text>
+                    <TouchableOpacity onPress={() => showMarkerInfo('energy')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                      <Info size={14} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.todayScoreValue}>{todaySummary.energyScore}<Text style={styles.scoreMax}>/10</Text></Text>
+                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.energy}</Text>
+                </View>
+                <View style={styles.todayScoreItem}>
+                  <CircularProgress
+                    size={70}
+                    strokeWidth={4}
+                    progress={(todaySummary.recoveryScore / 10) * 100}
+                    progressColor={colors.recoveryHigh}
+                    trackColor={colors.borderLight}
+                    fillColor={colors.recoveryFill}
+                  >
+                    <Heart size={24} color={colors.recoveryHigh} />
+                  </CircularProgress>
+                  <View style={styles.metricLabelRow}>
+                    <Text style={styles.todayScoreLabel}>{t.home.recovery}</Text>
+                    <TouchableOpacity onPress={() => showMarkerInfo('recovery')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                      <Info size={14} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.todayScoreValue}>{todaySummary.recoveryScore}<Text style={styles.scoreMax}>/10</Text></Text>
+                  <Text style={styles.todayAverage}>{t.insights.average}: {averages.recovery}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {checkInInsights.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t.insights.yourInsightsToday}</Text>
+              <Text style={styles.sectionSubtitle}>{t.insights.howChoicesConnect}</Text>
+              {checkInInsights.map((insight, index) => {
+                const IconComponent = insight.icon;
+                return (
+                  <View key={index} style={styles.contextInsightCard}>
+                    <View style={[styles.contextInsightIcon, { backgroundColor: insight.color + "20" }]}>
+                      <IconComponent size={20} color={insight.color} />
+                    </View>
+                    <View style={styles.contextInsightContent}>
+                      <Text style={styles.contextInsightTitle}>{insight.title}</Text>
+                      <Text style={styles.contextInsightMessage}>{insight.message}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (() => {
             const vmsMetrics = calculateVasomotorMetrics(checkIns, t);
             return vmsMetrics ? (
               <View style={styles.vasomotorCard}>
                 <View style={styles.vasomotorHeader}>
-                  <Flame size={24} color={colors.phaseMenstrual} />
+                  <Flame size={24} color="#E89BA4" />
                   <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
                 </View>
 
@@ -1188,20 +956,20 @@ export default function InsightsScreen() {
                   <Text style={styles.vasomotorMetricValue}>
                     {vmsMetrics.trend === 'increasing' ? t.menopause?.increasing || 'Increasing' : vmsMetrics.trend === 'decreasing' ? t.menopause?.decreasing || 'Decreasing' : t.menopause?.stable || 'Stable'}
                   </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.avgPerDay.replace('{0}', vmsMetrics.avgHotFlashes)}</Text>
+                  <Text style={styles.vasomotorMetricSubtext}>Avg {vmsMetrics.avgHotFlashes} per day (last 7 days)</Text>
                 </View>
 
                 <View style={styles.vasomotorMetric}>
                   <Text style={styles.vasomotorMetricLabel}>{t.menopause?.nightSweatFrequency || 'Night Sweats'}</Text>
-                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} {t.insights.ofSevenDays}</Text>
+                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} of 7 days</Text>
                 </View>
 
                 <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
                   <Text style={styles.vasomotorMetricLabel}>{t.menopause?.vmsScore || 'VMS Score'}</Text>
-                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? colors.error : colors.success }]}>
+                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? '#E89BA4' : '#10B981' }]}>
                     {vmsMetrics.vmsScore}
                   </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.symptomSeverityIndicator}</Text>
+                  <Text style={styles.vasomotorMetricSubtext}>Symptom severity indicator</Text>
                 </View>
               </View>
             ) : null;
@@ -1261,26 +1029,161 @@ export default function InsightsScreen() {
             )}
           </TouchableOpacity>
 
+          {trendData && trendData.length >= 2 && (
+            <View style={styles.trendsSection}>
+              <View style={styles.trendsSectionHeader}>
+                <View style={styles.trendsTitleRow}>
+                  <TrendingUp size={20} color={colors.primary} />
+                  <Text style={styles.trendsSectionTitle}>Trends</Text>
+                </View>
+                <View style={styles.timeRangeSelector}>
+                  {[7, 30, 90].map((days) => (
+                    <TouchableOpacity
+                      key={days}
+                      onPress={() => setTrendTimeRange(days as 7 | 30 | 90)}
+                      style={[
+                        styles.timeRangeButton,
+                        trendTimeRange === days && styles.timeRangeButtonActive
+                      ]}
+                    >
+                      <Text style={[
+                        styles.timeRangeButtonText,
+                        trendTimeRange === days && styles.timeRangeButtonTextActive
+                      ]}>
+                        {days}d
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Physical Scores</Text>
+                <LineChart
+                  data={physicalChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
+                    <Text style={styles.legendLabel}>Stress</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
+                    <Text style={styles.legendLabel}>Energy</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#3B82F6' }]} />
+                    <Text style={styles.legendLabel}>Recovery</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Hydration & Inflammation</Text>
+                <LineChart
+                  data={hydrationInflammationChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#A4C8E8' }]} />
+                    <Text style={styles.legendLabel}>Hydration</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#E89BA4' }]} />
+                    <Text style={styles.legendLabel}>Inflammation</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.chartContainer}>
+                <Text style={styles.chartTitle}>Fatigue</Text>
+                <LineChart
+                  data={fatigueChartData!}
+                  width={chartWidth}
+                  height={200}
+                  chartConfig={{
+                    backgroundGradientFrom: colors.background,
+                    backgroundGradientTo: colors.background,
+                    color: (opacity = 1) => `rgba(128, 128, 128, ${opacity})`,
+                    strokeWidth: 2,
+                    barPercentage: 0.5,
+                    useShadowColorFromDataset: false,
+                    decimalPlaces: 0,
+                    propsForLabels: {
+                      fontSize: 10
+                    }
+                  }}
+                  style={styles.chart}
+                  withVerticalLines={false}
+                  withHorizontalLines={true}
+                  withOuterLines={true}
+                  bezier
+                  segments={4}
+                />
+                <View style={styles.chartLegend}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendDot, { backgroundColor: '#F4C896' }]} />
+                    <Text style={styles.legendLabel}>Fatigue</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {scans.length > 0 && !trendData && (
+            <View style={styles.emptyStateCard}>
+              <TrendingUp size={40} color={colors.primary} />
+              <Text style={styles.emptyStateTitle}>Keep scanning to see trends</Text>
+              <Text style={styles.emptyStateText}>Collect at least 2 data points to visualize your wellness trends</Text>
+            </View>
+          )}
+
           {scans.length > 0 && (
             <>
               <View style={styles.section}>
-                <TouchableOpacity
-                  style={styles.collapsibleHeader}
-                  onPress={() => setShowPhysicalDetails(!showPhysicalDetails)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.collapsibleHeaderText}>
-                    <Text style={styles.sectionTitle}>{t.insights.physicalMarkers}</Text>
-                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                  </View>
-                  {showPhysicalDetails ? (
-                    <ChevronUp size={20} color={colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={20} color={colors.textSecondary} />
-                  )}
-                </TouchableOpacity>
-                {showPhysicalDetails && (
-                <>
+                <Text style={styles.sectionTitle}>{t.insights.physicalMarkers}</Text>
+                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#A4C8E8" + "20" }]}>
                     <Droplets size={20} color="#A4C8E8" />
@@ -1298,9 +1201,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.hydrationLevel || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.hydration}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.hydrationLevel || 0, true, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.hydrationLevel || 0, true, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.hydrationLevel || 0, true, t).color }]}>
+                          {getMetricStatus(latestScan?.hydrationLevel || 0, true, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1327,9 +1230,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.inflammation || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammation}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.inflammation || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.inflammation || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.inflammation || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.inflammation || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.inflammation || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.inflammation || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1356,9 +1259,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.fatigueLevel || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.fatigue}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.fatigueLevel || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.fatigueLevel || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.fatigueLevel || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.fatigueLevel || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1367,28 +1270,12 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: "#F4C896" }]} />
                   </View>
                 </View>
-                </>
-                )}
               </View>
 
               <View style={styles.section}>
-                <TouchableOpacity
-                  style={styles.collapsibleHeader}
-                  onPress={() => setShowMentalDetails(!showMentalDetails)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.collapsibleHeaderText}>
-                    <Text style={styles.sectionTitle}>{t.insights.mentalEmotionalState}</Text>
-                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                  </View>
-                  {showMentalDetails ? (
-                    <ChevronUp size={20} color={colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={20} color={colors.textSecondary} />
-                  )}
-                </TouchableOpacity>
-                {showMentalDetails && (
-                <>
+                <Text style={styles.sectionTitle}>{t.insights.mentalEmotionalState}</Text>
+                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#96E8D4" + "20" }]}>
                     <Brain size={20} color="#96E8D4" />
@@ -1406,9 +1293,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.cognitiveSharpness.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.cognitiveSharpness}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.cognitiveSharpness || 0, true, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1435,9 +1322,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.emotionalSensitivity.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.emotionalSensitivity}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.emotionalSensitivity || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1464,9 +1351,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.socialEnergy.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.socialEnergy}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.socialEnergy || 0, true, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1493,9 +1380,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.emotionalMentalState?.moodVolatilityRisk.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.moodVolatility}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.emotionalMentalState?.moodVolatilityRisk || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1504,28 +1391,12 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
                   </View>
                 </View>
-                </>
-                )}
               </View>
 
               <View style={styles.section}>
-                <TouchableOpacity
-                  style={styles.collapsibleHeader}
-                  onPress={() => setShowPhysiologicalDetails(!showPhysiologicalDetails)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.collapsibleHeaderText}>
-                    <Text style={styles.sectionTitle}>{t.insights.physiologicalInsights}</Text>
-                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                  </View>
-                  {showPhysiologicalDetails ? (
-                    <ChevronUp size={20} color={colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={20} color={colors.textSecondary} />
-                  )}
-                </TouchableOpacity>
-                {showPhysiologicalDetails && (
-                <>
+                <Text style={styles.sectionTitle}>{t.insights.physiologicalInsights}</Text>
+                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#B4E4F4" + "20" }]}>
                     <Droplets size={20} color="#B4E4F4" />
@@ -1543,9 +1414,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.dehydrationTendency.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.dehydrationTendency}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1572,9 +1443,9 @@ export default function InsightsScreen() {
                     <View style={styles.detailValues}>
                       <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.inflammatoryStress.toFixed(1) || 0}/10</Text>
                       <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammatoryStress}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).label}
+                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).bgColor }]}>
+                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).color }]}>
+                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t).label}
                         </Text>
                       </View>
                     </View>
@@ -1583,8 +1454,6 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
                   </View>
                 </View>
-                </>
-                )}
               </View>
 
               <View style={styles.section}>
@@ -2035,16 +1904,6 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textSecondary,
     marginTop: -8,
     marginBottom: 16,
-  },
-  collapsibleHeader: {
-    flexDirection: "row" as const,
-    alignItems: "center" as const,
-    justifyContent: "space-between" as const,
-    paddingVertical: 4,
-  },
-  collapsibleHeaderText: {
-    flex: 1,
-    marginRight: 8,
   },
   estimateDisclaimer: {
     fontSize: 11,
@@ -3056,14 +2915,6 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontWeight: "600" as const,
     color: colors.text,
     marginBottom: 16,
-  },
-  trendNarrative: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontStyle: "italic" as const,
-    marginBottom: 12,
-    marginTop: -8,
-    lineHeight: 18,
   },
   chart: {
     borderRadius: 16,

@@ -1509,7 +1509,7 @@ function buildHTML(
       letter-spacing: 1px;
       text-transform: uppercase;
     }
-    .patient-info {
+    .user-info {
       display: flex;
       justify-content: space-between;
       margin-top: 8px;
@@ -1652,7 +1652,7 @@ function buildHTML(
         </div>
       </div>
     </div>
-    <div class="patient-info">
+    <div class="user-info">
       <div><strong>${r.name}:</strong> ${userProfile.name}</div>
       <div><strong>${r.reportGenerated}:</strong> ${todayStr}</div>
     </div>
