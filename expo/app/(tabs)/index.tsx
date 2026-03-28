@@ -416,7 +416,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, t } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
