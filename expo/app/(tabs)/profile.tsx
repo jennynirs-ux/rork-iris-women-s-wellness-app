@@ -1640,7 +1640,7 @@ export default function ProfileScreen() {
           onRequestClose={() => setShowPrivacyModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.cycleModalContent, { maxHeight: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+            <View style={[styles.cycleModalContent, { height: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalHeaderTitle}>{t.settings.privacyPolicy}</Text>
                 <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
@@ -1767,7 +1767,7 @@ export default function ProfileScreen() {
           onRequestClose={() => setShowTermsModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.cycleModalContent, { maxHeight: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+            <View style={[styles.cycleModalContent, { height: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalHeaderTitle}>{t.settings.termsOfService}</Text>
                 <TouchableOpacity onPress={() => setShowTermsModal(false)}>

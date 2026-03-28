@@ -782,7 +782,7 @@ export default function CalendarScreen() {
                       <ScanMetricBar label={t.programs.cognitiveSharpness} value={scan.emotionalMentalState.cognitiveSharpness} color={colors.habitNutrition} icon={Brain} />
                       <ScanMetricBar label={t.programs.emotionalSensitivity} value={scan.emotionalMentalState.emotionalSensitivity} color={colors.secondary} icon={Heart} />
                       <ScanMetricBar label={t.programs.socialEnergy} value={scan.emotionalMentalState.socialEnergy} color={colors.habitRecovery} icon={Users} />
-                      <ScanMetricBar label={t.programs.moodVolatility} value={scan.emotionalMentalState.moodVolatilityRisk} color={colors.habitMovement} icon={BarChart3} />
+                      <ScanMetricBar label={t.insights?.moodVolatilityRisk || t.programs.moodVolatility} value={scan.emotionalMentalState.moodVolatilityRisk} color={colors.habitMovement} icon={BarChart3} />
                     </View>
 
                     <View style={styles.scanMetricsGroup}>
