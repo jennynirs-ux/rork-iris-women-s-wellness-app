@@ -108,6 +108,7 @@ function getInitialUserProfile(): UserProfile {
     birthControl: "none",
     isPremium: false,
     hasCompletedOnboarding: false,
+    dataConsent: true,
   };
 }
 

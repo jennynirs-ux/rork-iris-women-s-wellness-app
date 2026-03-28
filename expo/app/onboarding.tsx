@@ -165,7 +165,7 @@ export default function OnboardingScreen() {
   const [showBabyBirthYearPicker, setShowBabyBirthYearPicker] = useState(false);
   const [deliveryType, setDeliveryType] = useState<"vaginal" | "cesarean" | "other">("vaginal");
 
-  const [dataConsent, setDataConsent] = useState(false);
+  const [dataConsent, setDataConsent] = useState(true);
   const [showScanModal, setShowScanModal] = useState(false);
 
   const isAnyPickerOpen = showDayPicker || showMonthPicker || showYearPicker || 

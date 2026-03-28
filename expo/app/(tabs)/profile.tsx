@@ -48,8 +48,10 @@ import { getHealthKitAvailability } from "@/lib/healthKit";
 import { areNotificationsEnabled, enableNotifications, disableNotifications } from "@/lib/notifications";
 import { LANGUAGES } from "@/constants/translations";
 import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWeightInput, parseHeightInput } from "@/lib/unitConversion";
+import * as Clipboard from "expo-clipboard";
 import logger from "@/lib/logger";
 import { generateDoctorReport } from "@/lib/doctorReport";
+import { trpcClient } from "@/lib/trpc";
 import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
 
 function getTranslatedMonths(t: any): string[] {
@@ -392,8 +394,9 @@ export default function ProfileScreen() {
 
   // Partner mode states
   const [showPartnerModal, setShowPartnerModal] = useState(false);
-  const [partnerCode] = useState(userProfile.partnerCode || '');
+  const [partnerCode, setPartnerCode] = useState(userProfile.partnerCode || '');
   const [partnerInputCode, setPartnerInputCode] = useState('');
+  const [isGeneratingPartnerCode, setIsGeneratingPartnerCode] = useState(false);
 
   const styles = useMemo(() => createProfileStyles(colors), [colors]);
 
@@ -407,6 +410,23 @@ export default function ProfileScreen() {
     };
     loadGameification();
   }, [scans, checkIns, userProfile]);
+
+  // Generate partner code when the partner modal is opened
+  useEffect(() => {
+    if (showPartnerModal && !partnerCode && !isGeneratingPartnerCode && userProfile.name) {
+      setIsGeneratingPartnerCode(true);
+      trpcClient.partner.generate.mutate({ userId: userProfile.name })
+        .then((result) => {
+          setPartnerCode(result.partnerCode);
+          updateUserProfile({ ...userProfile, partnerCode: result.partnerCode });
+        })
+        .catch((err) => {
+          logger.error('[Partner] Failed to generate code:', err);
+          Alert.alert('Error', 'Could not generate partner code. Please try again.');
+        })
+        .finally(() => setIsGeneratingPartnerCode(false));
+    }
+  }, [showPartnerModal]);
 
   const calculateAge = (birthday: string): number => {
     if (!birthday) return 0;
@@ -1185,7 +1205,7 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   <Switch
-                    value={userProfile.dataConsent ?? false}
+                    value={userProfile.dataConsent ?? true}
                     onValueChange={handleToggleDataConsent}
                     trackColor={{ false: colors.border, true: colors.primaryLight }}
                     thumbColor={userProfile.dataConsent ? colors.primary : colors.surface}
@@ -1373,8 +1393,14 @@ export default function ProfileScreen() {
                             {
                               text: 'Unlink',
                               style: 'destructive',
-                              onPress: () => {
-                                // TODO: Call unlink mutation
+                              onPress: async () => {
+                                try {
+                                  await trpcClient.partner.unlink.mutate({ userId: userProfile.name });
+                                  updateUserProfile({ ...userProfile, linkedPartnerId: undefined });
+                                } catch (err) {
+                                  logger.error('[Partner] Failed to unlink:', err);
+                                  Alert.alert('Error', 'Could not unlink partner. Please try again.');
+                                }
                               }
                             }
                           ]
@@ -1618,15 +1644,15 @@ export default function ProfileScreen() {
           onRequestClose={() => setShowPrivacyModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.cycleModalContent, { maxHeight: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+            <View style={[styles.cycleModalContent, { height: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalHeaderTitle}>{t.settings.privacyPolicy}</Text>
                 <TouchableOpacity onPress={() => setShowPrivacyModal(false)}>
                   <Text style={styles.modalCloseText}>{t.settings.close}</Text>
                 </TouchableOpacity>
               </View>
-              
-              <ScrollView style={styles.legalContent} showsVerticalScrollIndicator={false}>
+
+              <ScrollView style={styles.legalContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
                 <Text style={styles.legalTitle}>{t.settings.privacyPolicyTitle}</Text>
                 <Text style={styles.legalDate}>{t.settings.privacyLastUpdated}</Text>
                 
@@ -1745,15 +1771,15 @@ export default function ProfileScreen() {
           onRequestClose={() => setShowTermsModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.cycleModalContent, { maxHeight: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+            <View style={[styles.cycleModalContent, { height: '80%', paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalHeaderTitle}>{t.settings.termsOfService}</Text>
                 <TouchableOpacity onPress={() => setShowTermsModal(false)}>
                   <Text style={styles.modalCloseText}>{t.settings.close}</Text>
                 </TouchableOpacity>
               </View>
-              
-              <ScrollView style={styles.legalContent} showsVerticalScrollIndicator={false}>
+
+              <ScrollView style={styles.legalContent} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
                 <Text style={styles.legalTitle}>{t.settings.termsTitle}</Text>
                 <Text style={styles.legalDate}>{t.settings.termsLastUpdated}</Text>
                 
@@ -2116,10 +2142,14 @@ export default function ProfileScreen() {
                       {partnerCode || 'Loading...'}
                     </Text>
                     <TouchableOpacity
-                      onPress={() => {
+                      onPress={async () => {
                         if (partnerCode) {
-                          // Copy to clipboard
-                          Alert.alert('Copied', 'Partner code copied to clipboard');
+                          try {
+                            await Clipboard.setStringAsync(partnerCode);
+                            Alert.alert('Copied', 'Partner code copied to clipboard');
+                          } catch (err) {
+                            logger.error('[Partner] Failed to copy:', err);
+                          }
                         }
                       }}
                       style={styles.copyButton}
@@ -2140,11 +2170,24 @@ export default function ProfileScreen() {
 
                   <TouchableOpacity
                     style={[styles.linkButton, { backgroundColor: colors.primary }]}
-                    onPress={() => {
-                      if (partnerInputCode) {
-                        // TODO: Call link mutation
-                        Alert.alert('Partner Linked!', 'You are now sharing data with your partner');
-                        setShowPartnerModal(false);
+                    onPress={async () => {
+                      if (partnerInputCode && userProfile.name) {
+                        try {
+                          const result = await trpcClient.partner.link.mutate({
+                            userId: userProfile.name,
+                            partnerCode: partnerInputCode,
+                          });
+                          if (result.success) {
+                            updateUserProfile({ ...userProfile, linkedPartnerId: partnerInputCode });
+                            Alert.alert('Partner Linked!', 'You are now sharing data with your partner');
+                            setShowPartnerModal(false);
+                          } else {
+                            Alert.alert('Error', (result as any).error || 'Could not link partner. Check the code and try again.');
+                          }
+                        } catch (err) {
+                          logger.error('[Partner] Failed to link:', err);
+                          Alert.alert('Error', 'Could not link partner. Please try again.');
+                        }
                       }
                     }}
                   >
