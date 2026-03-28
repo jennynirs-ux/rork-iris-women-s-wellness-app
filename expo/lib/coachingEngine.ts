@@ -1,4 +1,4 @@
-import { ScanResult, DailyCheckIn, CyclePhase, UserProfile } from "@/types";
+import { ScanResult, DailyCheckIn, CyclePhase, UserProfile, CycleHistory } from "@/types";
 
 export interface CoachingTip {
   id: string;
@@ -486,4 +486,250 @@ function getDefaultPhaseTip(phase: CyclePhase): CoachingTip {
   };
 
   return defaultTips[phase];
+}
+
+// ============================================================================
+// PATTERN-BASED COACHING (multi-cycle analysis)
+// ============================================================================
+
+/**
+ * Helper: Given scans and a cycle history entry, returns scans that fall
+ * within that cycle's date range.
+ */
+function getScansForCycle(scans: ScanResult[], cycle: CycleHistory): ScanResult[] {
+  const startMs = new Date(cycle.startDate).getTime();
+  const endMs = cycle.endDate
+    ? new Date(cycle.endDate).getTime()
+    : startMs + (cycle.lengthDays || 28) * 24 * 60 * 60 * 1000;
+  return scans.filter((s) => s.timestamp >= startMs && s.timestamp <= endMs);
+}
+
+/**
+ * Helper: Given scans for a cycle and a cycle history entry, determine
+ * approximate phase boundaries and return scans in the luteal phase.
+ */
+function getLutealScans(cycleScans: ScanResult[], cycle: CycleHistory): ScanResult[] {
+  const startMs = new Date(cycle.startDate).getTime();
+  const cycleDays = cycle.lengthDays || 28;
+  const ovulationDay = cycle.ovulationDay || Math.round(cycleDays * 0.5);
+  const lutealStartMs = startMs + ovulationDay * 24 * 60 * 60 * 1000;
+  return cycleScans.filter((s) => s.timestamp >= lutealStartMs);
+}
+
+/**
+ * Helper: Given scans for a cycle and a cycle history entry, determine
+ * approximate follicular phase scans (after menstrual, before ovulation).
+ */
+function getFollicularScans(cycleScans: ScanResult[], cycle: CycleHistory): ScanResult[] {
+  const startMs = new Date(cycle.startDate).getTime();
+  const cycleDays = cycle.lengthDays || 28;
+  const menstrualEndMs = startMs + 5 * 24 * 60 * 60 * 1000; // ~5 days menstrual
+  const ovulationDay = cycle.ovulationDay || Math.round(cycleDays * 0.5);
+  const ovulationMs = startMs + ovulationDay * 24 * 60 * 60 * 1000;
+  return cycleScans.filter((s) => s.timestamp >= menstrualEndMs && s.timestamp < ovulationMs);
+}
+
+/**
+ * Helper: average a metric across scans.
+ */
+function avgMetric(scans: ScanResult[], getter: (s: ScanResult) => number): number {
+  if (scans.length === 0) return 0;
+  return scans.reduce((sum, s) => sum + getter(s), 0) / scans.length;
+}
+
+/**
+ * Generates personalized coaching tips based on multi-cycle pattern analysis.
+ * Requires at least 2 completed cycles of data for pattern detection.
+ *
+ * @param scans - All scan results
+ * @param checkIns - All daily check-ins
+ * @param phase - Current cycle phase
+ * @param cycleHistory - Array of past cycle records
+ * @param t - Translation object
+ * @returns Array of pattern-based coaching tips (may be empty)
+ */
+export function generatePatternBasedTips(
+  scans: ScanResult[],
+  checkIns: DailyCheckIn[],
+  phase: CyclePhase,
+  cycleHistory: CycleHistory[],
+  t: any
+): CoachingTip[] {
+  const tips: CoachingTip[] = [];
+
+  // Need at least 2 completed cycles for pattern analysis
+  const completedCycles = cycleHistory.filter((c) => c.endDate && c.lengthDays);
+
+  // --- Pattern 1: Stress rises in luteal phase ---
+  if (completedCycles.length >= 2) {
+    const lastCycles = completedCycles.slice(-3);
+    let lutealStressHighCount = 0;
+
+    for (const cycle of lastCycles) {
+      const cycleScans = getScansForCycle(scans, cycle);
+      const lutealScans = getLutealScans(cycleScans, cycle);
+      const nonLutealScans = cycleScans.filter(
+        (s) => !lutealScans.includes(s)
+      );
+
+      if (lutealScans.length >= 2 && nonLutealScans.length >= 2) {
+        const lutealStress = avgMetric(lutealScans, (s) => s.stressScore);
+        const nonLutealStress = avgMetric(nonLutealScans, (s) => s.stressScore);
+        if (lutealStress > nonLutealStress * 1.2) {
+          lutealStressHighCount++;
+        }
+      }
+    }
+
+    if (lutealStressHighCount >= 2) {
+      tips.push({
+        id: "pattern-luteal-stress",
+        icon: "Moon",
+        title: t.coaching?.patternLutealStressTitle ?? "Luteal Phase Stress Pattern",
+        message: t.coaching?.patternLutealStressMsg ?? "Your stress tends to rise in your luteal phase. Consider scheduling lighter workdays during this time.",
+        category: "stress",
+        priority: 2,
+      });
+    }
+  }
+
+  // --- Pattern 2: Sleep drops below 6 for 3+ consecutive days ---
+  if (checkIns.length >= 3) {
+    const recentCheckIns = checkIns.slice(-7);
+    let consecutiveLowSleep = 0;
+    let maxConsecutive = 0;
+
+    for (let i = recentCheckIns.length - 1; i >= 0; i--) {
+      const sleepHours = recentCheckIns[i].sleepHours ?? recentCheckIns[i].sleep;
+      if (sleepHours !== undefined && sleepHours < 6) {
+        consecutiveLowSleep++;
+        maxConsecutive = Math.max(maxConsecutive, consecutiveLowSleep);
+      } else {
+        consecutiveLowSleep = 0;
+      }
+    }
+
+    if (maxConsecutive >= 3) {
+      tips.push({
+        id: "pattern-low-sleep-streak",
+        icon: "Moon",
+        title: t.coaching?.patternLowSleepTitle ?? "Sleep Deficit Detected",
+        message: t.coaching?.patternLowSleepMsg ?? "Your sleep has been low recently. Try setting an earlier bedtime or a wind-down routine.",
+        category: "sleep",
+        priority: 1,
+      });
+    }
+  }
+
+  // --- Pattern 3: Energy peaks in follicular phase ---
+  if (completedCycles.length >= 2) {
+    const lastCycles = completedCycles.slice(-3);
+    let follicularEnergyHighCount = 0;
+
+    for (const cycle of lastCycles) {
+      const cycleScans = getScansForCycle(scans, cycle);
+      const follicularScans = getFollicularScans(cycleScans, cycle);
+      const otherScans = cycleScans.filter(
+        (s) => !follicularScans.includes(s)
+      );
+
+      if (follicularScans.length >= 2 && otherScans.length >= 2) {
+        const follicularEnergy = avgMetric(follicularScans, (s) => s.energyScore);
+        const otherEnergy = avgMetric(otherScans, (s) => s.energyScore);
+        if (follicularEnergy > otherEnergy * 1.15) {
+          follicularEnergyHighCount++;
+        }
+      }
+    }
+
+    if (follicularEnergyHighCount >= 2) {
+      tips.push({
+        id: "pattern-follicular-energy",
+        icon: "Zap",
+        title: t.coaching?.patternFollicularEnergyTitle ?? "Follicular Energy Peak",
+        message: t.coaching?.patternFollicularEnergyMsg ?? "Your energy peaks in your follicular phase. This is a great time for challenging workouts!",
+        category: "energy",
+        priority: 3,
+      });
+    }
+  }
+
+  // --- Pattern 4: Skipped check-ins for 3+ days ---
+  if (checkIns.length > 0) {
+    const today = new Date();
+    const lastCheckIn = checkIns[checkIns.length - 1];
+    const lastCheckInDate = new Date(lastCheckIn.date);
+    const daysSinceLastCheckIn = Math.floor(
+      (today.getTime() - lastCheckInDate.getTime()) / (24 * 60 * 60 * 1000)
+    );
+
+    if (daysSinceLastCheckIn >= 3) {
+      tips.push({
+        id: "pattern-check-in-gap",
+        icon: "CheckCircle",
+        title: t.coaching?.patternCheckInGapTitle ?? "Welcome Back!",
+        message: t.coaching?.patternCheckInGapMsg ?? "Welcome back! Consistent logging helps IRIS learn your patterns better.",
+        category: "trend",
+        priority: 2,
+      });
+    }
+  }
+
+  // --- Pattern 5: Inflammation rises after weekends ---
+  if (scans.length >= 10 && checkIns.length >= 10) {
+    const last30DaysMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const recentScans = scans.filter((s) => s.timestamp >= last30DaysMs);
+
+    // Group scans by whether they are on Monday/Tuesday (post-weekend) vs mid-week
+    const postWeekendScans = recentScans.filter((s) => {
+      const day = new Date(s.date).getDay();
+      return day === 1 || day === 2; // Monday or Tuesday
+    });
+    const midWeekScans = recentScans.filter((s) => {
+      const day = new Date(s.date).getDay();
+      return day >= 3 && day <= 5; // Wednesday to Friday
+    });
+
+    if (postWeekendScans.length >= 3 && midWeekScans.length >= 3) {
+      const postWeekendInflammation = avgMetric(postWeekendScans, (s) => s.inflammation);
+      const midWeekInflammation = avgMetric(midWeekScans, (s) => s.inflammation);
+
+      if (postWeekendInflammation > midWeekInflammation * 1.2) {
+        tips.push({
+          id: "pattern-weekend-inflammation",
+          icon: "Flame",
+          title: t.coaching?.patternWeekendInflammationTitle ?? "Weekend Inflammation Pattern",
+          message: t.coaching?.patternWeekendInflammationMsg ?? "Your weekend routine may be affecting your comfort scores. Notice any dietary patterns?",
+          category: "inflammation",
+          priority: 3,
+        });
+      }
+    }
+  }
+
+  // --- Pattern 6: Hydration consistently low ---
+  if (scans.length >= 7) {
+    const last14Days = scans.filter(
+      (s) => s.timestamp >= Date.now() - 14 * 24 * 60 * 60 * 1000
+    );
+    if (last14Days.length >= 5) {
+      const lowHydrationCount = last14Days.filter(
+        (s) => s.hydrationLevel < 4.5
+      ).length;
+      const lowHydrationRatio = lowHydrationCount / last14Days.length;
+
+      if (lowHydrationRatio >= 0.6) {
+        tips.push({
+          id: "pattern-low-hydration",
+          icon: "Droplets",
+          title: t.coaching?.patternLowHydrationTitle ?? "Hydration Pattern",
+          message: t.coaching?.patternLowHydrationMsg ?? "Your hydration tends to run low. Try setting a water reminder throughout the day.",
+          category: "hydration",
+          priority: 2,
+        });
+      }
+    }
+  }
+
+  return tips;
 }

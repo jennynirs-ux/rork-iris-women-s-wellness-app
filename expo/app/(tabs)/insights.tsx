@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
+import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, TrendingDown, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -11,6 +11,7 @@ import { router } from "expo-router";
 import { getMarkerTranslation } from "@/lib/insightsTranslations";
 import { translateSymptoms } from "@/lib/symptomTranslation";
 import { LineChart } from "react-native-chart-kit";
+import { compareWeeks, WeekComparison } from "@/lib/scanComparison";
 
 type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation' | 'fatigue' | 
   'cognitiveSharpness' | 'emotionalSensitivity' | 'socialEnergy' | 'moodVolatility' |
@@ -664,6 +665,10 @@ export default function InsightsScreen() {
     return filtered;
   }, [scans, trendTimeRange]);
 
+  const weekComparison = useMemo(() => {
+    return compareWeeks(scans, new Date());
+  }, [scans]);
+
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth - 32; // padding
 
@@ -1157,6 +1162,72 @@ export default function InsightsScreen() {
               <TrendingUp size={40} color={colors.primary} />
               <Text style={styles.emptyStateTitle}>Keep scanning to see trends</Text>
               <Text style={styles.emptyStateText}>Collect at least 2 data points to visualize your wellness trends</Text>
+            </View>
+          )}
+
+          {weekComparison && (
+            <View style={styles.comparisonSection}>
+              <Text style={styles.sectionTitle}>{t.insights.weekComparisonTitle}</Text>
+              <Text style={styles.sectionSubtitle}>{t.insights.weekComparisonSubtitle}</Text>
+              {weekComparison.map((item) => {
+                const isImproving = item.trend === 'improving';
+                const isDeclining = item.trend === 'declining';
+                const trendColor = isImproving
+                  ? (colors.statusGood ?? '#10B981')
+                  : isDeclining
+                  ? (colors.statusAttention ?? '#EF4444')
+                  : colors.textSecondary;
+                const trendBgColor = isImproving
+                  ? (colors.statusGoodBg ?? '#ECFDF5')
+                  : isDeclining
+                  ? (colors.statusAttentionBg ?? '#FEF2F2')
+                  : colors.borderLight;
+                const TrendIcon = isImproving ? TrendingUp : isDeclining ? TrendingDown : Minus;
+
+                const COMPARISON_ICONS: Record<string, any> = {
+                  Battery: Battery,
+                  Zap: Zap,
+                  Heart: Heart,
+                  Droplets: Droplets,
+                  Moon: Moon,
+                  Flame: Flame,
+                };
+                const IconComponent = COMPARISON_ICONS[item.icon] || Battery;
+
+                // Resolve translation key like "home.energy" -> t.home.energy
+                const resolveKey = (key: string): string => {
+                  const parts = key.split('.');
+                  let val: any = t;
+                  for (const part of parts) {
+                    val = val?.[part];
+                  }
+                  return typeof val === 'string' ? val : key;
+                };
+
+                return (
+                  <View key={item.metric} style={styles.comparisonCard}>
+                    <View style={styles.comparisonLeft}>
+                      <View style={[styles.comparisonIcon, { backgroundColor: trendBgColor }]}>
+                        <IconComponent size={18} color={trendColor} />
+                      </View>
+                      <View style={styles.comparisonInfo}>
+                        <Text style={styles.comparisonMetricName}>{resolveKey(item.metricKey)}</Text>
+                        <Text style={styles.comparisonValues}>
+                          {item.thisWeek.toFixed(1)} {t.insights.weekComparisonVs} {item.lastWeek.toFixed(1)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.comparisonRight}>
+                      <View style={[styles.comparisonTrendBadge, { backgroundColor: trendBgColor }]}>
+                        <TrendIcon size={14} color={trendColor} />
+                        <Text style={[styles.comparisonChangeText, { color: trendColor }]}>
+                          {item.change > 0 ? '+' : ''}{item.change.toFixed(0)}%
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           )}
 
@@ -2987,5 +3058,63 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 12,
     color: colors.textTertiary,
     marginTop: 4,
+  },
+  comparisonSection: {
+    marginBottom: 32,
+  },
+  comparisonCard: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  comparisonLeft: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    flex: 1,
+  },
+  comparisonIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: 12,
+  },
+  comparisonInfo: {
+    flex: 1,
+  },
+  comparisonMetricName: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: colors.text,
+    marginBottom: 2,
+  },
+  comparisonValues: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  comparisonRight: {
+    marginLeft: 12,
+  },
+  comparisonTrendBadge: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 4,
+  },
+  comparisonChangeText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
   },
 }); }

@@ -133,8 +133,12 @@ function RootLayoutNav() {
         <Stack.Screen name="scan-result" options={{ presentation: "modal", title: "Scan Results" }} />
         <Stack.Screen name="admin-login" options={{ headerShown: false }} />
         <Stack.Screen name="admin" options={{ headerShown: false }} />
+        <Stack.Screen name="share-recap" options={{ presentation: "modal", title: "Cycle Recap" }} />
         <Stack.Screen name="referral" options={{ presentation: "modal", headerShown: false }} />
         <Stack.Screen name="paywall" options={{ presentation: "modal", headerShown: false }} />
+        <Stack.Screen name="programs" options={{ headerShown: false }} />
+        <Stack.Screen name="program-detail" options={{ headerShown: false }} />
+        <Stack.Screen name="journal" options={{ headerShown: false }} />
       </Stack>
     </OnboardingGate>
   );
