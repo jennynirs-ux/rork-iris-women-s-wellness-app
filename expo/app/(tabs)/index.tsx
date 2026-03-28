@@ -245,7 +245,7 @@ const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, is
 
 CommunityTipCard.displayName = 'CommunityTipCard';
 
-function WebDatePicker({ date, onChange, colors, t }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light; t: any }) {
+function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date: Date) => void; colors: typeof Colors.light }) {
   const monthRef = useRef<TextInput>(null);
   const dayRef = useRef<TextInput>(null);
   const yearRef = useRef<TextInput>(null);
@@ -345,7 +345,7 @@ function WebDatePicker({ date, onChange, colors, t }: { date: Date; onChange: (d
   return (
     <View style={wdpStyles.container}>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>{t.home.month}</Text>
+        <Text style={wdpStyles.label}>Month</Text>
         <TextInput
           ref={monthRef}
           style={wdpStyles.input}
@@ -361,7 +361,7 @@ function WebDatePicker({ date, onChange, colors, t }: { date: Date; onChange: (d
         <Text style={wdpStyles.separator}>/</Text>
       </View>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>{t.home.day}</Text>
+        <Text style={wdpStyles.label}>Day</Text>
         <TextInput
           ref={dayRef}
           style={wdpStyles.input}
@@ -377,7 +377,7 @@ function WebDatePicker({ date, onChange, colors, t }: { date: Date; onChange: (d
         <Text style={wdpStyles.separator}>/</Text>
       </View>
       <View style={wdpStyles.group}>
-        <Text style={wdpStyles.label}>{t.home.year}</Text>
+        <Text style={wdpStyles.label}>Year</Text>
         <TextInput
           ref={yearRef}
           style={[wdpStyles.input, wdpStyles.yearInput]}
@@ -486,14 +486,6 @@ export default function HomeScreen() {
       router.replace("/onboarding" as any);
     }
   }, [userProfile.hasCompletedOnboarding, isLoading]);
-
-  const hasTodayScan = useMemo(() => {
-    if (!latestScan) return false;
-    const today = new Date().toISOString().split("T")[0];
-    return latestScan.date === today;
-  }, [latestScan]);
-
-  const shouldShowDailyRitualCard = useMemo(() => !hasTodayScan || !todayCheckIn, [hasTodayScan, todayCheckIn]);
 
   const generateTodayHabits = useCallback(() => {
     const scan = latestScan;
@@ -762,64 +754,38 @@ export default function HomeScreen() {
     return { completed, total };
   }, [todayHabits]);
 
-  const weeklyDigest = useMemo(() => {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
-
-    const recentScans = scans.filter(s => s.date >= sevenDaysAgoStr);
-    const scanCount = recentScans.length;
-    if (scanCount < 2) return null;
-
-    const recentCheckIns = checkIns.filter(c => c.date >= sevenDaysAgoStr);
-    const checkInCount = recentCheckIns.length;
-
-    const avgEnergy = recentScans.reduce((sum, s) => sum + (s.energyScore ?? 5), 0) / scanCount;
-    const avgStress = recentScans.reduce((sum, s) => sum + (s.stressScore ?? 5), 0) / scanCount;
-    const avgRecovery = recentScans.reduce((sum, s) => sum + (s.recoveryScore ?? 5), 0) / scanCount;
-
-    // Determine trend by comparing first-half vs second-half averages
-    const midpoint = Math.floor(scanCount / 2);
-    const firstHalf = recentScans.slice(0, midpoint);
-    const secondHalf = recentScans.slice(midpoint);
-
-    const avgFirst = firstHalf.length > 0
-      ? (firstHalf.reduce((s, sc) => s + (sc.energyScore ?? 5) + (sc.recoveryScore ?? 5) - (sc.stressScore ?? 5), 0) / firstHalf.length)
-      : 0;
-    const avgSecond = secondHalf.length > 0
-      ? (secondHalf.reduce((s, sc) => s + (sc.energyScore ?? 5) + (sc.recoveryScore ?? 5) - (sc.stressScore ?? 5), 0) / secondHalf.length)
-      : 0;
-
-    const diff = avgSecond - avgFirst;
-    let trend: 'improving' | 'stable' | 'declining' = 'stable';
-    if (diff > 1) trend = 'improving';
-    else if (diff < -1) trend = 'declining';
-
-    // Find best improving metric
-    const firstEnergy = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.energyScore ?? 5), 0) / firstHalf.length : avgEnergy;
-    const secondEnergy = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.energyScore ?? 5), 0) / secondHalf.length : avgEnergy;
-    const firstStress = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.stressScore ?? 5), 0) / firstHalf.length : avgStress;
-    const secondStress = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.stressScore ?? 5), 0) / secondHalf.length : avgStress;
-    const firstRecovery = firstHalf.length > 0 ? firstHalf.reduce((s, sc) => s + (sc.recoveryScore ?? 5), 0) / firstHalf.length : avgRecovery;
-    const secondRecovery = secondHalf.length > 0 ? secondHalf.reduce((s, sc) => s + (sc.recoveryScore ?? 5), 0) / secondHalf.length : avgRecovery;
-
-    const improvements = [
-      { metric: 'energy', delta: secondEnergy - firstEnergy },
-      { metric: 'stress', delta: firstStress - secondStress }, // lower stress is better
-      { metric: 'recovery', delta: secondRecovery - firstRecovery },
-    ];
-    const bestMetric = improvements.reduce((best, curr) => curr.delta > best.delta ? curr : best, improvements[0]);
-
-    return {
-      avgEnergy: Math.round(avgEnergy * 10) / 10,
-      avgStress: Math.round(avgStress * 10) / 10,
-      avgRecovery: Math.round(avgRecovery * 10) / 10,
-      scanCount,
-      checkInCount,
-      bestMetric: bestMetric.metric,
-      trend,
+  const allHabits = useMemo(() => {
+    const scanHabit: Habit = {
+      id: '__scan__',
+      title: t.home?.scan || 'Scan',
+      description: progressScanDone
+        ? (t.home?.scanCompleted || 'Completed today')
+        : (t.home?.startYourDay || 'Start your day with a scan and check-in'),
+      category: 'hydration' as Habit['category'],
+      completed: progressScanDone,
+      icon: 'Eye',
     };
-  }, [scans, checkIns]);
+    const checkInHabit: Habit = {
+      id: '__checkin__',
+      title: t.home?.checkIn || 'Check-in',
+      description: progressCheckInDone
+        ? (t.home?.checkInCompleted || 'Completed today')
+        : (t.home?.logHowYouFeel || 'Log how you feel today'),
+      category: 'hydration' as Habit['category'],
+      completed: progressCheckInDone,
+      icon: 'ClipboardCheck',
+    };
+    return [scanHabit, checkInHabit, ...todayHabits];
+  }, [todayHabits, progressScanDone, progressCheckInDone, t]);
+
+  const handleSpecialHabitPress = useCallback((habitId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (habitId === '__scan__') {
+      router.push('/(tabs)/scan');
+    } else if (habitId === '__checkin__') {
+      router.push('/check-in' as any);
+    }
+  }, []);
 
   const renderHeaderComponent = useCallback(() => (
     <View>
@@ -827,9 +793,9 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>{greeting}</Text>
-          {enrichedPhaseInfo?.phaseDay != null && enrichedPhaseInfo?.phaseName ? (
+          {enrichedPhaseInfo?.cycleDay != null && enrichedPhaseInfo?.phaseName ? (
             <Text style={styles.headerSubtitle}>
-              Day {enrichedPhaseInfo.phaseDay} · {enrichedPhaseInfo.phaseName}
+              Day {enrichedPhaseInfo.cycleDay} of {enrichedPhaseInfo.totalCycleDays} · {enrichedPhaseInfo.phaseName}
             </Text>
           ) : null}
         </View>
@@ -862,76 +828,14 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* FIX 3: Today's Progress Widget */}
-      {!isNewUser && (
-        <View style={styles.progressCard}>
-          <Text style={styles.progressTitle}>
-            {t.home?.todaysProgress || "Today's Progress"}
-          </Text>
-          <View style={styles.progressRow}>
-            <View style={styles.progressItem}>
-              <View style={[styles.progressIconCircle, { backgroundColor: progressScanDone ? '#8BC9A320' : colors.surface }]}>
-                {progressScanDone ? (
-                  <CheckCircle2 size={20} color="#8BC9A3" />
-                ) : (
-                  <Eye size={20} color={colors.textTertiary} />
-                )}
-              </View>
-              <Text style={[styles.progressLabel, progressScanDone && { color: '#8BC9A3' }]}>
-                {t.home?.scan || 'Scan'}
-              </Text>
-            </View>
-            <View style={styles.progressItem}>
-              <View style={[styles.progressIconCircle, { backgroundColor: progressCheckInDone ? '#8BC9A320' : colors.surface }]}>
-                {progressCheckInDone ? (
-                  <CheckCircle2 size={20} color="#8BC9A3" />
-                ) : (
-                  <ClipboardCheck size={20} color={colors.textTertiary} />
-                )}
-              </View>
-              <Text style={[styles.progressLabel, progressCheckInDone && { color: '#8BC9A3' }]}>
-                {t.home?.checkIn || 'Check-in'}
-              </Text>
-            </View>
-            <View style={styles.progressItem}>
-              <View style={[styles.progressIconCircle, { backgroundColor: habitsProgress.completed > 0 ? '#8BC9A320' : colors.surface }]}>
-                {habitsProgress.completed === habitsProgress.total && habitsProgress.total > 0 ? (
-                  <CheckCircle2 size={20} color="#8BC9A3" />
-                ) : (
-                  <Activity size={20} color={habitsProgress.completed > 0 ? '#8BC9A3' : colors.textTertiary} />
-                )}
-              </View>
-              <Text style={[styles.progressLabel, habitsProgress.completed > 0 && { color: '#8BC9A3' }]}>
-                {habitsProgress.completed}/{habitsProgress.total}
-              </Text>
-            </View>
-          </View>
-          {!progressScanDone && !progressCheckInDone && (
-            <Text style={styles.progressCta}>
-              {t.home?.completeDailyCheck || 'Complete your daily wellness check'}
-            </Text>
-          )}
-        </View>
-      )}
 
       <View style={styles.summaryCard}>
-        <View style={styles.phaseHeader}>
-          <View style={[styles.phaseIconContainer, { backgroundColor: lifeStagePhase.color + "30" }]}>
-            <lifeStagePhase.icon size={32} color={lifeStagePhase.color} />
-          </View>
-          <View style={styles.phaseInfo}>
-            <Text style={styles.phaseLabel}>{t.home.phase}</Text>
-            <Text style={styles.phaseName}>{lifeStagePhase.label}</Text>
-            {phaseEstimate.confidence === 'low' && (
-              <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
-                {t.home.estimatedLowConfidence}
-              </Text>
-            )}
-            {phaseEstimate.confidence === 'medium' && (
-              <Text style={{ fontSize: 11, color: colors.textTertiary, marginTop: 2 }}>
-                {t.home.approximateMediumConfidence}
-              </Text>
-            )}
+        <View style={styles.phaseBadgeRow}>
+          <View style={[styles.phaseBadge, { backgroundColor: lifeStagePhase.color + "20" }]}>
+            <lifeStagePhase.icon size={16} color={lifeStagePhase.color} />
+            <Text style={[styles.phaseBadgeText, { color: lifeStagePhase.color }]}>
+              {lifeStagePhase.label}
+            </Text>
           </View>
           {userProfile.lifeStage === 'regular' && (
             <TouchableOpacity
@@ -943,10 +847,20 @@ export default function HomeScreen() {
               accessibilityLabel="Edit cycle start date"
               accessibilityRole="button"
             >
-              <Edit2 size={20} color={colors.primary} />
+              <Edit2 size={16} color={colors.primary} />
             </TouchableOpacity>
           )}
         </View>
+        {phaseEstimate.confidence === 'low' && (
+          <Text style={styles.phaseConfidenceText}>
+            Estimated — log more data for accuracy
+          </Text>
+        )}
+        {phaseEstimate.confidence === 'medium' && (
+          <Text style={styles.phaseConfidenceText}>
+            Approximate — based on limited data
+          </Text>
+        )}
 
         <View style={styles.scoresContainer}>
           <View style={styles.scoreItem} accessibilityLabel={`Stress score: ${todaySummary.stressScore} out of 10`}>
@@ -994,6 +908,11 @@ export default function HomeScreen() {
           <Text style={styles.focusLabel}>{t.home.recommendedFocus}</Text>
           <Text style={styles.focusText}>{todaySummary.recommendedFocus}</Text>
         </View>
+        {enrichedPhaseInfo?.phaseDescription ? (
+          <Text style={styles.phaseDescriptionSmall}>
+            {enrichedPhaseInfo.phaseDescription}
+          </Text>
+        ) : null}
       </View>
 
       {streakData && streakData.scanStreak > 0 && (
@@ -1001,7 +920,7 @@ export default function HomeScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Flame size={18} color="#FF6B6B" />
             <Text style={styles.streakText}>
-              {streakData.scanStreak}-day {t.home.scanStreak}
+              {streakData.scanStreak}-day scan streak!
             </Text>
           </View>
         </View>
@@ -1036,82 +955,15 @@ export default function HomeScreen() {
             accessibilityLabel="Update life stage"
             accessibilityRole="button"
           >
-            <Text style={styles.suggestionButtonText}>{t.home.updateLifeStage}</Text>
+            <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
             <ArrowRight size={14} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
 
-      {shouldShowDailyRitualCard && (
-        <TouchableOpacity
-          style={styles.dailyRitualCard}
-          onPress={() => router.push("/scan" as any)}
-          activeOpacity={0.7}
-          accessibilityLabel="Start daily iris scan"
-          accessibilityRole="button"
-        >
-          <View style={styles.ritualIconContainer}>
-            <View style={styles.ritualIconCircle}>
-              <Eye size={24} color={colors.primary} />
-            </View>
-          </View>
-          <View style={styles.ritualContent}>
-            <Text style={styles.ritualTitle}>{t.home.dailyRitual}</Text>
-            <Text style={styles.ritualSubtext}>{t.home.startYourDay}</Text>
-          </View>
-          <View style={styles.ritualButton}>
-            <Text style={styles.ritualButtonText}>{t.home.start}</Text>
-            <ArrowRight size={16} color="#FFFFFF" />
-          </View>
-        </TouchableOpacity>
-      )}
-
-      {weeklyDigest && (
-        <View style={styles.weeklyDigestCard}>
-          <Text style={styles.weeklyDigestTitle}>
-            {t.home?.weekInReview || 'Your Week in Review'}
-          </Text>
-          <Text style={styles.weeklyDigestSubtitle}>
-            {(t.home?.weekScansCheckIns || '{scans} scans, {checkIns} check-ins this week')
-              .replace('{scans}', String(weeklyDigest.scanCount))
-              .replace('{checkIns}', String(weeklyDigest.checkInCount))}
-          </Text>
-          <View style={styles.weeklyDigestMetrics}>
-            <View style={styles.weeklyDigestMetricRow}>
-              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.energy || 'Energy'}</Text>
-              <View style={styles.weeklyDigestBarTrack}>
-                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgEnergy / 10) * 100}%`, backgroundColor: '#8BC9A3' }]} />
-              </View>
-              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgEnergy}</Text>
-            </View>
-            <View style={styles.weeklyDigestMetricRow}>
-              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.stress || 'Stress'}</Text>
-              <View style={styles.weeklyDigestBarTrack}>
-                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgStress / 10) * 100}%`, backgroundColor: '#E89BA4' }]} />
-              </View>
-              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgStress}</Text>
-            </View>
-            <View style={styles.weeklyDigestMetricRow}>
-              <Text style={styles.weeklyDigestMetricLabel}>{t.home?.recovery || 'Recovery'}</Text>
-              <View style={styles.weeklyDigestBarTrack}>
-                <View style={[styles.weeklyDigestBarFill, { width: `${(weeklyDigest.avgRecovery / 10) * 100}%`, backgroundColor: '#B8A4E8' }]} />
-              </View>
-              <Text style={styles.weeklyDigestMetricValue}>{weeklyDigest.avgRecovery}</Text>
-            </View>
-          </View>
-          <Text style={styles.weeklyDigestSummary}>
-            {weeklyDigest.trend === 'improving'
-              ? (t.home?.weekImproved || 'Your {metric} improved this week').replace('{metric}', weeklyDigest.bestMetric)
-              : weeklyDigest.trend === 'declining'
-                ? (t.home?.weekDeclining || 'Some scores dipped \u2014 be extra gentle with yourself')
-                : (t.home?.weekSteady || 'Steady week \u2014 keep it up!')}
-          </Text>
-        </View>
-      )}
-
       {coachingTips.length > 0 && (
         <View style={styles.coachingTipsSection}>
-          <Text style={styles.sectionTitle}>{t.home.dailyTips}</Text>
+          <Text style={styles.sectionTitle}>Daily Tips</Text>
           {coachingTips.map((tip) => (
             <CoachingTipCard
               key={tip.id}
@@ -1124,6 +976,14 @@ export default function HomeScreen() {
         </View>
       )}
 
+      <View style={styles.habitsList}>
+        <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
+      </View>
+    </View>
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, coachingTips, handleDismissCoachingTip, greeting, enrichedPhaseInfo, isNewUser, phaseEstimate, streakData]);
+
+  const renderFooterComponent = useCallback(() => (
+    <View>
       {communityFeedData?.tips && communityFeedData.tips.length > 0 && (
         <View style={styles.communitySection}>
           <TouchableOpacity
@@ -1133,7 +993,7 @@ export default function HomeScreen() {
             accessibilityLabel="Toggle community feed"
             accessibilityRole="button"
           >
-            <Text style={styles.sectionTitle}>{t.home.fromCommunity}</Text>
+            <Text style={styles.sectionTitle}>From the Community</Text>
             {communityCollapsed ? (
               <ChevronDown size={20} color={colors.text} />
             ) : (
@@ -1163,18 +1023,14 @@ export default function HomeScreen() {
                 accessibilityRole="button"
               >
                 <Send size={16} color="#FFFFFF" />
-                <Text style={styles.communityShareButtonText}>{t.home.shareTip}</Text>
+                <Text style={styles.communityShareButtonText}>Share a tip</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
       )}
-
-      <View style={styles.habitsList}>
-        <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
-      </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, greeting, enrichedPhaseInfo, isNewUser, progressScanDone, progressCheckInDone, habitsProgress, todayStr, weeklyDigest]);
+  ), [communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, colors, styles]);
 
   if (isLoading) {
     return (
@@ -1191,20 +1047,54 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
         <FlatList
-          data={todayHabits}
-          renderItem={({ item: habit }) => (
-            <HabitCard
-              habit={habit}
-              colors={colors}
-              onPress={handleHabitPress}
-              styles={styles}
-            />
-          )}
+          data={allHabits}
+          renderItem={({ item: habit }) => {
+            if (habit.id === '__scan__' || habit.id === '__checkin__') {
+              const isSpecialScan = habit.id === '__scan__';
+              const iconColor = habit.completed ? '#8BC9A3' : colors.primary;
+              return (
+                <TouchableOpacity
+                  style={styles.habitCard}
+                  onPress={() => handleSpecialHabitPress(habit.id)}
+                  accessibilityLabel={`${habit.title}, ${habit.completed ? 'completed' : 'not completed'}`}
+                  accessibilityRole="button"
+                >
+                  <View style={[styles.habitIcon, { backgroundColor: (habit.completed ? '#8BC9A3' : colors.primary) + '20' }]}>
+                    {isSpecialScan ? (
+                      <Eye size={20} color={iconColor} />
+                    ) : (
+                      <ClipboardCheck size={20} color={iconColor} />
+                    )}
+                  </View>
+                  <View style={styles.habitContent}>
+                    <Text style={styles.habitTitle}>{habit.title}</Text>
+                    <Text style={styles.habitDescription}>{habit.description}</Text>
+                  </View>
+                  <View style={styles.habitCheckbox}>
+                    {habit.completed ? (
+                      <CheckCircle2 size={24} color="#8BC9A3" />
+                    ) : (
+                      <ArrowRight size={24} color={colors.primary} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            return (
+              <HabitCard
+                habit={habit}
+                colors={colors}
+                onPress={handleHabitPress}
+                styles={styles}
+              />
+            );
+          }}
           keyExtractor={(habit) => habit.id}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={5}
           ListHeaderComponent={renderHeaderComponent}
+          ListFooterComponent={renderFooterComponent}
           contentContainerStyle={styles.flatListContent}
           showsVerticalScrollIndicator={false}
         />
@@ -1228,12 +1118,12 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
               <Text style={styles.modalDescription}>
-                {t.home.selectPeriodDescription} Day {enrichedPhaseInfo.cycleDay} / {enrichedPhaseInfo.totalCycleDays} — {enrichedPhaseInfo.phaseName}
+                Select the first day of your last period to adjust your cycle tracking. Day {enrichedPhaseInfo.cycleDay} of {enrichedPhaseInfo.totalCycleDays} — {enrichedPhaseInfo.phaseName}
               </Text>
 
               <View style={styles.datePickerContainer}>
                 {Platform.OS === "web" ? (
-                  <WebDatePicker date={tempDate} onChange={setTempDate} colors={colors} t={t} />
+                  <WebDatePicker date={tempDate} onChange={setTempDate} colors={colors} />
                 ) : (
                   <DateTimePicker
                     value={tempDate}
@@ -1274,7 +1164,7 @@ export default function HomeScreen() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t.home.shareTipTitle}</Text>
+                <Text style={styles.modalTitle}>Share a Tip</Text>
                 <TouchableOpacity
                   onPress={() => setShowCommunityModal(false)}
                   accessibilityLabel="Close"
@@ -1285,11 +1175,11 @@ export default function HomeScreen() {
               </View>
 
               <Text style={styles.modalDescription}>
-                {t.home.shareTipDescription}
+                Share a helpful tip with others in your {currentPhase} phase. Keep it 10-280 characters.
               </Text>
 
               <View style={styles.communityModalForm}>
-                <Text style={styles.formLabel}>{t.home.category}</Text>
+                <Text style={styles.formLabel}>Category</Text>
                 <View style={styles.categorySelector}>
                   {(["nutrition", "exercise", "selfcare", "mindfulness", "sleep"] as const).map((cat) => (
                     <TouchableOpacity
@@ -1314,10 +1204,10 @@ export default function HomeScreen() {
                   ))}
                 </View>
 
-                <Text style={styles.formLabel}>{t.home.yourTip}</Text>
+                <Text style={styles.formLabel}>Your Tip</Text>
                 <TextInput
                   style={styles.communityTipInput}
-                  placeholder={t.home.shareWisdomPlaceholder}
+                  placeholder="Share your wisdom..."
                   placeholderTextColor={colors.textTertiary}
                   value={communityTipText}
                   onChangeText={setCommunityTipText}
@@ -1340,7 +1230,7 @@ export default function HomeScreen() {
                   accessibilityRole="button"
                 >
                   <Text style={styles.submitTipButtonText}>
-                    {submitTipMutation.isPending ? t.home.submitting : t.home.submitTip}
+                    {submitTipMutation.isPending ? "Submitting..." : "Submit Tip"}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1430,51 +1320,6 @@ function createStyles(colors: typeof Colors.light) {
       fontSize: 16,
       fontWeight: "600" as const,
     },
-    progressCard: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
-    },
-    progressTitle: {
-      fontSize: 15,
-      fontWeight: "600" as const,
-      color: colors.text,
-      marginBottom: 12,
-    },
-    progressRow: {
-      flexDirection: "row" as const,
-      justifyContent: "space-around" as const,
-      alignItems: "center" as const,
-    },
-    progressItem: {
-      alignItems: "center" as const,
-      gap: 6,
-    },
-    progressIconCircle: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      alignItems: "center" as const,
-      justifyContent: "center" as const,
-    },
-    progressLabel: {
-      fontSize: 12,
-      fontWeight: "600" as const,
-      color: colors.textSecondary,
-    },
-    progressCta: {
-      fontSize: 13,
-      color: colors.textTertiary,
-      textAlign: "center" as const,
-      marginTop: 12,
-      fontStyle: "italic" as const,
-    },
     loadingContainer: {
       flex: 1,
       justifyContent: "center" as const,
@@ -1498,31 +1343,35 @@ function createStyles(colors: typeof Colors.light) {
       shadowRadius: 12,
       elevation: 3,
     },
-    phaseHeader: {
+    phaseBadgeRow: {
       flexDirection: "row" as const,
       alignItems: "center" as const,
-      marginBottom: 20,
+      justifyContent: "space-between" as const,
+      marginBottom: 12,
     },
-    phaseIconContainer: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+    phaseBadge: {
+      flexDirection: "row" as const,
       alignItems: "center" as const,
-      justifyContent: "center" as const,
-      marginRight: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      gap: 6,
     },
-    phaseInfo: {
-      flex: 1,
-    },
-    phaseLabel: {
+    phaseBadgeText: {
       fontSize: 13,
-      color: colors.textSecondary,
-      marginBottom: 2,
-    },
-    phaseName: {
-      fontSize: 22,
       fontWeight: "700" as const,
-      color: colors.text,
+    },
+    phaseConfidenceText: {
+      fontSize: 11,
+      color: colors.textTertiary,
+      marginBottom: 8,
+    },
+    phaseDescriptionSmall: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      textAlign: "center" as const,
+      marginTop: 12,
+      lineHeight: 17,
     },
     scoresContainer: {
       flexDirection: "row" as const,
@@ -1729,60 +1578,6 @@ function createStyles(colors: typeof Colors.light) {
       fontSize: 16,
       fontWeight: "600" as const,
     },
-    dailyRitualCard: {
-      backgroundColor: colors.card,
-      borderRadius: 20,
-      padding: 20,
-      marginBottom: 24,
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.06,
-      shadowRadius: 8,
-      elevation: 2,
-      borderWidth: 1,
-      borderColor: colors.primaryLight,
-    },
-    ritualIconContainer: {
-      marginRight: 16,
-    },
-    ritualIconCircle: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: colors.primaryLight,
-      alignItems: "center" as const,
-      justifyContent: "center" as const,
-    },
-    ritualContent: {
-      flex: 1,
-    },
-    ritualTitle: {
-      fontSize: 16,
-      fontWeight: "600" as const,
-      color: colors.text,
-      marginBottom: 4,
-    },
-    ritualSubtext: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      lineHeight: 18,
-    },
-    ritualButton: {
-      backgroundColor: colors.primary,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 20,
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      gap: 4,
-    },
-    ritualButtonText: {
-      color: "#FFFFFF",
-      fontSize: 14,
-      fontWeight: "600" as const,
-    },
     coachingTipsSection: {
       marginBottom: 24,
     },
@@ -1982,66 +1777,6 @@ function createStyles(colors: typeof Colors.light) {
       color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "600" as const,
-    },
-    weeklyDigestCard: {
-      backgroundColor: colors.card,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
-      shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
-    },
-    weeklyDigestTitle: {
-      fontSize: 16,
-      fontWeight: "700" as const,
-      color: colors.text,
-      marginBottom: 4,
-    },
-    weeklyDigestSubtitle: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      marginBottom: 12,
-    },
-    weeklyDigestMetrics: {
-      gap: 8,
-      marginBottom: 12,
-    },
-    weeklyDigestMetricRow: {
-      flexDirection: "row" as const,
-      alignItems: "center" as const,
-      gap: 8,
-    },
-    weeklyDigestMetricLabel: {
-      fontSize: 12,
-      fontWeight: "500" as const,
-      color: colors.textSecondary,
-      width: 60,
-    },
-    weeklyDigestBarTrack: {
-      flex: 1,
-      height: 6,
-      backgroundColor: colors.surface,
-      borderRadius: 3,
-      overflow: "hidden" as const,
-    },
-    weeklyDigestBarFill: {
-      height: 6,
-      borderRadius: 3,
-    },
-    weeklyDigestMetricValue: {
-      fontSize: 12,
-      fontWeight: "600" as const,
-      color: colors.text,
-      width: 28,
-      textAlign: "right" as const,
-    },
-    weeklyDigestSummary: {
-      fontSize: 13,
-      color: colors.text,
-      fontStyle: "italic" as const,
     },
   });
 }
