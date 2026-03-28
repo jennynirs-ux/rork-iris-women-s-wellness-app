@@ -40,7 +40,20 @@ import {
   Flag,
   Flame,
   ClipboardCheck,
+  AlertCircle,
+  Star,
+  TrendingUp,
+  CheckCircle,
+  Camera,
+  Leaf,
+  Coffee,
+  BedDouble,
 } from "lucide-react-native";
+
+const COACHING_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  AlertCircle, Moon, Zap, Battery, Droplets, Flame, Leaf, Star,
+  TrendingUp, CheckCircle, Brain, Camera, Heart, Sprout, Coffee, BedDouble,
+};
 import * as Haptics from "expo-haptics";
 import CircularProgress from "@/components/CircularProgress";
 import { useApp } from "@/contexts/AppContext";
@@ -168,12 +181,19 @@ const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: Coaching
   };
 
   const borderColor = categoryColors[tip.category];
+  const IconComp = COACHING_ICON_MAP[tip.icon];
 
   return (
     <View style={[styles.coachingTipCard, { borderLeftColor: borderColor }]}>
       <View style={styles.coachingTipContent}>
         <View style={styles.coachingTipHeader}>
-          <Text style={styles.coachingTipIcon}>{tip.icon}</Text>
+          {IconComp ? (
+            <View style={{ marginRight: 12 }}>
+              <IconComp size={20} color={borderColor} />
+            </View>
+          ) : (
+            <Text style={styles.coachingTipIcon}>{tip.icon}</Text>
+          )}
           <Text style={styles.coachingTipTitle}>{tip.title}</Text>
           <TouchableOpacity
             onPress={() => onDismiss(tip.id)}

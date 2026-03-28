@@ -40,19 +40,11 @@ const BIRTH_YEAR_OPTIONS = Array.from({ length: 80 }, (_, i) => {
   return year;
 });
 
+// Month values only — display labels come from getMonthLabel() which uses translated t.calendar.months
 const MONTH_OPTIONS = [
-  { value: "01", label: "January" },
-  { value: "02", label: "February" },
-  { value: "03", label: "March" },
-  { value: "04", label: "April" },
-  { value: "05", label: "May" },
-  { value: "06", label: "June" },
-  { value: "07", label: "July" },
-  { value: "08", label: "August" },
-  { value: "09", label: "September" },
-  { value: "10", label: "October" },
-  { value: "11", label: "November" },
-  { value: "12", label: "December" },
+  { value: "01" }, { value: "02" }, { value: "03" }, { value: "04" },
+  { value: "05" }, { value: "06" }, { value: "07" }, { value: "08" },
+  { value: "09" }, { value: "10" }, { value: "11" }, { value: "12" },
 ];
 
 const getDaysInMonth = (month: string, year: string): number => {

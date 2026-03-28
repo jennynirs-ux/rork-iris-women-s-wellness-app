@@ -66,7 +66,7 @@ export default function TabLayout() {
       {isOffline && (
         <View style={dynamicStyles.offlineBanner}>
           <Wifi size={18} color={colors.card} />
-          <Text style={dynamicStyles.offlineBannerText}>You are offline</Text>
+          <Text style={dynamicStyles.offlineBannerText}>{t.common?.offline || 'You are offline'}</Text>
         </View>
       )}
       <Tabs
