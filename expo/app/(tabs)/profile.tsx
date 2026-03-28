@@ -36,6 +36,8 @@ import {
   FileText,
   Zap,
   Thermometer,
+  Eye,
+  X,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme, ThemeMode } from "@/contexts/ThemeContext";
@@ -370,6 +372,7 @@ export default function ProfileScreen() {
 
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showScanInfoModal, setShowScanInfoModal] = useState(false);
   const [editWeeksPregnant, setEditWeeksPregnant] = useState(userProfile.weeksPregnant?.toString() || '');
   const adminTapCount = useRef(0);
   const adminTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -770,7 +773,21 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               )}
 
-              <TouchableOpacity 
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => setShowScanInfoModal(true)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.menuIcon}>
+                  <Eye size={20} color={colors.primary} />
+                </View>
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuText}>{t.settings?.howScanningWorks || 'How Scanning Works'}</Text>
+                </View>
+                <ChevronRight size={20} color={colors.textTertiary} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => setShowSettingsModal(true)}
               >
@@ -1462,6 +1479,61 @@ export default function ProfileScreen() {
                 <Text style={styles.versionText}>{t.settings.version} 1.0.0</Text>
               </TouchableOpacity>
               </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={showScanInfoModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowScanInfoModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.cycleModalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalHeaderTitle}>{t.settings?.howScanningWorks || 'How Scanning Works'}</Text>
+                <TouchableOpacity onPress={() => setShowScanInfoModal(false)}>
+                  <X size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+              <View style={{ paddingHorizontal: 20, paddingBottom: 24 }}>
+                <View style={{ alignItems: 'center', marginBottom: 24, marginTop: 8 }}>
+                  <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center' }}>
+                    <Eye size={36} color={colors.primary} />
+                  </View>
+                </View>
+                {[
+                  t.scan?.firstScanBullet1 || 'Takes about 5 seconds',
+                  t.scan?.firstScanBullet2 || 'We analyze your iris patterns for wellness estimates',
+                  t.scan?.firstScanBullet3 || 'No photos are stored — everything stays on your device',
+                ].map((bullet, idx) => (
+                  <View key={idx} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16, paddingRight: 8 }}>
+                    <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: 12, marginTop: 2 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary }}>{idx + 1}</Text>
+                    </View>
+                    <Text style={{ flex: 1, fontSize: 15, lineHeight: 22, color: colors.text }}>{bullet}</Text>
+                  </View>
+                ))}
+                <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 16, marginTop: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <Shield size={16} color={colors.success} />
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+                      {(t as any).privacy?.yourPrivacy || 'Your Privacy'}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 13, lineHeight: 19, color: colors.textSecondary }}>
+                    {(t as any).privacy?.eyePhotosOnDevice || 'Eye photos are analyzed on-device and never stored or sent'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={{ backgroundColor: colors.primary, borderRadius: 24, paddingVertical: 14, alignItems: 'center', marginTop: 24 }}
+                  onPress={() => setShowScanInfoModal(false)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>{t.settings.close}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>

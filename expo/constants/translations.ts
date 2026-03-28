@@ -266,6 +266,7 @@ type Translations = {
     termsSection7Text: string;
     selectDueDate: string;
     babyBirthDate: string;
+    howScanningWorks: string;
     month: string;
     day: string;
     year: string;
@@ -1377,6 +1378,7 @@ const en: Translations = {
     termsSection7Text: 'IRIS is provided "as is" without warranties of any kind. We do our best to provide accurate wellness insights, but we cannot guarantee the completeness or reliability of any information in the app.\n\nMojjo SE is not liable for any decisions you make based on information from IRIS. Use the app as one of many tools in your wellness journey \u2014 not as your only source of guidance.',
     selectDueDate: 'Select Due Date',
     babyBirthDate: "Baby's Birth Date",
+    howScanningWorks: 'How Scanning Works',
     month: 'Month',
     day: 'Day',
     year: 'Year',
@@ -2488,6 +2490,7 @@ const sv: Translations = {
     termsSection7Text: 'IRIS tillhandahålls "i befintligt skick" utan garantier av något slag. Vi gör vårt bästa för att ge korrekta välmåendeinsikter, men vi kan inte garantera fullständigheten eller tillförlitligheten av information i appen.\n\nMojjo SE ansvarar inte för beslut du fattar baserat på information från IRIS. Använd appen som ett av många verktyg i din välmåenderesa \u2014 inte som din enda vägledningskälla.',
     selectDueDate: 'Välj förväntat födelsedatum',
     babyBirthDate: 'Barnets födelsedatum',
+    howScanningWorks: 'Hur skanningen fungerar',
     month: 'Månad',
     day: 'Dag',
     year: 'År',
@@ -3599,6 +3602,7 @@ const de: Translations = {
     termsSection7Text: 'IRIS wird „wie besehen“ ohne jegliche Garantien bereitgestellt. Wir tun unser Bestes, um genaue Wellness-Einblicke zu liefern, können aber die Vollständigkeit oder Zuverlässigkeit von Informationen in der App nicht garantieren.\n\nMojjo SE haftet nicht für Entscheidungen, die du auf Basis von Informationen aus IRIS triffst. Nutze die App als eines von vielen Werkzeugen auf deiner Wellness-Reise \u2014 nicht als deine einzige Orientierungsquelle.',
     selectDueDate: 'Voraussichtliches Geburtsdatum auswählen',
     babyBirthDate: 'Geburtsdatum des Babys',
+    howScanningWorks: 'So funktioniert der Scan',
     month: 'Monat',
     day: 'Tag',
     year: 'Jahr',
@@ -4710,6 +4714,7 @@ const fr: Translations = {
     termsSection7Text: 'IRIS est fourni « en l\'état » sans garantie d\'aucune sorte. Nous faisons de notre mieux pour fournir des informations de bien-être précises, mais nous ne pouvons pas garantir l\'exhaustivité ou la fiabilité des informations dans l\'application.\n\nMojjo SE n\'est pas responsable des décisions que vous prenez sur la base d\'informations d\'IRIS. Utilisez l\'application comme un outil parmi d\'autres dans votre parcours bien-être — pas comme votre seule source d\'orientation.',
     selectDueDate: 'Sélectionner la date d\'accouchement prévue',
     babyBirthDate: 'Date de naissance du bébé',
+    howScanningWorks: 'Comment fonctionne le scan',
     month: 'Mois',
     day: 'Jour',
     year: 'Année',
@@ -5821,6 +5826,7 @@ const es: Translations = {
     termsSection7Text: 'IRIS se proporciona "tal cual" sin garantías de ningún tipo. Hacemos nuestro mejor esfuerzo para proporcionar información precisa de bienestar, pero no podemos garantizar la integridad o fiabilidad de la información en la app.\n\nMojjo SE no es responsable de las decisiones que tomes basándote en información de IRIS. Usa la app como una herramienta más en tu viaje de bienestar — no como tu única fuente de orientación.',
     selectDueDate: 'Seleccionar fecha prevista de parto',
     babyBirthDate: 'Fecha de nacimiento del bebé',
+    howScanningWorks: 'Cómo funciona el escaneo',
     month: 'Mes',
     day: 'Día',
     year: 'Año',
@@ -6932,6 +6938,7 @@ const it: Translations = {
     termsSection7Text: 'IRIS è fornito "così com\'è" senza garanzie di alcun tipo. Facciamo del nostro meglio per fornire informazioni accurate sul benessere, ma non possiamo garantire la completezza o l\'affidabilità delle informazioni nell\'app.\n\nMojjo SE non è responsabile per le decisioni che prendi sulla base delle informazioni di IRIS. Usa l\'app come uno dei tanti strumenti nel tuo percorso di benessere — non come la tua unica fonte di orientamento.',
     selectDueDate: 'Seleziona data prevista di parto',
     babyBirthDate: 'Data di nascita del bambino',
+    howScanningWorks: 'Come funziona la scansione',
     month: 'Mese',
     day: 'Giorno',
     year: 'Anno',
@@ -8043,6 +8050,7 @@ const nl: Translations = {
     termsSection7Text: 'IRIS wordt geleverd "zoals het is" zonder enige garantie. We doen ons best om nauwkeurige wellness-inzichten te bieden, maar we kunnen de volledigheid of betrouwbaarheid van informatie in de app niet garanderen.\n\nMojjo SE is niet aansprakelijk voor beslissingen die je neemt op basis van informatie uit IRIS. Gebruik de app als een van vele tools op je wellness-reis — niet als je enige bron van begeleiding.',
     selectDueDate: 'Uitgerekende datum selecteren',
     babyBirthDate: 'Geboortedatum baby',
+    howScanningWorks: 'Hoe scannen werkt',
     month: 'Maand',
     day: 'Dag',
     year: 'Jaar',
@@ -9154,6 +9162,7 @@ const pl: Translations = {
     termsSection7Text: 'IRIS jest dostarczany „tak jak jest” bez jakichkolwiek gwarancji. Dokładamy wszelkich starań, aby dostarczać dokładne informacje o wellness, ale nie możemy zagwarantować kompletności ani wiarygodności informacji w aplikacji.\n\nMojjo SE nie ponosi odpowiedzialności za decyzje podejmowane na podstawie informacji z IRIS. Używaj aplikacji jako jednego z wielu narzędzi w swojej podróży wellness — nie jako jedynego źródła wskazówek.',
     selectDueDate: 'Wybierz przewidywany termin porodu',
     babyBirthDate: 'Data urodzenia dziecka',
+    howScanningWorks: 'Jak działa skanowanie',
     month: 'Miesiąc',
     day: 'Dzień',
     year: 'Rok',
@@ -10265,6 +10274,7 @@ const pt: Translations = {
     termsSection7Text: 'O IRIS é fornecido "como está" sem garantias de qualquer tipo. Fazemos o nosso melhor para fornecer informações precisas sobre bem-estar, mas não podemos garantir a completude ou confiabilidade das informações no app.\n\nA Mojjo SE não é responsável por decisões que você tome com base em informações do IRIS. Use o app como uma das muitas ferramentas em sua jornada de bem-estar — não como sua única fonte de orientação.',
     selectDueDate: 'Selecionar data prevista do parto',
     babyBirthDate: 'Data de nascimento do bebê',
+    howScanningWorks: 'Como funciona o escaneamento',
     month: 'Mês',
     day: 'Dia',
     year: 'Ano',
