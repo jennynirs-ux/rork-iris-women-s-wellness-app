@@ -700,80 +700,86 @@ export default function InsightsScreen() {
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth - 32; // padding
 
+  // Show only every Nth label to avoid clutter on 30d/90d
+  const labelInterval = trendTimeRange <= 7 ? 1 : trendTimeRange <= 30 ? 5 : 15;
+
   const physicalChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.stress),
           color: hexToChartColor(colors.phaseMenstrual),
           strokeWidth: 2,
-          label: 'Stress'
+          label: t.home?.stress || 'Stress'
         },
         {
           data: trendData.map(d => d.energy),
           color: hexToChartColor(colors.phaseFollicular),
           strokeWidth: 2,
-          label: 'Energy'
+          label: t.home?.energy || 'Energy'
         },
         {
           data: trendData.map(d => d.recovery),
           color: hexToChartColor(colors.phaseLuteal),
           strokeWidth: 2,
-          label: 'Recovery'
+          label: t.home?.recovery || 'Recovery'
         }
       ]
     };
-  }, [trendData, colors]);
+  }, [trendData, colors, labelInterval, t]);
 
   const hydrationInflammationChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.hydration),
           color: hexToChartColor(colors.habitHydration),
           strokeWidth: 2,
-          label: 'Hydration'
+          label: t.home?.hydration || t.insights?.dehydrationTendency || 'Hydration'
         },
         {
           data: trendData.map(d => d.inflammation),
           color: hexToChartColor(colors.habitMovement),
           strokeWidth: 2,
-          label: 'Inflammation'
+          label: t.insights?.inflammation || 'Inflammation'
         }
       ]
     };
-  }, [trendData, colors]);
+  }, [trendData, colors, labelInterval, t]);
 
   const fatigueChartData = useMemo(() => {
     if (!trendData) return null;
 
     return {
-      labels: trendData.map(d => {
+      labels: trendData.map((d, i) => {
+        if (i % labelInterval !== 0) return '';
         const date = new Date(d.date);
-        return `${date.getMonth() + 1}/${date.getDate()}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
       }),
       datasets: [
         {
           data: trendData.map(d => d.fatigue),
           color: hexToChartColor(colors.habitRecovery),
           strokeWidth: 2,
-          label: 'Fatigue'
+          label: t.insights?.fatigue || t.insights?.chartFatigue || 'Fatigue'
         }
       ]
     };
-  }, [trendData, colors]);
+  }, [trendData, colors, labelInterval, t]);
 
   const trendNarratives = useMemo(() => {
     if (!trendData || trendData.length < 2) return null;
