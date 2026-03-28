@@ -11,17 +11,20 @@ import { CheckCircle, Calendar } from "lucide-react-native";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Helper to determine color based on score and metric type
-const getScoreColor = (value: number, metricType: 'good-high' | 'good-low'): string => {
+const getScoreColor = (value: number, metricType: 'good-high' | 'good-low', themeColors?: typeof Colors.light): string => {
+  const good = themeColors?.statusGood ?? '#8BC9A3';
+  const moderate = themeColors?.statusModerate ?? '#F4C896';
+  const attention = themeColors?.statusAttention ?? '#E89BA4';
   if (metricType === 'good-high') {
     // For energy, recovery, hydration: high is good
-    if (value >= 7) return '#8BC9A3'; // green
-    if (value >= 4) return '#F4C896'; // yellow
-    return '#E89BA4'; // red
+    if (value >= 7) return good;
+    if (value >= 4) return moderate;
+    return attention;
   } else {
     // For stress, fatigue, inflammation: low is good
-    if (value <= 3) return '#8BC9A3'; // green
-    if (value <= 6) return '#F4C896'; // yellow
-    return '#E89BA4'; // red
+    if (value <= 3) return good;
+    if (value <= 6) return moderate;
+    return attention;
   }
 };
 
@@ -169,7 +172,7 @@ function ScanResultScreenInner() {
 
           <Animated.View style={[styles.scoresGrid, { opacity: fadeAnim }]}>
             {scores.map((score, idx) => {
-              const color = getScoreColor(score.value, score.type);
+              const color = getScoreColor(score.value, score.type, colors);
               const interpretation = getInterpretation(score.label, score.value);
               return (
                 <ScoreGauge

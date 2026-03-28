@@ -163,14 +163,14 @@ interface CoachingTipCardProps {
 
 const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: CoachingTipCardProps) => {
   const categoryColors: Record<CoachingTip['category'], string> = {
-    stress: "#FF6B6B",
-    energy: "#FFD93D",
-    recovery: "#6BCB77",
-    hydration: "#4D96FF",
-    inflammation: "#FF8C42",
-    sleep: "#9D84B7",
-    phase: "#E89BA4",
-    trend: "#66C2FF",
+    stress: colors.stressHigh,
+    energy: colors.energyHigh,
+    recovery: colors.recoveryHigh,
+    hydration: colors.habitHydration,
+    inflammation: colors.habitMovement,
+    sleep: colors.phaseLuteal,
+    phase: colors.phaseMenstrual,
+    trend: colors.info,
   };
 
   const borderColor = categoryColors[tip.category];
@@ -1245,7 +1245,7 @@ function createStyles(colors: typeof Colors.light) {
       color: colors.primary,
     },
     streakCard: {
-      backgroundColor: "#FF6B6B20",
+      backgroundColor: colors.statusAttention + "20",
       borderRadius: 12,
       padding: 12,
       marginHorizontal: 20,
