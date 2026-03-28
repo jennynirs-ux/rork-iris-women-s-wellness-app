@@ -173,9 +173,9 @@ export default function CheckInScreen() {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     essential: true,
     bleeding: true,
-    lifestyle: false,
-    symptoms: false,
-    menopause: false,
+    lifestyle: true,
+    symptoms: true,
+    menopause: true,
   });
 
   const INFO_CONTENT: Record<string, { title: string; content: string }> = {
