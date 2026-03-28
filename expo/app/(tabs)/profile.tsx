@@ -520,7 +520,7 @@ export default function ProfileScreen() {
       logger.error('Failed to toggle data consent:', error);
       Alert.alert(
         t.settings.error,
-        'Failed to update data consent preference. Please try again.'
+        t.profile.dataConsentError || 'Failed to update data consent preference. Please try again.'
       );
     }
   };
@@ -619,7 +619,7 @@ export default function ProfileScreen() {
                 </View>
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuText}>{t.notifications.title}</Text>
-                  <Text style={styles.menuSubtext}>Check-in, scan, hydration</Text>
+                  <Text style={styles.menuSubtext}>{t.profile.reminderTypes || 'Check-in, scan, hydration'}</Text>
                 </View>
                 <ChevronRight size={20} color={colors.textTertiary} />
               </TouchableOpacity>
@@ -671,10 +671,10 @@ export default function ProfileScreen() {
                   <Crown size={32} color={colors.warning} />
                   <View style={styles.premiumContent}>
                     <Text style={styles.premiumTitle}>{t.profile.premium}</Text>
-                    <Text style={styles.premiumPrice}>Active</Text>
+                    <Text style={styles.premiumPrice}>{t.profile.active || 'Active'}</Text>
                   </View>
                   <View style={[styles.premiumButton, { backgroundColor: colors.success }]}>
-                    <Text style={styles.premiumButtonText}>Active</Text>
+                    <Text style={styles.premiumButtonText}>{t.profile.active || 'Active'}</Text>
                   </View>
                 </View>
               ) : (
@@ -686,7 +686,7 @@ export default function ProfileScreen() {
                   <Crown size={32} color={colors.warning} />
                   <View style={styles.premiumContent}>
                     <Text style={styles.premiumTitle}>{t.profile.premium}</Text>
-                    <Text style={styles.premiumPrice}>$4.99 / month</Text>
+                    <Text style={styles.premiumPrice}>{t.profile.pricePerMonth || '$4.99 / month'}</Text>
                   </View>
                   <View style={styles.premiumButton}>
                     <Text style={styles.premiumButtonText}>{t.profile.upgrade}</Text>
@@ -697,7 +697,7 @@ export default function ProfileScreen() {
               {/* Achievements Section */}
               {milestones && milestones.length > 0 && (
                 <View style={styles.achievementsSection}>
-                  <Text style={styles.sectionTitle}>Achievements</Text>
+                  <Text style={styles.sectionTitle}>{t.profile.achievements || 'Achievements'}</Text>
                   <View style={styles.milestonesGrid}>
                     {milestones.map((milestone) => (
                       <View
@@ -721,7 +721,7 @@ export default function ProfileScreen() {
               {/* Monthly Comparison Section */}
               {monthlyComparison && monthlyComparison.length > 0 && (
                 <View style={styles.monthlyComparisonSection}>
-                  <Text style={styles.sectionTitle}>Monthly Progress</Text>
+                  <Text style={styles.sectionTitle}>{t.profile.monthlyProgress || 'Monthly Progress'}</Text>
                   {monthlyComparison.map((comparison, index) => (
                     <View key={index} style={styles.comparisonItem}>
                       <View style={styles.comparisonLabel}>
@@ -737,10 +737,10 @@ export default function ProfileScreen() {
                       </View>
                       <View style={styles.comparisonValues}>
                         <Text style={styles.comparisonValue}>
-                          {comparison.current.toFixed(1)} (this month)
+                          {comparison.current.toFixed(1)} ({t.profile.thisMonth || 'this month'})
                         </Text>
                         <Text style={styles.comparisonValuePrevious}>
-                          {comparison.previous.toFixed(1)} (last month)
+                          {comparison.previous.toFixed(1)} ({t.profile.lastMonth || 'last month'})
                         </Text>
                       </View>
                     </View>

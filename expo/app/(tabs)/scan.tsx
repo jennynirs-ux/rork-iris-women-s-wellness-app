@@ -510,19 +510,19 @@ function ScanScreenInner() {
           <View style={styles.briefingIconWrapper}>
             <Eye size={48} color={colors.primary} />
           </View>
-          <Text style={styles.briefingTitle}>Your First Wellness Check</Text>
+          <Text style={styles.briefingTitle}>{t.scan?.firstScanTitle || 'Your First Wellness Check'}</Text>
           <View style={styles.briefingBullets}>
             <View style={styles.briefingBulletRow}>
               <CheckCircle size={18} color={colors.primary} />
-              <Text style={styles.briefingBulletText}>Takes about 5 seconds</Text>
+              <Text style={styles.briefingBulletText}>{t.scan?.firstScanBullet1 || 'Takes about 5 seconds'}</Text>
             </View>
             <View style={styles.briefingBulletRow}>
               <CheckCircle size={18} color={colors.primary} />
-              <Text style={styles.briefingBulletText}>We analyze your iris patterns for wellness estimates</Text>
+              <Text style={styles.briefingBulletText}>{t.scan?.firstScanBullet2 || 'We analyze your iris patterns for wellness estimates'}</Text>
             </View>
             <View style={styles.briefingBulletRow}>
               <Shield size={18} color={colors.primary} />
-              <Text style={styles.briefingBulletText}>No photos are stored — everything stays on your device</Text>
+              <Text style={styles.briefingBulletText}>{t.scan?.firstScanBullet3 || 'No photos are stored — everything stays on your device'}</Text>
             </View>
           </View>
           <TouchableOpacity
@@ -531,7 +531,7 @@ function ScanScreenInner() {
             activeOpacity={0.8}
           >
             <Eye size={20} color={colors.card} />
-            <Text style={styles.briefingCtaText}>Ready, Start Camera</Text>
+            <Text style={styles.briefingCtaText}>{t.scan?.readyStartCamera || 'Ready, Start Camera'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -634,7 +634,7 @@ function ScanScreenInner() {
                 <View style={styles.privacyBadge}>
                   <Shield size={12} color="rgba(255,255,255,0.7)" />
                   <Text style={styles.privacyBadgeText}>
-                    {(t as any).privacy?.onDeviceOnly || 'On-device only · Photos never stored'}
+                    {t.scan?.onDeviceOnly || 'On-device only — Photos never stored'}
                   </Text>
                 </View>
 
@@ -655,7 +655,7 @@ function ScanScreenInner() {
                   <Text style={[
                     styles.scanButtonText,
                     !faceDetected && styles.scanButtonTextDisabled,
-                  ]}>Capture</Text>
+                  ]}>{t.scan?.capture || 'Capture'}</Text>
                 </TouchableOpacity>
               </>
             )}

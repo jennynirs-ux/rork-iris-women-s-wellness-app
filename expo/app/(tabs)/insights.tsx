@@ -754,10 +754,10 @@ export default function InsightsScreen() {
         <View style={styles.noScansContainer}>
           <BarChart3 size={64} color={colors.textTertiary} />
           <Text style={styles.noScansTitle}>
-            {(t.insights as any)?.emptyTitle || "Your Insights Await"}
+            {t.insights?.emptyTitle || "Your Insights Await"}
           </Text>
           <Text style={styles.noScansSubtitle}>
-            {(t.insights as any)?.emptySubtitle || "Complete your first scan to see personalized wellness insights and trends"}
+            {t.insights?.emptySubtitle || "Complete your first scan to see personalized wellness insights and trends"}
           </Text>
           <TouchableOpacity
             style={styles.noScansCta}
@@ -765,7 +765,7 @@ export default function InsightsScreen() {
             activeOpacity={0.8}
           >
             <Eye size={20} color={colors.card} />
-            <Text style={styles.noScansCtaText}>Start Scanning</Text>
+            <Text style={styles.noScansCtaText}>{t.insights?.startScanning || 'Start Scanning'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -968,12 +968,12 @@ export default function InsightsScreen() {
                   <Text style={styles.vasomotorMetricValue}>
                     {vmsMetrics.trend === 'increasing' ? t.menopause?.increasing || 'Increasing' : vmsMetrics.trend === 'decreasing' ? t.menopause?.decreasing || 'Decreasing' : t.menopause?.stable || 'Stable'}
                   </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>Avg {vmsMetrics.avgHotFlashes} per day (last 7 days)</Text>
+                  <Text style={styles.vasomotorMetricSubtext}>{(t.insights?.avgPerDay || 'Avg {0} per day (last 7 days)').replace('{0}', String(vmsMetrics.avgHotFlashes))}</Text>
                 </View>
 
                 <View style={styles.vasomotorMetric}>
                   <Text style={styles.vasomotorMetricLabel}>{t.menopause?.nightSweatFrequency || 'Night Sweats'}</Text>
-                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} of 7 days</Text>
+                  <Text style={styles.vasomotorMetricValue}>{(t.insights?.ofDays || '{0} of 7 days').replace('{0}', String(vmsMetrics.nightSweatDays))}</Text>
                 </View>
 
                 <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
@@ -981,7 +981,7 @@ export default function InsightsScreen() {
                   <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? '#E89BA4' : '#10B981' }]}>
                     {vmsMetrics.vmsScore}
                   </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>Symptom severity indicator</Text>
+                  <Text style={styles.vasomotorMetricSubtext}>{t.insights?.symptomSeverity || 'Symptom severity indicator'}</Text>
                 </View>
               </View>
             ) : null;

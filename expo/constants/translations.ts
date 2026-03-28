@@ -164,6 +164,14 @@ type Translations = {
     goalSkinHealth: string;
     goalStressReduction: string;
     exportDataReady: string;
+    achievements: string;
+    monthlyProgress: string;
+    active: string;
+    pricePerMonth: string;
+    reminderTypes: string;
+    thisMonth: string;
+    lastMonth: string;
+    dataConsentError: string;
   };
   settings: {
     title: string;
@@ -326,6 +334,8 @@ type Translations = {
     optional: string;
     somewhat: string;
     cancel: string;
+    medicalDisclaimer: string;
+    offline: string;
   };
   home: {
     todaysSummary: string;
@@ -333,6 +343,7 @@ type Translations = {
     stress: string;
     energy: string;
     recovery: string;
+    hydration: string;
     recommendedFocus: string;
     todaysHabits: string;
     dailyRitual: string;
@@ -389,6 +400,13 @@ type Translations = {
     validationNoFace: string;
     faceDetected: string;
     noFaceDetected: string;
+    firstScanTitle: string;
+    firstScanBullet1: string;
+    firstScanBullet2: string;
+    firstScanBullet3: string;
+    readyStartCamera: string;
+    capture: string;
+    onDeviceOnly: string;
   };
   scanResult: {
     scanComplete: string;
@@ -398,6 +416,29 @@ type Translations = {
     menstrualQuestion: string;
     yesIAm: string;
     noImNot: string;
+    title: string;
+    subtitle: string;
+    viewInsights: string;
+    completeCheckIn: string;
+    done: string;
+    energyHigh: string;
+    energyMod: string;
+    energyLow: string;
+    stressLow: string;
+    stressMod: string;
+    stressHigh: string;
+    recoveryHigh: string;
+    recoveryMod: string;
+    recoveryLow: string;
+    hydrationHigh: string;
+    hydrationMod: string;
+    hydrationLow: string;
+    fatigueEnergized: string;
+    fatigueSome: string;
+    fatigueHigh: string;
+    inflammationLow: string;
+    inflammationMod: string;
+    inflammationHigh: string;
   };
   checkIn: {
     dailyCheckIn: string;
@@ -593,6 +634,12 @@ type Translations = {
     crossHeadacheFatigueMsg: string;
     crossLutealMoodTitle: string;
     crossLutealMoodMsg: string;
+    emptyTitle: string;
+    emptySubtitle: string;
+    startScanning: string;
+    avgPerDay: string;
+    ofDays: string;
+    symptomSeverity: string;
   };
   scanRecommendations: {
     stressHighRest: string;
@@ -1228,6 +1275,14 @@ const en: Translations = {
     goalSkinHealth: 'Skin Health',
     goalStressReduction: 'Stress Reduction',
     exportDataReady: 'Data exported to clipboard',
+    achievements: 'Achievements',
+    monthlyProgress: 'Monthly Progress',
+    active: 'Active',
+    pricePerMonth: '$4.99 / month',
+    reminderTypes: 'Check-in, scan, hydration',
+    thisMonth: 'this month',
+    lastMonth: 'last month',
+    dataConsentError: 'Failed to update data consent preference. Please try again.',
   },
   settings: {
     title: 'Settings',
@@ -1390,6 +1445,8 @@ const en: Translations = {
     optional: 'optional',
     somewhat: 'Somewhat',
     cancel: 'Cancel',
+    medicalDisclaimer: 'This is a wellness tool only. Results are not medical advice, diagnosis, or treatment. Consult a healthcare professional for medical concerns.',
+    offline: 'You are offline',
   },
   tabs: {
     home: 'Home',
@@ -1427,6 +1484,7 @@ const en: Translations = {
     stress: 'Stress',
     energy: 'Energy',
     recovery: 'Recovery',
+    hydration: 'Hydration',
     recommendedFocus: 'Recommended Focus',
     todaysHabits: "Today's Habits",
     dailyRitual: 'Daily Ritual',
@@ -1483,6 +1541,13 @@ const en: Translations = {
     validationNoFace: 'No face detected. Position your face clearly in the oval guide and try again.',
     faceDetected: 'Face detected',
     noFaceDetected: 'No face detected — position your face in the oval',
+    firstScanTitle: 'Your First Wellness Check',
+    firstScanBullet1: 'Takes about 5 seconds',
+    firstScanBullet2: 'We analyze your iris patterns for wellness estimates',
+    firstScanBullet3: 'No photos are stored — everything stays on your device',
+    readyStartCamera: 'Ready, Start Camera',
+    capture: 'Capture',
+    onDeviceOnly: 'On-device only — Photos never stored',
   },
   scanResult: {
     scanComplete: 'Check Complete',
@@ -1492,6 +1557,29 @@ const en: Translations = {
     menstrualQuestion: 'Based on your cycle tracking, you may be entering your menstrual phase. Are you currently menstruating?',
     yesIAm: 'Yes, I am',
     noImNot: "No, I'm not",
+    title: 'Your Scan Results',
+    subtitle: "Here's your wellness snapshot",
+    viewInsights: 'View Full Insights',
+    completeCheckIn: 'Complete Your Check-In',
+    done: 'Done',
+    energyHigh: 'Strong energy today',
+    energyMod: 'Moderate energy',
+    energyLow: 'Consider rest',
+    stressLow: 'Stress is low',
+    stressMod: 'Moderate stress levels',
+    stressHigh: 'Stress score is higher — consider a break',
+    recoveryHigh: 'Well recovered',
+    recoveryMod: 'Moderate recovery',
+    recoveryLow: 'Recovery needed',
+    hydrationHigh: 'Well hydrated',
+    hydrationMod: 'Adequate hydration',
+    hydrationLow: 'Drink more water',
+    fatigueEnergized: 'Feeling energized',
+    fatigueSome: 'Some fatigue present',
+    fatigueHigh: 'High fatigue — prioritize rest',
+    inflammationLow: 'Low inflammation',
+    inflammationMod: 'Moderate inflammation',
+    inflammationHigh: 'Higher score — consider comfort foods',
   },
   checkIn: {
     dailyCheckIn: 'Daily Check-In',
@@ -1687,6 +1775,12 @@ const en: Translations = {
     crossHeadacheFatigueMsg: 'Headaches are often associated with elevated fatigue. Stay hydrated and consider rest.',
     crossLutealMoodTitle: 'Luteal Phase Mood Patterns',
     crossLutealMoodMsg: 'Lower mood during the luteal phase is a common experience. Your feelings are valid and temporary.',
+    emptyTitle: 'Your Insights Await',
+    emptySubtitle: 'Complete your first scan to see personalized wellness insights and trends',
+    startScanning: 'Start Scanning',
+    avgPerDay: 'Avg {0} per day (last 7 days)',
+    ofDays: '{0} of 7 days',
+    symptomSeverity: 'Symptom severity indicator',
   },
   programs: {
     title: 'Calendar',
@@ -2292,6 +2386,14 @@ const sv: Translations = {
     goalSkinHealth: 'Hudhälsa',
     goalStressReduction: 'Stresshantering',
     exportDataReady: 'Data exporterad till urklipp',
+    achievements: 'Prestationer',
+    monthlyProgress: 'Månadsframsteg',
+    active: 'Aktiv',
+    pricePerMonth: '49 kr / månad',
+    reminderTypes: 'Incheckning, skanning, hydrering',
+    thisMonth: 'denna månad',
+    lastMonth: 'förra månaden',
+    dataConsentError: 'Det gick inte att uppdatera inställningen för datamedgivande. Försök igen.',
   },
   settings: {
     title: 'Inställningar',
@@ -2454,6 +2556,8 @@ const sv: Translations = {
     optional: 'valfritt',
     somewhat: 'Något',
     cancel: 'Avbryt',
+    medicalDisclaimer: 'Detta är ett hälsoverktyg. Resultaten utgör inte medicinsk rådgivning, diagnos eller behandling. Kontakta en läkare vid medicinska frågor.',
+    offline: 'Du är offline',
   },
   tabs: {
     home: 'Hem',
@@ -2491,6 +2595,7 @@ const sv: Translations = {
     stress: 'Stress',
     energy: 'Energi',
     recovery: 'Återhämtning',
+    hydration: 'Hydrering',
     recommendedFocus: 'Rekommenderat fokus',
     todaysHabits: 'Dagens vanor',
     dailyRitual: 'Daglig ritual',
@@ -2547,6 +2652,13 @@ const sv: Translations = {
     validationNoFace: 'Inget ansikte upptäcktes. Placera ditt ansikte tydligt i ovalguiden och försök igen.',
     faceDetected: 'Ansikte upptäckt',
     noFaceDetected: 'Inget ansikte upptäckt — placera ditt ansikte i ovalen',
+    firstScanTitle: 'Din första hälsokontroll',
+    firstScanBullet1: 'Tar ungefär 5 sekunder',
+    firstScanBullet2: 'Vi analyserar dina irismönster för hälsouppskattningar',
+    firstScanBullet3: 'Inga foton sparas — allt stannar på din enhet',
+    readyStartCamera: 'Redo, starta kamera',
+    capture: 'Fånga',
+    onDeviceOnly: 'Endast på enheten — Foton sparas aldrig',
   },
   scanResult: {
     scanComplete: 'Kontroll klar',
@@ -2556,6 +2668,29 @@ const sv: Translations = {
     menstrualQuestion: 'Baserat på din cykelspårning kan du vara på väg in i din mensfas. Har du mens just nu?',
     yesIAm: 'Ja, det har jag',
     noImNot: 'Nej, det har jag inte',
+    title: 'Dina skanningsresultat',
+    subtitle: 'Här är din hälsoöversikt',
+    viewInsights: 'Visa fullständiga insikter',
+    completeCheckIn: 'Slutför din incheckning',
+    done: 'Klar',
+    energyHigh: 'Stark energi idag',
+    energyMod: 'Måttlig energi',
+    energyLow: 'Överväg vila',
+    stressLow: 'Stressen är låg',
+    stressMod: 'Måttliga stressnivåer',
+    stressHigh: 'Stressvärdet är högre — överväg en paus',
+    recoveryHigh: 'Väl återhämtad',
+    recoveryMod: 'Måttlig återhämtning',
+    recoveryLow: 'Återhämtning behövs',
+    hydrationHigh: 'Väl hydrerad',
+    hydrationMod: 'Tillräcklig hydrering',
+    hydrationLow: 'Drick mer vatten',
+    fatigueEnergized: 'Känner mig energisk',
+    fatigueSome: 'Viss trötthet',
+    fatigueHigh: 'Hög trötthet — prioritera vila',
+    inflammationLow: 'Låg inflammation',
+    inflammationMod: 'Måttlig inflammation',
+    inflammationHigh: 'Högre värde — överväg lugnande kost',
   },
   checkIn: {
     dailyCheckIn: 'Daglig incheckning',
@@ -2751,6 +2886,12 @@ const sv: Translations = {
     crossHeadacheFatigueMsg: 'Huvudvärk är ofta kopplat till förhöjd trötthet. Håll dig hydrerad.',
     crossLutealMoodTitle: 'Lutealfas Humörmönster',
     crossLutealMoodMsg: 'Lägre humör under lutealfasen är en vanlig hormonell respons. Dina känslor är giltiga.',
+    emptyTitle: 'Dina insikter väntar',
+    emptySubtitle: 'Gör din första skanning för att se personliga hälsoinsikter och trender',
+    startScanning: 'Börja skanna',
+    avgPerDay: 'Snitt {0} per dag (senaste 7 dagarna)',
+    ofDays: '{0} av 7 dagar',
+    symptomSeverity: 'Symptomallvarlighetsindikator',
   },
   programs: {
     title: 'Kalender',
@@ -3356,6 +3497,14 @@ const de: Translations = {
     goalSkinHealth: 'Hautgesundheit',
     goalStressReduction: 'Stressabbau',
     exportDataReady: 'Daten in Zwischenablage exportiert',
+    achievements: 'Erfolge',
+    monthlyProgress: 'Monatlicher Fortschritt',
+    active: 'Aktiv',
+    pricePerMonth: '4,99 € / Monat',
+    reminderTypes: 'Check-in, Scan, Flüssigkeitszufuhr',
+    thisMonth: 'diesen Monat',
+    lastMonth: 'letzten Monat',
+    dataConsentError: 'Die Einstellung für die Dateneinwilligung konnte nicht aktualisiert werden. Bitte versuche es erneut.',
   },
   settings: {
     title: 'Einstellungen',
@@ -3518,6 +3667,8 @@ const de: Translations = {
     optional: 'optional',
     somewhat: 'Etwas',
     cancel: 'Abbrechen',
+    medicalDisclaimer: 'Dies ist ein Wellness-Tool. Die Ergebnisse stellen keine medizinische Beratung, Diagnose oder Behandlung dar. Wenden Sie sich bei gesundheitlichen Bedenken an einen Arzt.',
+    offline: 'Du bist offline',
   },
   tabs: {
     home: 'Start',
@@ -3555,6 +3706,7 @@ const de: Translations = {
     stress: 'Stress',
     energy: 'Energie',
     recovery: 'Erholung',
+    hydration: 'Hydration',
     recommendedFocus: 'Empfohlener Fokus',
     todaysHabits: 'Heutige Gewohnheiten',
     dailyRitual: 'Tägliches Ritual',
@@ -3611,6 +3763,13 @@ const de: Translations = {
     validationNoFace: 'Kein Gesicht erkannt. Positioniere dein Gesicht deutlich in der ovalen Führung und versuche es erneut.',
     faceDetected: 'Gesicht erkannt',
     noFaceDetected: 'Kein Gesicht erkannt — positioniere dein Gesicht im Oval',
+    firstScanTitle: 'Dein erster Wellness-Check',
+    firstScanBullet1: 'Dauert etwa 5 Sekunden',
+    firstScanBullet2: 'Wir analysieren deine Irismuster für Wellness-Schätzungen',
+    firstScanBullet3: 'Keine Fotos werden gespeichert — alles bleibt auf deinem Gerät',
+    readyStartCamera: 'Bereit, Kamera starten',
+    capture: 'Aufnehmen',
+    onDeviceOnly: 'Nur auf dem Gerät — Fotos werden nie gespeichert',
   },
   scanResult: {
     scanComplete: 'Check abgeschlossen',
@@ -3620,6 +3779,29 @@ const de: Translations = {
     menstrualQuestion: 'Basierend auf deiner Zyklusverfolgung könntest du in deine Menstruationsphase eintreten. Hast du gerade deine Periode?',
     yesIAm: 'Ja, habe ich',
     noImNot: 'Nein, habe ich nicht',
+    title: 'Deine Scan-Ergebnisse',
+    subtitle: 'Hier ist dein Wellness-Überblick',
+    viewInsights: 'Alle Einblicke anzeigen',
+    completeCheckIn: 'Check-in abschließen',
+    done: 'Fertig',
+    energyHigh: 'Starke Energie heute',
+    energyMod: 'Mäßige Energie',
+    energyLow: 'Ruhe empfohlen',
+    stressLow: 'Stress ist niedrig',
+    stressMod: 'Mäßige Stresswerte',
+    stressHigh: 'Stresswert ist höher — eine Pause erwägen',
+    recoveryHigh: 'Gut erholt',
+    recoveryMod: 'Mäßige Erholung',
+    recoveryLow: 'Erholung nötig',
+    hydrationHigh: 'Gut hydriert',
+    hydrationMod: 'Ausreichende Hydration',
+    hydrationLow: 'Mehr Wasser trinken',
+    fatigueEnergized: 'Energiegeladen',
+    fatigueSome: 'Etwas Müdigkeit vorhanden',
+    fatigueHigh: 'Hohe Müdigkeit — Ruhe priorisieren',
+    inflammationLow: 'Geringe Entzündung',
+    inflammationMod: 'Mäßige Entzündung',
+    inflammationHigh: 'Höherer Wert — beruhigende Kost erwägen',
   },
   checkIn: {
     dailyCheckIn: 'Tägliches Check-in',
@@ -3815,6 +3997,12 @@ const de: Translations = {
     crossHeadacheFatigueMsg: 'Kopfschmerzen sind oft mit erhöhter Müdigkeit verbunden. Bleib hydriert.',
     crossLutealMoodTitle: 'Lutealphase Stimmungsmuster',
     crossLutealMoodMsg: 'Niedrigere Stimmung in der Lutealphase ist eine häufige hormonelle Reaktion.',
+    emptyTitle: 'Deine Einblicke warten',
+    emptySubtitle: 'Führe deinen ersten Scan durch, um personalisierte Wellness-Einblicke und Trends zu sehen',
+    startScanning: 'Scannen starten',
+    avgPerDay: 'Durchschn. {0} pro Tag (letzte 7 Tage)',
+    ofDays: '{0} von 7 Tagen',
+    symptomSeverity: 'Symptom-Schweregrad-Indikator',
   },
   programs: {
     title: 'Kalender',
@@ -4420,6 +4608,14 @@ const fr: Translations = {
     goalSkinHealth: 'Santé de la peau',
     goalStressReduction: 'Réduction du stress',
     exportDataReady: 'Données exportées dans le presse-papiers',
+    achievements: 'Réalisations',
+    monthlyProgress: 'Progrès mensuel',
+    active: 'Actif',
+    pricePerMonth: '4,99 € / mois',
+    reminderTypes: 'Bilan, scan, hydratation',
+    thisMonth: 'ce mois-ci',
+    lastMonth: 'le mois dernier',
+    dataConsentError: 'Impossible de mettre à jour la préférence de consentement des données. Veuillez réessayer.',
   },
   settings: {
     title: 'Paramètres',
@@ -4582,6 +4778,8 @@ const fr: Translations = {
     optional: 'facultatif',
     somewhat: 'Un peu',
     cancel: 'Annuler',
+    medicalDisclaimer: 'Ceci est un outil de bien-être uniquement. Les résultats ne constituent pas un avis médical, un diagnostic ou un traitement. Consultez un professionnel de santé pour vos préoccupations médicales.',
+    offline: 'Vous êtes hors ligne',
   },
   tabs: {
     home: 'Accueil',
@@ -4619,6 +4817,7 @@ const fr: Translations = {
     stress: 'Stress',
     energy: 'Énergie',
     recovery: 'Récupération',
+    hydration: 'Hydratation',
     recommendedFocus: 'Focus recommandé',
     todaysHabits: "Habitudes d'aujourd'hui",
     dailyRitual: 'Rituel quotidien',
@@ -4675,6 +4874,13 @@ const fr: Translations = {
     validationNoFace: 'Aucun visage détecté. Positionnez votre visage clairement dans le guide ovale et réessayez.',
     faceDetected: 'Visage détecté',
     noFaceDetected: "Aucun visage détecté — positionnez votre visage dans l'ovale",
+    firstScanTitle: 'Votre premier bilan bien-être',
+    firstScanBullet1: 'Prend environ 5 secondes',
+    firstScanBullet2: "Nous analysons vos motifs d'iris pour des estimations de bien-être",
+    firstScanBullet3: 'Aucune photo stockée — tout reste sur votre appareil',
+    readyStartCamera: 'Prêt, démarrer la caméra',
+    capture: 'Capturer',
+    onDeviceOnly: 'Sur appareil uniquement — Photos jamais stockées',
   },
   scanResult: {
     scanComplete: 'Bilan terminé',
@@ -4684,6 +4890,29 @@ const fr: Translations = {
     menstrualQuestion: 'Selon le suivi de votre cycle, vous pourriez entrer dans votre phase menstruelle. Avez-vous actuellement vos règles?',
     yesIAm: 'Oui, je les ai',
     noImNot: 'Non, je ne les ai pas',
+    title: 'Vos résultats de scan',
+    subtitle: 'Voici votre aperçu bien-être',
+    viewInsights: 'Voir tous les aperçus',
+    completeCheckIn: 'Compléter votre bilan',
+    done: 'Terminé',
+    energyHigh: 'Forte énergie aujourd\'hui',
+    energyMod: 'Énergie modérée',
+    energyLow: 'Repos recommandé',
+    stressLow: 'Le stress est bas',
+    stressMod: 'Niveaux de stress modérés',
+    stressHigh: 'Score de stress élevé — envisagez une pause',
+    recoveryHigh: 'Bien récupéré',
+    recoveryMod: 'Récupération modérée',
+    recoveryLow: 'R��cupération nécessaire',
+    hydrationHigh: 'Bien hydraté',
+    hydrationMod: 'Hydratation suffisante',
+    hydrationLow: 'Buvez plus d\'eau',
+    fatigueEnergized: 'Plein d\'énergie',
+    fatigueSome: 'Un peu de fatigue',
+    fatigueHigh: 'Fatigue élevée — priorisez le repos',
+    inflammationLow: 'Inflammation faible',
+    inflammationMod: 'Inflammation modérée',
+    inflammationHigh: 'Score plus élevé — envisagez des aliments apaisants',
   },
   checkIn: {
     dailyCheckIn: 'Bilan quotidien',
@@ -4879,6 +5108,12 @@ const fr: Translations = {
     crossHeadacheFatigueMsg: 'Les maux de tête sont souvent associés à une fatigue élevée. Restez hydratée.',
     crossLutealMoodTitle: 'Humeur en Phase Lutéale',
     crossLutealMoodMsg: 'Une humeur plus basse en phase lutéale est une réponse hormonale courante. Vos sentiments sont valides.',
+    emptyTitle: 'Vos aperçus vous attendent',
+    emptySubtitle: 'Effectuez votre premier scan pour voir des aperçus et tendances personnalisés',
+    startScanning: 'Commencer le scan',
+    avgPerDay: 'Moy. {0} par jour (7 derniers jours)',
+    ofDays: '{0} sur 7 jours',
+    symptomSeverity: 'Indicateur de sévérité des symptômes',
   },
   programs: {
     title: 'Calendrier',
@@ -5484,6 +5719,14 @@ const es: Translations = {
     goalSkinHealth: 'Salud de la piel',
     goalStressReduction: 'Reducción del estrés',
     exportDataReady: 'Datos exportados al portapapeles',
+    achievements: 'Logros',
+    monthlyProgress: 'Progreso mensual',
+    active: 'Activo',
+    pricePerMonth: '4,99 € / mes',
+    reminderTypes: 'Check-in, escaneo, hidratación',
+    thisMonth: 'este mes',
+    lastMonth: 'el mes pasado',
+    dataConsentError: 'No se pudo actualizar la preferencia de consentimiento de datos. Inténtalo de nuevo.',
   },
   settings: {
     title: 'Configuración',
@@ -5646,6 +5889,8 @@ const es: Translations = {
     optional: 'opcional',
     somewhat: 'Algo',
     cancel: 'Cancelar',
+    medicalDisclaimer: 'Esta es solo una herramienta de bienestar. Los resultados no constituyen consejo médico, diagnóstico ni tratamiento. Consulte a un profesional de salud para preocupaciones médicas.',
+    offline: 'Estás sin conexión',
   },
   tabs: {
     home: 'Inicio',
@@ -5683,6 +5928,7 @@ const es: Translations = {
     stress: 'Estrés',
     energy: 'Energía',
     recovery: 'Recuperación',
+    hydration: 'Hidratación',
     recommendedFocus: 'Enfoque recomendado',
     todaysHabits: 'Hábitos de hoy',
     dailyRitual: 'Ritual diario',
@@ -5739,6 +5985,13 @@ const es: Translations = {
     validationNoFace: 'No se detectó ningún rostro. Posiciona tu cara claramente en la guía ovalada e inténtalo de nuevo.',
     faceDetected: 'Rostro detectado',
     noFaceDetected: 'No se detectó rostro — posiciona tu cara en el óvalo',
+    firstScanTitle: 'Tu primer chequeo de bienestar',
+    firstScanBullet1: 'Tarda unos 5 segundos',
+    firstScanBullet2: 'Analizamos tus patrones de iris para estimaciones de bienestar',
+    firstScanBullet3: 'No se almacenan fotos — todo permanece en tu dispositivo',
+    readyStartCamera: 'Listo, iniciar cámara',
+    capture: 'Capturar',
+    onDeviceOnly: 'Solo en el dispositivo — Fotos nunca almacenadas',
   },
   scanResult: {
     scanComplete: 'Chequeo completo',
@@ -5748,6 +6001,29 @@ const es: Translations = {
     menstrualQuestion: 'Según el seguimiento de tu ciclo, podrías estar entrando en tu fase menstrual. ¿Estás menstruando actualmente?',
     yesIAm: 'Sí, lo estoy',
     noImNot: 'No, no lo estoy',
+    title: 'Tus resultados del escaneo',
+    subtitle: 'Aquí está tu resumen de bienestar',
+    viewInsights: 'Ver perspectivas completas',
+    completeCheckIn: 'Completar tu registro',
+    done: 'Listo',
+    energyHigh: 'Energía fuerte hoy',
+    energyMod: 'Energía moderada',
+    energyLow: 'Considera descansar',
+    stressLow: 'El estrés es bajo',
+    stressMod: 'Niveles de estrés moderados',
+    stressHigh: 'Puntuación de estrés alta — considera un descanso',
+    recoveryHigh: 'Bien recuperada',
+    recoveryMod: 'Recuperación moderada',
+    recoveryLow: 'Recuperación necesaria',
+    hydrationHigh: 'Bien hidratada',
+    hydrationMod: 'Hidratación adecuada',
+    hydrationLow: 'Bebe más agua',
+    fatigueEnergized: 'Con energía',
+    fatigueSome: 'Algo de fatiga',
+    fatigueHigh: 'Fatiga alta — prioriza el descanso',
+    inflammationLow: 'Inflamación baja',
+    inflammationMod: 'Inflamación moderada',
+    inflammationHigh: 'Puntuación más alta — considera alimentos reconfortantes',
   },
   checkIn: {
     dailyCheckIn: 'Registro diario',
@@ -5943,6 +6219,12 @@ const es: Translations = {
     crossHeadacheFatigueMsg: 'Los dolores de cabeza suelen estar asociados con fatiga elevada. Manténte hidratada.',
     crossLutealMoodTitle: 'Patrones de Ánimo en Fase Lútea',
     crossLutealMoodMsg: 'Un ánimo más bajo en la fase lútea es una respuesta hormonal común. Tus sentimientos son válidos.',
+    emptyTitle: 'Tus perspectivas te esperan',
+    emptySubtitle: 'Completa tu primer escaneo para ver perspectivas y tendencias personalizadas',
+    startScanning: 'Empezar a escanear',
+    avgPerDay: 'Prom. {0} por día (últimos 7 días)',
+    ofDays: '{0} de 7 días',
+    symptomSeverity: 'Indicador de severidad de síntomas',
   },
   programs: {
     title: 'Calendario',
@@ -6548,6 +6830,14 @@ const it: Translations = {
     goalSkinHealth: 'Salute della pelle',
     goalStressReduction: 'Riduzione dello stress',
     exportDataReady: 'Dati esportati negli appunti',
+    achievements: 'Traguardi',
+    monthlyProgress: 'Progresso mensile',
+    active: 'Attivo',
+    pricePerMonth: '4,99 € / mese',
+    reminderTypes: 'Check-in, scansione, idratazione',
+    thisMonth: 'questo mese',
+    lastMonth: 'il mese scorso',
+    dataConsentError: 'Impossibile aggiornare la preferenza sul consenso ai dati. Riprova.',
   },
   settings: {
     title: 'Impostazioni',
@@ -6710,6 +7000,8 @@ const it: Translations = {
     optional: 'facoltativo',
     somewhat: 'In parte',
     cancel: 'Annulla',
+    medicalDisclaimer: 'Questo è solo uno strumento di benessere. I risultati non costituiscono consulenza medica, diagnosi o trattamento. Consultare un professionista sanitario per problemi medici.',
+    offline: 'Sei offline',
   },
   tabs: {
     home: 'Home',
@@ -6747,6 +7039,7 @@ const it: Translations = {
     stress: 'Stress',
     energy: 'Energia',
     recovery: 'Recupero',
+    hydration: 'Idratazione',
     recommendedFocus: 'Focus consigliato',
     todaysHabits: 'Abitudini di oggi',
     dailyRitual: 'Rituale quotidiano',
@@ -6803,6 +7096,13 @@ const it: Translations = {
     validationNoFace: 'Nessun volto rilevato. Posiziona il viso chiaramente nella guida ovale e riprova.',
     faceDetected: 'Volto rilevato',
     noFaceDetected: "Nessun volto rilevato — posiziona il viso nell'ovale",
+    firstScanTitle: 'Il tuo primo check benessere',
+    firstScanBullet1: 'Richiede circa 5 secondi',
+    firstScanBullet2: "Analizziamo i tuoi schemi dell'iride per stime di benessere",
+    firstScanBullet3: 'Nessuna foto salvata — tutto resta sul tuo dispositivo',
+    readyStartCamera: 'Pronto, avvia fotocamera',
+    capture: 'Cattura',
+    onDeviceOnly: 'Solo sul dispositivo — Foto mai salvate',
   },
   scanResult: {
     scanComplete: 'Check completato',
@@ -6812,6 +7112,29 @@ const it: Translations = {
     menstrualQuestion: 'In base al monitoraggio del tuo ciclo, potresti stare entrando nella fase mestruale. Hai il ciclo attualmente?',
     yesIAm: 'Sì, ce l\'ho',
     noImNot: 'No, non ce l\'ho',
+    title: 'I tuoi risultati della scansione',
+    subtitle: 'Ecco il tuo riepilogo benessere',
+    viewInsights: 'Vedi approfondimenti completi',
+    completeCheckIn: 'Completa il tuo check-in',
+    done: 'Fatto',
+    energyHigh: 'Forte energia oggi',
+    energyMod: 'Energia moderata',
+    energyLow: 'Considera il riposo',
+    stressLow: 'Lo stress è basso',
+    stressMod: 'Livelli di stress moderati',
+    stressHigh: 'Punteggio stress più alto — considera una pausa',
+    recoveryHigh: 'Ben recuperata',
+    recoveryMod: 'Recupero moderato',
+    recoveryLow: 'Recupero necessario',
+    hydrationHigh: 'Ben idratata',
+    hydrationMod: 'Idratazione adeguata',
+    hydrationLow: 'Bevi più acqua',
+    fatigueEnergized: 'Piena di energia',
+    fatigueSome: 'Un po\' di affaticamento',
+    fatigueHigh: 'Alta stanchezza — dai priorità al riposo',
+    inflammationLow: 'Infiammazione bassa',
+    inflammationMod: 'Infiammazione moderata',
+    inflammationHigh: 'Punteggio più alto — considera cibi leggeri',
   },
   checkIn: {
     dailyCheckIn: 'Check-in quotidiano',
@@ -7007,6 +7330,12 @@ const it: Translations = {
     crossHeadacheFatigueMsg: 'Il mal di testa è spesso associato a stanchezza elevata. Mantieniti idratata.',
     crossLutealMoodTitle: 'Umore in Fase Luteale',
     crossLutealMoodMsg: 'Un umore più basso nella fase luteale è una risposta ormonale comune. I tuoi sentimenti sono validi.',
+    emptyTitle: 'I tuoi approfondimenti ti aspettano',
+    emptySubtitle: 'Completa la tua prima scansione per vedere approfondimenti e tendenze personalizzate',
+    startScanning: 'Inizia la scansione',
+    avgPerDay: 'Media {0} al giorno (ultimi 7 giorni)',
+    ofDays: '{0} di 7 giorni',
+    symptomSeverity: 'Indicatore di gravità dei sintomi',
   },
   programs: {
     title: 'Calendario',
@@ -7612,6 +7941,14 @@ const nl: Translations = {
     goalSkinHealth: 'Huidgezondheid',
     goalStressReduction: 'Stressvermindering',
     exportDataReady: 'Data geëxporteerd naar klembord',
+    achievements: 'Prestaties',
+    monthlyProgress: 'Maandelijkse voortgang',
+    active: 'Actief',
+    pricePerMonth: '€ 4,99 / maand',
+    reminderTypes: 'Check-in, scan, hydratatie',
+    thisMonth: 'deze maand',
+    lastMonth: 'vorige maand',
+    dataConsentError: 'Kan de voorkeur voor gegevenstoestemming niet bijwerken. Probeer het opnieuw.',
   },
   settings: {
     title: 'Instellingen',
@@ -7774,6 +8111,8 @@ const nl: Translations = {
     optional: 'optioneel',
     somewhat: 'Enigszins',
     cancel: 'Annuleren',
+    medicalDisclaimer: 'Dit is alleen een welzijnstool. Resultaten vormen geen medisch advies, diagnose of behandeling. Raadpleeg een zorgprofessional bij medische zorgen.',
+    offline: 'Je bent offline',
   },
   tabs: {
     home: 'Home',
@@ -7811,6 +8150,7 @@ const nl: Translations = {
     stress: 'Stress',
     energy: 'Energie',
     recovery: 'Herstel',
+    hydration: 'Hydratatie',
     recommendedFocus: 'Aanbevolen focus',
     todaysHabits: 'Gewoontes van vandaag',
     dailyRitual: 'Dagelijks ritueel',
@@ -7867,6 +8207,13 @@ const nl: Translations = {
     validationNoFace: 'Geen gezicht gedetecteerd. Positioneer je gezicht duidelijk in de ovale gids en probeer het opnieuw.',
     faceDetected: 'Gezicht gedetecteerd',
     noFaceDetected: 'Geen gezicht gedetecteerd — positioneer je gezicht in het ovaal',
+    firstScanTitle: 'Je eerste welzijnscheck',
+    firstScanBullet1: 'Duurt ongeveer 5 seconden',
+    firstScanBullet2: 'We analyseren je irispatronen voor welzijnsschattingen',
+    firstScanBullet3: "Geen foto's opgeslagen — alles blijft op je apparaat",
+    readyStartCamera: 'Klaar, start camera',
+    capture: 'Vastleggen',
+    onDeviceOnly: "Alleen op apparaat — Foto's worden nooit opgeslagen",
   },
   scanResult: {
     scanComplete: 'Check voltooid',
@@ -7876,6 +8223,29 @@ const nl: Translations = {
     menstrualQuestion: 'Op basis van je cyclustracking kun je je menstruatiefase ingaan. Ben je momenteel ongesteld?',
     yesIAm: 'Ja, dat ben ik',
     noImNot: 'Nee, dat ben ik niet',
+    title: 'Je scanresultaten',
+    subtitle: 'Hier is je welzijnsoverzicht',
+    viewInsights: 'Bekijk volledige inzichten',
+    completeCheckIn: 'Voltooi je check-in',
+    done: 'Klaar',
+    energyHigh: 'Sterke energie vandaag',
+    energyMod: 'Matige energie',
+    energyLow: 'Overweeg rust',
+    stressLow: 'Stress is laag',
+    stressMod: 'Matige stressniveaus',
+    stressHigh: 'Stressscore is hoger — overweeg een pauze',
+    recoveryHigh: 'Goed hersteld',
+    recoveryMod: 'Matig herstel',
+    recoveryLow: 'Herstel nodig',
+    hydrationHigh: 'Goed gehydrateerd',
+    hydrationMod: 'Voldoende hydratatie',
+    hydrationLow: 'Drink meer water',
+    fatigueEnergized: 'Vol energie',
+    fatigueSome: 'Enige vermoeidheid',
+    fatigueHigh: 'Hoge vermoeidheid — geef rust prioriteit',
+    inflammationLow: 'Lage ontsteking',
+    inflammationMod: 'Matige ontsteking',
+    inflammationHigh: 'Hogere score — overweeg rustgevend voedsel',
   },
   checkIn: {
     dailyCheckIn: 'Dagelijkse check-in',
@@ -8071,6 +8441,12 @@ const nl: Translations = {
     crossHeadacheFatigueMsg: 'Hoofdpijn is vaak geassocieerd met verhoogde vermoeidheid. Blijf gehydrateerd.',
     crossLutealMoodTitle: 'Luteale Fase Stemmingspatronen',
     crossLutealMoodMsg: 'Een lager humeur in de luteale fase is een veelvoorkomende hormonale reactie.',
+    emptyTitle: 'Je inzichten wachten op je',
+    emptySubtitle: 'Voltooi je eerste scan om gepersonaliseerde welzijnsinzichten en trends te zien',
+    startScanning: 'Begin met scannen',
+    avgPerDay: 'Gem. {0} per dag (laatste 7 dagen)',
+    ofDays: '{0} van 7 dagen',
+    symptomSeverity: 'Symptoomernst-indicator',
   },
   programs: {
     title: 'Kalender',
@@ -8676,6 +9052,14 @@ const pl: Translations = {
     goalSkinHealth: 'Zdrowie skóry',
     goalStressReduction: 'Redukcja stresu',
     exportDataReady: 'Dane wyeksportowane do schowka',
+    achievements: 'Osiągnięcia',
+    monthlyProgress: 'Postęp miesięczny',
+    active: 'Aktywne',
+    pricePerMonth: '19,99 zł / miesiąc',
+    reminderTypes: 'Zameldowanie, skan, nawodnienie',
+    thisMonth: 'w tym miesiącu',
+    lastMonth: 'w zeszłym miesiącu',
+    dataConsentError: 'Nie udało się zaktualizować preferencji zgody na dane. Spróbuj ponownie.',
   },
   settings: {
     title: 'Ustawienia',
@@ -8838,6 +9222,8 @@ const pl: Translations = {
     optional: 'opcjonalnie',
     somewhat: 'Trochę',
     cancel: 'Anuluj',
+    medicalDisclaimer: 'To jest wyłącznie narzędzie wellness. Wyniki nie stanowią porady medycznej, diagnozy ani leczenia. W razie problemów zdrowotnych skonsultuj się z lekarzem.',
+    offline: 'Jesteś offline',
   },
   tabs: {
     home: 'Strona główna',
@@ -8875,6 +9261,7 @@ const pl: Translations = {
     stress: 'Stres',
     energy: 'Energia',
     recovery: 'Regeneracja',
+    hydration: 'Nawodnienie',
     recommendedFocus: 'Zalecany fokus',
     todaysHabits: 'Dzisiejsze nawyki',
     dailyRitual: 'Codzienny rytuał',
@@ -8931,6 +9318,13 @@ const pl: Translations = {
     validationNoFace: 'Nie wykryto twarzy. Umieść twarz wyraźnie w owalnym przewodniku i spróbuj ponownie.',
     faceDetected: 'Wykryto twarz',
     noFaceDetected: 'Nie wykryto twarzy — umieść twarz w owalu',
+    firstScanTitle: 'Twoja pierwsza kontrola wellness',
+    firstScanBullet1: 'Trwa około 5 sekund',
+    firstScanBullet2: 'Analizujemy wzory tęczówki dla szacunków wellness',
+    firstScanBullet3: 'Żadne zdjęcia nie są zapisywane — wszystko zostaje na Twoim urządzeniu',
+    readyStartCamera: 'Gotowe, uruchom kamerę',
+    capture: 'Zrób zdjęcie',
+    onDeviceOnly: 'Tylko na urządzeniu — Zdjęcia nigdy nie są zapisywane',
   },
   scanResult: {
     scanComplete: 'Kontrola zakończona',
@@ -8940,6 +9334,29 @@ const pl: Translations = {
     menstrualQuestion: 'Na podstawie śledzenia cyklu możesz wchodzić w fazę miesiączkową. Czy obecnie masz miesiączkę?',
     yesIAm: 'Tak, mam',
     noImNot: 'Nie, nie mam',
+    title: 'Twoje wyniki skanowania',
+    subtitle: 'Oto Twój przegląd wellness',
+    viewInsights: 'Zobacz pełne wnioski',
+    completeCheckIn: 'Dokończ swój check-in',
+    done: 'Gotowe',
+    energyHigh: 'Silna energia dzisiaj',
+    energyMod: 'Umiarkowana energia',
+    energyLow: 'Rozważ odpoczynek',
+    stressLow: 'Stres jest niski',
+    stressMod: 'Umiarkowane poziomy stresu',
+    stressHigh: 'Wynik stresu jest wyższy — rozważ przerwę',
+    recoveryHigh: 'Dobrze zregenerowana',
+    recoveryMod: 'Umiarkowana regeneracja',
+    recoveryLow: 'Regeneracja potrzebna',
+    hydrationHigh: 'Dobrze nawodniona',
+    hydrationMod: 'Wystarczające nawodnienie',
+    hydrationLow: 'Pij więcej wody',
+    fatigueEnergized: 'Pełna energii',
+    fatigueSome: 'Pewne zmęczenie',
+    fatigueHigh: 'Duże zmęczenie — priorytet to odpoczynek',
+    inflammationLow: 'Niski stan zapalny',
+    inflammationMod: 'Umiarkowany stan zapalny',
+    inflammationHigh: 'Wyższy wynik — rozważ łagodną dietę',
   },
   checkIn: {
     dailyCheckIn: 'Codzienny check-in',
@@ -9135,6 +9552,12 @@ const pl: Translations = {
     crossHeadacheFatigueMsg: 'Bóle głowy są często związane z podwyższonym zmęczeniem. Pij dużo wody.',
     crossLutealMoodTitle: 'Wzorce Nastroju w Fazie Lutealnej',
     crossLutealMoodMsg: 'Niższy nastrój w fazie lutealnej to powszechna reakcja hormonalna. Twoje uczucia są ważne.',
+    emptyTitle: 'Twoje wnioski czekają',
+    emptySubtitle: 'Wykonaj pierwszy skan, aby zobaczyć spersonalizowane wnioski i trendy',
+    startScanning: 'Zacznij skanowanie',
+    avgPerDay: 'Śr. {0} dziennie (ostatnie 7 dni)',
+    ofDays: '{0} z 7 dni',
+    symptomSeverity: 'Wskaźnik nasilenia objawów',
   },
   programs: {
     title: 'Kalendarz',
@@ -9740,6 +10163,14 @@ const pt: Translations = {
     goalSkinHealth: 'Saúde da pele',
     goalStressReduction: 'Redução do estresse',
     exportDataReady: 'Dados exportados para a área de transferência',
+    achievements: 'Conquistas',
+    monthlyProgress: 'Progresso mensal',
+    active: 'Ativo',
+    pricePerMonth: 'R$ 24,99 / mês',
+    reminderTypes: 'Check-in, scan, hidratação',
+    thisMonth: 'este mês',
+    lastMonth: 'mês passado',
+    dataConsentError: 'Falha ao atualizar a preferência de consentimento de dados. Tente novamente.',
   },
   settings: {
     title: 'Configurações',
@@ -9902,6 +10333,8 @@ const pt: Translations = {
     optional: 'opcional',
     somewhat: 'Um pouco',
     cancel: 'Cancelar',
+    medicalDisclaimer: 'Esta é apenas uma ferramenta de bem-estar. Os resultados não constituem aconselhamento médico, diagnóstico ou tratamento. Consulte um profissional de saúde para preocupações médicas.',
+    offline: 'Você está offline',
   },
   tabs: {
     home: 'Início',
@@ -9939,6 +10372,7 @@ const pt: Translations = {
     stress: 'Estresse',
     energy: 'Energia',
     recovery: 'Recuperação',
+    hydration: 'Hidratação',
     recommendedFocus: 'Foco recomendado',
     todaysHabits: 'Hábitos de hoje',
     dailyRitual: 'Ritual diário',
@@ -9995,6 +10429,13 @@ const pt: Translations = {
     validationNoFace: 'Nenhum rosto detectado. Posicione seu rosto claramente no guia oval e tente novamente.',
     faceDetected: 'Rosto detectado',
     noFaceDetected: 'Nenhum rosto detectado — posicione seu rosto no oval',
+    firstScanTitle: 'Seu primeiro check de bem-estar',
+    firstScanBullet1: 'Leva cerca de 5 segundos',
+    firstScanBullet2: 'Analisamos seus padrões de íris para estimativas de bem-estar',
+    firstScanBullet3: 'Nenhuma foto armazenada — tudo fica no seu dispositivo',
+    readyStartCamera: 'Pronto, iniciar câmera',
+    capture: 'Capturar',
+    onDeviceOnly: 'Apenas no dispositivo — Fotos nunca armazenadas',
   },
   scanResult: {
     scanComplete: 'Check concluído',
@@ -10004,6 +10445,29 @@ const pt: Translations = {
     menstrualQuestion: 'Com base no rastreamento do seu ciclo, você pode estar entrando na fase menstrual. Você está menstruando atualmente?',
     yesIAm: 'Sim, estou',
     noImNot: 'Não, não estou',
+    title: 'Seus resultados da verificação',
+    subtitle: 'Aqui está seu resumo de bem-estar',
+    viewInsights: 'Ver insights completos',
+    completeCheckIn: 'Completar seu check-in',
+    done: 'Concluído',
+    energyHigh: 'Energia forte hoje',
+    energyMod: 'Energia moderada',
+    energyLow: 'Considere descansar',
+    stressLow: 'O estresse está baixo',
+    stressMod: 'Níveis moderados de estresse',
+    stressHigh: 'Pontuação de estresse mais alta — considere uma pausa',
+    recoveryHigh: 'Bem recuperada',
+    recoveryMod: 'Recuperação moderada',
+    recoveryLow: 'Recuperação necessária',
+    hydrationHigh: 'Bem hidratada',
+    hydrationMod: 'Hidratação adequada',
+    hydrationLow: 'Beba mais água',
+    fatigueEnergized: 'Cheia de energia',
+    fatigueSome: 'Alguma fadiga',
+    fatigueHigh: 'Alta fadiga — priorize o descanso',
+    inflammationLow: 'Inflamação baixa',
+    inflammationMod: 'Inflamação moderada',
+    inflammationHigh: 'Pontuação mais alta — considere alimentos reconfortantes',
   },
   checkIn: {
     dailyCheckIn: 'Check-in diário',
@@ -10199,6 +10663,12 @@ const pt: Translations = {
     crossHeadacheFatigueMsg: 'Dores de cabeça são frequentemente associadas a fadiga elevada. Mantenha-se hidratada.',
     crossLutealMoodTitle: 'Padrões de Humor na Fase Lútea',
     crossLutealMoodMsg: 'Humor mais baixo na fase lútea é uma resposta hormonal comum. Seus sentimentos são válidos.',
+    emptyTitle: 'Seus insights aguardam',
+    emptySubtitle: 'Complete sua primeira verificação para ver insights e tendências personalizadas',
+    startScanning: 'Começar a escanear',
+    avgPerDay: 'Méd. {0} por dia (últimos 7 dias)',
+    ofDays: '{0} de 7 dias',
+    symptomSeverity: 'Indicador de gravidade dos sintomas',
   },
   programs: {
     title: 'Calendário',

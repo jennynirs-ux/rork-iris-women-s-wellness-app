@@ -25,21 +25,22 @@ const getScoreColor = (value: number, metricType: 'good-high' | 'good-low'): str
   }
 };
 
-// Helper to get interpretation text
-const getInterpretation = (label: string, value: number): string => {
-  switch (label) {
-    case 'Energy':
-      return value >= 7 ? 'Strong energy today' : value >= 4 ? 'Moderate energy' : 'Consider rest';
-    case 'Stress':
-      return value <= 3 ? 'Stress is low' : value <= 6 ? 'Moderate stress levels' : 'Stress score is higher — consider a break';
-    case 'Recovery':
-      return value >= 7 ? 'Well recovered' : value >= 4 ? 'Moderate recovery' : 'Recovery needed';
-    case 'Hydration':
-      return value >= 7 ? 'Well hydrated' : value >= 4 ? 'Adequate hydration' : 'Drink more water';
-    case 'Fatigue':
-      return value <= 3 ? 'Feeling energized' : value <= 6 ? 'Some fatigue present' : 'High fatigue — prioritize rest';
-    case 'Inflammation':
-      return value <= 3 ? 'Low inflammation' : value <= 6 ? 'Moderate inflammation' : 'Higher score — consider comfort foods';
+// Helper to get interpretation text (translation-aware)
+const getInterpretation = (key: string, value: number, t: any): string => {
+  const sr = t?.scanResult;
+  switch (key) {
+    case 'energy':
+      return value >= 7 ? (sr?.energyHigh || 'Strong energy today') : value >= 4 ? (sr?.energyMod || 'Moderate energy') : (sr?.energyLow || 'Consider rest');
+    case 'stress':
+      return value <= 3 ? (sr?.stressLow || 'Stress is low') : value <= 6 ? (sr?.stressMod || 'Moderate stress levels') : (sr?.stressHigh || 'Stress score is higher — consider a break');
+    case 'recovery':
+      return value >= 7 ? (sr?.recoveryHigh || 'Well recovered') : value >= 4 ? (sr?.recoveryMod || 'Moderate recovery') : (sr?.recoveryLow || 'Recovery needed');
+    case 'hydration':
+      return value >= 7 ? (sr?.hydrationHigh || 'Well hydrated') : value >= 4 ? (sr?.hydrationMod || 'Adequate hydration') : (sr?.hydrationLow || 'Drink more water');
+    case 'fatigue':
+      return value <= 3 ? (sr?.fatigueEnergized || 'Feeling energized') : value <= 6 ? (sr?.fatigueSome || 'Some fatigue present') : (sr?.fatigueHigh || 'High fatigue — prioritize rest');
+    case 'inflammation':
+      return value <= 3 ? (sr?.inflammationLow || 'Low inflammation') : value <= 6 ? (sr?.inflammationMod || 'Moderate inflammation') : (sr?.inflammationHigh || 'Higher score — consider comfort foods');
     default:
       return '';
   }
@@ -146,12 +147,12 @@ function ScanResultScreenInner() {
   }
 
   const scores = [
-    { label: 'Energy', value: latestScan.energyScore ?? 5, type: 'good-high' as const },
-    { label: 'Stress', value: latestScan.stressScore ?? 5, type: 'good-low' as const },
-    { label: 'Recovery', value: latestScan.recoveryScore ?? 5, type: 'good-high' as const },
-    { label: 'Hydration', value: latestScan.hydrationLevel ?? 5, type: 'good-high' as const },
-    { label: 'Fatigue', value: latestScan.fatigueLevel ?? 5, type: 'good-low' as const },
-    { label: 'Inflammation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
+    { key: 'energy', label: t.home?.energy || 'Energy', value: latestScan.energyScore ?? 5, type: 'good-high' as const },
+    { key: 'stress', label: t.home?.stress || 'Stress', value: latestScan.stressScore ?? 5, type: 'good-low' as const },
+    { key: 'recovery', label: t.home?.recovery || 'Recovery', value: latestScan.recoveryScore ?? 5, type: 'good-high' as const },
+    { key: 'hydration', label: t.home?.hydration || 'Hydration', value: latestScan.hydrationLevel ?? 5, type: 'good-high' as const },
+    { key: 'fatigue', label: t.insights?.fatigue || 'Fatigue', value: latestScan.fatigueLevel ?? 5, type: 'good-low' as const },
+    { key: 'inflammation', label: t.insights?.inflammation || 'Inflammation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
   ];
 
   return (
@@ -167,14 +168,14 @@ function ScanResultScreenInner() {
         >
           <Animated.View style={[styles.headerSection, { opacity: fadeAnim }]}>
             <CheckCircle size={64} color={colors.success} style={styles.successIcon} />
-            <Text style={styles.resultTitle}>Your Scan Results</Text>
-            <Text style={styles.resultSubtitle}>{"Here's your wellness snapshot"}</Text>
+            <Text style={styles.resultTitle}>{t.scanResult?.title || 'Your Scan Results'}</Text>
+            <Text style={styles.resultSubtitle}>{t.scanResult?.subtitle || "Here's your wellness snapshot"}</Text>
           </Animated.View>
 
           <Animated.View style={[styles.scoresGrid, { opacity: fadeAnim }]}>
             {scores.map((score, idx) => {
               const color = getScoreColor(score.value, score.type);
-              const interpretation = getInterpretation(score.label, score.value);
+              const interpretation = getInterpretation(score.key, score.value, t);
               return (
                 <ScoreGauge
                   key={idx}
@@ -191,7 +192,7 @@ function ScanResultScreenInner() {
 
           <Animated.View style={[styles.disclaimerContainer, { opacity: fadeAnim }]}>
             <Text style={styles.disclaimer}>
-              {(t.common as any)?.medicalDisclaimer ?? "This is a wellness tool only. Results are not medical advice, diagnosis, or treatment. Consult a healthcare professional for medical concerns."}
+              {t.common?.medicalDisclaimer || "This is a wellness tool only. Results are not medical advice, diagnosis, or treatment. Consult a healthcare professional for medical concerns."}
             </Text>
           </Animated.View>
 
@@ -201,7 +202,7 @@ function ScanResultScreenInner() {
               onPress={handleViewInsights}
               activeOpacity={0.8}
             >
-              <Text style={styles.primaryButtonText}>View Full Insights</Text>
+              <Text style={styles.primaryButtonText}>{t.scanResult?.viewInsights || 'View Full Insights'}</Text>
             </TouchableOpacity>
             {!todayCheckIn && (
               <TouchableOpacity
@@ -210,7 +211,7 @@ function ScanResultScreenInner() {
                 activeOpacity={0.8}
               >
                 <ClipboardCheck size={20} color={colors.primary} />
-                <Text style={styles.checkInButtonText}>Complete Your Check-In</Text>
+                <Text style={styles.checkInButtonText}>{t.scanResult?.completeCheckIn || 'Complete Your Check-In'}</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
@@ -218,7 +219,7 @@ function ScanResultScreenInner() {
               onPress={handleDone}
               activeOpacity={0.8}
             >
-              <Text style={styles.secondaryButtonText}>Done</Text>
+              <Text style={styles.secondaryButtonText}>{t.scanResult?.done || 'Done'}</Text>
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>

@@ -103,8 +103,21 @@ export default function PaywallScreen() {
 
   const monthlyPrice = monthlyPkg?.product?.priceString || "$4.99";
   const annualPrice = annualPkg?.product?.priceString || "$29.99";
+
+  // Extract currency symbol from priceString (e.g. "$29.99" -> "$", "kr29.99" -> "kr")
+  const currencySymbol = useMemo(() => {
+    const ps = annualPkg?.product?.priceString || monthlyPkg?.product?.priceString || "";
+    const match = ps.match(/^([^\d]+)/);
+    if (match) return match[1];
+    // Fallback: try trailing symbol (e.g. "29,99 kr")
+    const trailingMatch = ps.match(/([^\d,.\s]+)\s*$/);
+    if (trailingMatch) return trailingMatch[1] + " ";
+    // Last resort: use currencyCode
+    return annualPkg?.product?.currencyCode || monthlyPkg?.product?.currencyCode || "$";
+  }, [annualPkg, monthlyPkg]);
+
   const annualMonthly = annualPkg?.product?.price
-    ? `$${(annualPkg.product.price / 12).toFixed(2)}`
+    ? `${currencySymbol}${(annualPkg.product.price / 12).toFixed(2)}`
     : "$2.50";
 
   const features = [
