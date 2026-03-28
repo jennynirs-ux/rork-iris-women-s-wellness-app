@@ -454,6 +454,37 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
   }
 };
 
+function generateTrendNarrative(
+  data: number[],
+  metricName: string,
+  isGoodHigh: boolean,
+  t: any
+): string {
+  if (data.length < 2) return '';
+  const recent = data.slice(-3);
+  const earlier = data.slice(0, 3);
+  const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+  const earlierAvg = earlier.reduce((a, b) => a + b, 0) / earlier.length;
+  const change = recentAvg - earlierAvg;
+  const pctChange = Math.abs(Math.round((change / (earlierAvg || 1)) * 100));
+
+  if (Math.abs(change) < 0.5) {
+    return (t.insights?.trendSteady ?? 'Your {metric} has been steady').replace('{metric}', metricName);
+  }
+  const direction = change > 0
+    ? (t.insights?.trendRising ?? 'rising')
+    : (t.insights?.trendDropping ?? 'dropping');
+  const sentiment = (change > 0 === isGoodHigh)
+    ? ` ${t.insights?.trendNicely ?? 'nicely'}`
+    : '';
+  const template = t.insights?.trendChange ?? 'Your {metric} has been {direction}{sentiment} — {pct}% over this period';
+  return template
+    .replace('{metric}', metricName)
+    .replace('{direction}', direction)
+    .replace('{sentiment}', sentiment)
+    .replace('{pct}', String(pctChange));
+}
+
 export default function InsightsScreen() {
   const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language } = useApp();
   const lifeStageOverride = phaseEstimate.lifeStageOverride;
@@ -735,6 +766,29 @@ export default function InsightsScreen() {
       ]
     };
   }, [trendData]);
+
+  const trendNarratives = useMemo(() => {
+    if (!trendData || trendData.length < 2) return null;
+    const stressData = trendData.map(d => d.stress);
+    const energyData = trendData.map(d => d.energy);
+    const recoveryData = trendData.map(d => d.recovery);
+    const hydrationData = trendData.map(d => d.hydration);
+    const inflammationData = trendData.map(d => d.inflammation);
+    const fatigueData = trendData.map(d => d.fatigue);
+
+    return {
+      physical: [
+        generateTrendNarrative(stressData, t.home.stress, false, t),
+        generateTrendNarrative(energyData, t.home.energy, true, t),
+        generateTrendNarrative(recoveryData, t.home.recovery, true, t),
+      ].filter(Boolean).join('. ') || null,
+      hydrationInflammation: [
+        generateTrendNarrative(hydrationData, t.habits?.hydration ?? 'Hydration', true, t),
+        generateTrendNarrative(inflammationData, t.insights?.inflammation ?? 'Inflammation', false, t),
+      ].filter(Boolean).join('. ') || null,
+      fatigue: generateTrendNarrative(fatigueData, t.insights?.fatigue ?? 'Fatigue', false, t) || null,
+    };
+  }, [trendData, t]);
 
   if (scans.length === 0) {
     return (
@@ -1059,6 +1113,9 @@ export default function InsightsScreen() {
 
               <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Physical Scores</Text>
+                {trendNarratives?.physical && (
+                  <Text style={styles.trendNarrative}>{trendNarratives.physical}</Text>
+                )}
                 <LineChart
                   data={physicalChartData!}
                   width={chartWidth}
@@ -1100,6 +1157,9 @@ export default function InsightsScreen() {
 
               <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Hydration & Inflammation</Text>
+                {trendNarratives?.hydrationInflammation && (
+                  <Text style={styles.trendNarrative}>{trendNarratives.hydrationInflammation}</Text>
+                )}
                 <LineChart
                   data={hydrationInflammationChartData!}
                   width={chartWidth}
@@ -1137,6 +1197,9 @@ export default function InsightsScreen() {
 
               <View style={styles.chartContainer}>
                 <Text style={styles.chartTitle}>Fatigue</Text>
+                {trendNarratives?.fatigue && (
+                  <Text style={styles.trendNarrative}>{trendNarratives.fatigue}</Text>
+                )}
                 <LineChart
                   data={fatigueChartData!}
                   width={chartWidth}
@@ -2915,6 +2978,14 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontWeight: "600" as const,
     color: colors.text,
     marginBottom: 16,
+  },
+  trendNarrative: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontStyle: "italic" as const,
+    marginBottom: 12,
+    marginTop: -8,
+    lineHeight: 18,
   },
   chart: {
     borderRadius: 16,
