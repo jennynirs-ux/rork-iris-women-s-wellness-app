@@ -832,10 +832,7 @@ export default function HomeScreen() {
       <View style={styles.summaryCard}>
         <View style={styles.phaseBadgeRow}>
           <View style={[styles.phaseBadge, { backgroundColor: lifeStagePhase.color + "20" }]}>
-            <lifeStagePhase.icon size={16} color={lifeStagePhase.color} />
-            <Text style={[styles.phaseBadgeText, { color: lifeStagePhase.color }]}>
-              {lifeStagePhase.label}
-            </Text>
+            <lifeStagePhase.icon size={14} color={lifeStagePhase.color} />
           </View>
           {userProfile.lifeStage === 'regular' && (
             <TouchableOpacity
@@ -908,23 +905,9 @@ export default function HomeScreen() {
           <Text style={styles.focusLabel}>{t.home.recommendedFocus}</Text>
           <Text style={styles.focusText}>{todaySummary.recommendedFocus}</Text>
         </View>
-        {enrichedPhaseInfo?.phaseDescription ? (
-          <Text style={styles.phaseDescriptionSmall}>
-            {enrichedPhaseInfo.phaseDescription}
-          </Text>
-        ) : null}
       </View>
 
-      {streakData && streakData.scanStreak > 0 && (
-        <View style={styles.streakCard}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Flame size={18} color="#FF6B6B" />
-            <Text style={styles.streakText}>
-              {streakData.scanStreak}-day scan streak!
-            </Text>
-          </View>
-        </View>
-      )}
+      {/* Streak moved inline to Scan habit item */}
 
       {lifeStageSuggestion && (
         <View style={styles.suggestionBanner}>
@@ -961,20 +944,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {coachingTips.length > 0 && (
-        <View style={styles.coachingTipsSection}>
-          <Text style={styles.sectionTitle}>Daily Tips</Text>
-          {coachingTips.map((tip) => (
-            <CoachingTipCard
-              key={tip.id}
-              tip={tip}
-              colors={colors}
-              onDismiss={handleDismissCoachingTip}
-              styles={styles}
-            />
-          ))}
-        </View>
-      )}
+      {/* Daily Tips hidden — redundant with summary card's recommended focus */}
 
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
@@ -1069,6 +1039,14 @@ export default function HomeScreen() {
                   <View style={styles.habitContent}>
                     <Text style={styles.habitTitle}>{habit.title}</Text>
                     <Text style={styles.habitDescription}>{habit.description}</Text>
+                    {isSpecialScan && streakData && streakData.scanStreak > 1 && (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                        <Flame size={11} color={colors.statusAttention} />
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: colors.statusAttention }}>
+                          {streakData.scanStreak}-day {t.home?.scanStreak || 'streak'}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                   <View style={styles.habitCheckbox}>
                     {habit.completed ? (
