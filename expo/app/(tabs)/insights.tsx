@@ -504,6 +504,9 @@ export default function InsightsScreen() {
   const [phaseGuidanceExpanded, setPhaseGuidanceExpanded] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(false);
   const [trendTimeRange, setTrendTimeRange] = useState<7 | 30 | 90>(7);
+  const [showPhysicalDetails, setShowPhysicalDetails] = useState(false);
+  const [showMentalDetails, setShowMentalDetails] = useState(false);
+  const [showPhysiologicalDetails, setShowPhysiologicalDetails] = useState(false);
 
   const showMarkerInfo = useCallback((marker: MarkerType) => {
     setSelectedMarker(marker);
@@ -715,19 +718,19 @@ export default function InsightsScreen() {
       datasets: [
         {
           data: trendData.map(d => d.stress),
-          color: hexToChartColor(colors.phaseMenstrual),
+          color: hexToChartColor(colors.stressHigh),
           strokeWidth: 2,
           label: t.home?.stress || 'Stress'
         },
         {
           data: trendData.map(d => d.energy),
-          color: hexToChartColor(colors.phaseFollicular),
+          color: hexToChartColor(colors.energyHigh),
           strokeWidth: 2,
           label: t.home?.energy || 'Energy'
         },
         {
           data: trendData.map(d => d.recovery),
-          color: hexToChartColor(colors.phaseLuteal),
+          color: hexToChartColor(colors.recoveryHigh),
           strokeWidth: 2,
           label: t.home?.recovery || 'Recovery'
         }
@@ -852,75 +855,6 @@ export default function InsightsScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-          {todayCheckIn && (
-            <View style={styles.checkInSummaryCard}>
-              <Text style={styles.checkInSummaryTitle}>{t.insights.checkInInsights}</Text>
-              <View style={styles.checkInGrid}>
-                <View style={styles.checkInItem}>
-                  <Text style={styles.checkInLabel}>{t.checkIn.sleepQuestion}</Text>
-                  <View style={styles.checkInValueRow}>
-                    <Text style={styles.checkInValue}>
-                      {todayCheckIn.sleep >= 7 ? t.common.yes : todayCheckIn.sleep >= 4 ? t.common.somewhat : t.common.no}
-                    </Text>
-                    {todayCheckIn.sleep >= 7 ? (
-                      <Sparkles size={16} color="#F4C896" />
-                    ) : todayCheckIn.sleep >= 4 ? (
-                      <Minus size={16} color="#94A3B8" />
-                    ) : (
-                      <Moon size={16} color="#64748B" />
-                    )}
-                  </View>
-                </View>
-              </View>
-              {!!todayCheckIn.bleedingLevel && todayCheckIn.bleedingLevel !== 'none' && (
-                <View style={styles.checkInGrid}>
-                  <View style={styles.checkInItem}>
-                    <Text style={styles.checkInLabel}>{t.checkIn.bleeding}</Text>
-                    <Text style={styles.checkInValue}>{todayCheckIn.bleedingLevel.charAt(0).toUpperCase() + todayCheckIn.bleedingLevel.slice(1)}</Text>
-                  </View>
-                </View>
-              )}
-              {(!!todayCheckIn.cervicalMucus || todayCheckIn.ovulationPain !== undefined) && (
-                <View style={styles.checkInGrid}>
-                  {!!todayCheckIn.cervicalMucus && (
-                    <View style={styles.checkInItem}>
-                      <Text style={styles.checkInLabel}>{t.insights.cervicalMucus}</Text>
-                      <Text style={styles.checkInValue}>{todayCheckIn.cervicalMucus.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</Text>
-                    </View>
-                  )}
-                  {todayCheckIn.ovulationPain !== undefined && (
-                    <View style={styles.checkInItem}>
-                      <Text style={styles.checkInLabel}>{t.insights.ovulationPain}</Text>
-                      <Text style={styles.checkInValue}>{todayCheckIn.ovulationPain ? t.common.yes : t.common.no}</Text>
-                    </View>
-                  )}
-                </View>
-              )}
-              {(todayCheckIn.hadCaffeine || todayCheckIn.hadAlcohol || todayCheckIn.isIll || todayCheckIn.hadSugar || todayCheckIn.hadProcessedFood) && (
-                <View style={styles.lifestyleFactorsRow}>
-                  <Text style={styles.lifestyleFactorsLabel}>{t.insights.lifestyle}: </Text>
-                  {todayCheckIn.hadCaffeine && <View style={styles.factorTag}><Coffee size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.checkIn.hadCaffeine.replace('Had caffeine', 'Caffeine').replace('Drack koffein', 'Koffein').replace('Koffein getrunken', 'Koffein').replace('Caféine consommée', 'Caféine').replace('Consumió cafeína', 'Cafeína').replace('Caffeina assunta', 'Caffeina').replace('Cafeïne gebruikt', 'Cafeïne').replace('Spożyła kofeinę', 'Kofeina').replace('Consumiu cafeína', 'Cafeína')}</Text></View>}
-                  {todayCheckIn.hadAlcohol && <View style={styles.factorTag}><Wine size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.checkIn.hadAlcohol.replace('Had alcohol', 'Alcohol').replace('Drack alkohol', 'Alkohol').replace('Alkohol getrunken', 'Alkohol').replace('Alcool consommé', 'Alcool').replace('Consumió alcohol', 'Alcohol').replace('Alcol assunto', 'Alcol').replace('Alcohol gebruikt', 'Alcohol').replace('Spożyła alkohol', 'Alkohol').replace('Consumiu álcool', 'Álcool')}</Text></View>}
-                  {todayCheckIn.isIll && <View style={styles.factorTag}><Thermometer size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.insights.feelingIll}</Text></View>}
-                  {todayCheckIn.hadSugar && <View style={styles.factorTag}><Text style={styles.factorTagText}>{t.insights.sugar}</Text></View>}
-                  {todayCheckIn.hadProcessedFood && <View style={styles.factorTag}><Text style={styles.factorTagText}>{t.insights.processedFood}</Text></View>}
-                </View>
-              )}
-              {todayCheckIn.symptoms.length > 0 && (
-                <View style={styles.symptomsRow}>
-                  <Text style={styles.symptomsLabel}>{t.programs.symptoms}: </Text>
-                  <Text style={styles.symptomsText}>{translateSymptoms(todayCheckIn.symptoms, t.symptoms)}</Text>
-                </View>
-              )}
-              {!!todayCheckIn.notes && todayCheckIn.notes.trim() !== '' && (
-                <View style={styles.notesRow}>
-                  <Text style={styles.notesLabel}>{t.insights.notes}: </Text>
-                  <Text style={styles.notesText}>{todayCheckIn.notes}</Text>
-                </View>
-              )}
-            </View>
-          )}
-
           {latestScan && (
             <View style={styles.todayResultCard}>
               <Text style={styles.todayResultTitle}>{t.insights.scanMetrics}</Text>
@@ -989,114 +923,6 @@ export default function InsightsScreen() {
             </View>
           )}
 
-          {checkInInsights.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t.insights.yourInsightsToday}</Text>
-              <Text style={styles.sectionSubtitle}>{t.insights.howChoicesConnect}</Text>
-              {checkInInsights.map((insight, index) => {
-                const IconComponent = insight.icon;
-                return (
-                  <View key={index} style={styles.contextInsightCard}>
-                    <View style={[styles.contextInsightIcon, { backgroundColor: insight.color + "20" }]}>
-                      <IconComponent size={20} color={insight.color} />
-                    </View>
-                    <View style={styles.contextInsightContent}>
-                      <Text style={styles.contextInsightTitle}>{insight.title}</Text>
-                      <Text style={styles.contextInsightMessage}>{insight.message}</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-
-          {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (() => {
-            const vmsMetrics = calculateVasomotorMetrics(checkIns, t);
-            return vmsMetrics ? (
-              <View style={styles.vasomotorCard}>
-                <View style={styles.vasomotorHeader}>
-                  <Flame size={24} color={colors.phaseMenstrual} />
-                  <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
-                </View>
-
-                <View style={styles.vasomotorMetric}>
-                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.hotFlashTrend || 'Hot Flash Trend'}</Text>
-                  <Text style={styles.vasomotorMetricValue}>
-                    {vmsMetrics.trend === 'increasing' ? t.menopause?.increasing || 'Increasing' : vmsMetrics.trend === 'decreasing' ? t.menopause?.decreasing || 'Decreasing' : t.menopause?.stable || 'Stable'}
-                  </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.avgPerDay.replace('{0}', vmsMetrics.avgHotFlashes)}</Text>
-                </View>
-
-                <View style={styles.vasomotorMetric}>
-                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.nightSweatFrequency || 'Night Sweats'}</Text>
-                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} {t.insights.ofSevenDays}</Text>
-                </View>
-
-                <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
-                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.vmsScore || 'VMS Score'}</Text>
-                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? colors.error : colors.success }]}>
-                    {vmsMetrics.vmsScore}
-                  </Text>
-                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.symptomSeverityIndicator}</Text>
-                </View>
-              </View>
-            ) : null;
-          })()}
-
-          <View style={styles.phaseCard}>
-            <Text style={styles.phaseTitle}>{isNonCycleLifeStage ? (lifeStageOverride === 'pregnancy' ? t.onboarding.pregnant : lifeStageOverride === 'postpartum' ? t.phases.postpartumRecovery : lifeStageOverride === 'perimenopause' ? t.phases.perimenopauseTransition : t.phases.menopause) : t.insights.currentCyclePhase}</Text>
-            <Text style={styles.phaseValue}>{phaseGuidance.phaseName}</Text>
-            <Text style={styles.phaseDescription}>
-              {phaseGuidance.description}
-            </Text>
-          </View>
-
-          <TouchableOpacity 
-            style={styles.guidanceCard}
-            onPress={() => setPhaseGuidanceExpanded(!phaseGuidanceExpanded)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.guidanceHeader}>
-              <View style={[styles.guidanceIconBox, { backgroundColor: phaseGuidance.color + "20" }]}>
-                {React.createElement(phaseGuidance.icon, { size: 24, color: phaseGuidance.color })}
-              </View>
-              <Text style={styles.guidanceTitle}>{t.insights.whatToExpect} {phaseGuidance.phaseName}</Text>
-              {phaseGuidanceExpanded ? (
-                <ChevronUp size={20} color={colors.textSecondary} />
-              ) : (
-                <ChevronDown size={20} color={colors.textSecondary} />
-              )}
-            </View>
-            {phaseGuidanceExpanded && (
-              <>
-                <View style={styles.guidanceSection}>
-                  <View style={styles.guidanceSectionHeader}>
-                    <Info size={16} color={colors.primary} />
-                    <Text style={styles.guidanceSectionTitle}>{t.insights.thisIsNormal}</Text>
-                  </View>
-                  {phaseGuidance.whatToExpect.map((item, index) => (
-                    <View key={index} style={styles.guidanceItem}>
-                      <View style={styles.guidanceBullet} />
-                      <Text style={styles.guidanceText}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
-                <View style={styles.guidanceSection}>
-                  <View style={styles.guidanceSectionHeader}>
-                    <Lightbulb size={16} color={colors.success} />
-                    <Text style={[styles.guidanceSectionTitle, { color: colors.success }]}>{t.insights.howToOptimize}</Text>
-                  </View>
-                  {phaseGuidance.howToImprove.map((item, index) => (
-                    <View key={index} style={styles.guidanceItem}>
-                      <View style={[styles.guidanceBullet, { backgroundColor: colors.success }]} />
-                      <Text style={styles.guidanceText}>{item}</Text>
-                    </View>
-                  ))}
-                </View>
-              </>
-            )}
-          </TouchableOpacity>
-
           {trendData && trendData.length >= 2 && (
             <View style={styles.trendsSection}>
               <View style={styles.trendsSectionHeader}>
@@ -1156,15 +982,15 @@ export default function InsightsScreen() {
                 />
                 <View style={styles.chartLegend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.phaseMenstrual }]} />
+                    <View style={[styles.legendDot, { backgroundColor: colors.stressHigh }]} />
                     <Text style={styles.legendLabel}>{t.home.stress}</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.phaseFollicular }]} />
+                    <View style={[styles.legendDot, { backgroundColor: colors.energyHigh }]} />
                     <Text style={styles.legendLabel}>{t.home.energy}</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: colors.phaseLuteal }]} />
+                    <View style={[styles.legendDot, { backgroundColor: colors.recoveryHigh }]} />
                     <Text style={styles.legendLabel}>{t.home.recovery}</Text>
                   </View>
                 </View>
@@ -1258,12 +1084,203 @@ export default function InsightsScreen() {
             </View>
           )}
 
+          {checkInInsights.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t.insights.yourInsightsToday}</Text>
+              <Text style={styles.sectionSubtitle}>{t.insights.howChoicesConnect}</Text>
+              {checkInInsights.map((insight, index) => {
+                const IconComponent = insight.icon;
+                return (
+                  <View key={index} style={styles.contextInsightCard}>
+                    <View style={[styles.contextInsightIcon, { backgroundColor: insight.color + "20" }]}>
+                      <IconComponent size={20} color={insight.color} />
+                    </View>
+                    <View style={styles.contextInsightContent}>
+                      <Text style={styles.contextInsightTitle}>{insight.title}</Text>
+                      <Text style={styles.contextInsightMessage}>{insight.message}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {todayCheckIn && (
+            <View style={styles.checkInSummaryCard}>
+              <Text style={styles.checkInSummaryTitle}>{t.insights.checkInInsights}</Text>
+              <View style={styles.checkInGrid}>
+                <View style={styles.checkInItem}>
+                  <Text style={styles.checkInLabel}>{t.checkIn.sleepQuestion}</Text>
+                  <View style={styles.checkInValueRow}>
+                    <Text style={styles.checkInValue}>
+                      {todayCheckIn.sleep >= 7 ? t.common.yes : todayCheckIn.sleep >= 4 ? t.common.somewhat : t.common.no}
+                    </Text>
+                    {todayCheckIn.sleep >= 7 ? (
+                      <Sparkles size={16} color="#F4C896" />
+                    ) : todayCheckIn.sleep >= 4 ? (
+                      <Minus size={16} color="#94A3B8" />
+                    ) : (
+                      <Moon size={16} color="#64748B" />
+                    )}
+                  </View>
+                </View>
+              </View>
+              {!!todayCheckIn.bleedingLevel && todayCheckIn.bleedingLevel !== 'none' && (
+                <View style={styles.checkInGrid}>
+                  <View style={styles.checkInItem}>
+                    <Text style={styles.checkInLabel}>{t.checkIn.bleeding}</Text>
+                    <Text style={styles.checkInValue}>{todayCheckIn.bleedingLevel.charAt(0).toUpperCase() + todayCheckIn.bleedingLevel.slice(1)}</Text>
+                  </View>
+                </View>
+              )}
+              {(!!todayCheckIn.cervicalMucus || todayCheckIn.ovulationPain !== undefined) && (
+                <View style={styles.checkInGrid}>
+                  {!!todayCheckIn.cervicalMucus && (
+                    <View style={styles.checkInItem}>
+                      <Text style={styles.checkInLabel}>{t.insights.cervicalMucus}</Text>
+                      <Text style={styles.checkInValue}>{todayCheckIn.cervicalMucus.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</Text>
+                    </View>
+                  )}
+                  {todayCheckIn.ovulationPain !== undefined && (
+                    <View style={styles.checkInItem}>
+                      <Text style={styles.checkInLabel}>{t.insights.ovulationPain}</Text>
+                      <Text style={styles.checkInValue}>{todayCheckIn.ovulationPain ? t.common.yes : t.common.no}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+              {(todayCheckIn.hadCaffeine || todayCheckIn.hadAlcohol || todayCheckIn.isIll || todayCheckIn.hadSugar || todayCheckIn.hadProcessedFood) && (
+                <View style={styles.lifestyleFactorsRow}>
+                  <Text style={styles.lifestyleFactorsLabel}>{t.insights.lifestyle}: </Text>
+                  {todayCheckIn.hadCaffeine && <View style={styles.factorTag}><Coffee size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.checkIn.hadCaffeine.replace('Had caffeine', 'Caffeine').replace('Drack koffein', 'Koffein').replace('Koffein getrunken', 'Koffein').replace('Caféine consommée', 'Caféine').replace('Consumió cafeína', 'Cafeína').replace('Caffeina assunta', 'Caffeina').replace('Cafeïne gebruikt', 'Cafeïne').replace('Spożyła kofeinę', 'Kofeina').replace('Consumiu cafeína', 'Cafeína')}</Text></View>}
+                  {todayCheckIn.hadAlcohol && <View style={styles.factorTag}><Wine size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.checkIn.hadAlcohol.replace('Had alcohol', 'Alcohol').replace('Drack alkohol', 'Alkohol').replace('Alkohol getrunken', 'Alkohol').replace('Alcool consommé', 'Alcool').replace('Consumió alcohol', 'Alcohol').replace('Alcol assunto', 'Alcol').replace('Alcohol gebruikt', 'Alcohol').replace('Spożyła alkohol', 'Alkohol').replace('Consumiu álcool', 'Álcool')}</Text></View>}
+                  {todayCheckIn.isIll && <View style={styles.factorTag}><Thermometer size={12} color={colors.primary} /><Text style={styles.factorTagText}>{t.insights.feelingIll}</Text></View>}
+                  {todayCheckIn.hadSugar && <View style={styles.factorTag}><Text style={styles.factorTagText}>{t.insights.sugar}</Text></View>}
+                  {todayCheckIn.hadProcessedFood && <View style={styles.factorTag}><Text style={styles.factorTagText}>{t.insights.processedFood}</Text></View>}
+                </View>
+              )}
+              {todayCheckIn.symptoms.length > 0 && (
+                <View style={styles.symptomsRow}>
+                  <Text style={styles.symptomsLabel}>{t.programs.symptoms}: </Text>
+                  <Text style={styles.symptomsText}>{translateSymptoms(todayCheckIn.symptoms, t.symptoms)}</Text>
+                </View>
+              )}
+              {!!todayCheckIn.notes && todayCheckIn.notes.trim() !== '' && (
+                <View style={styles.notesRow}>
+                  <Text style={styles.notesLabel}>{t.insights.notes}: </Text>
+                  <Text style={styles.notesText}>{todayCheckIn.notes}</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (() => {
+            const vmsMetrics = calculateVasomotorMetrics(checkIns, t);
+            return vmsMetrics ? (
+              <View style={styles.vasomotorCard}>
+                <View style={styles.vasomotorHeader}>
+                  <Flame size={24} color={colors.phaseMenstrual} />
+                  <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
+                </View>
+
+                <View style={styles.vasomotorMetric}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.hotFlashTrend || 'Hot Flash Trend'}</Text>
+                  <Text style={styles.vasomotorMetricValue}>
+                    {vmsMetrics.trend === 'increasing' ? t.menopause?.increasing || 'Increasing' : vmsMetrics.trend === 'decreasing' ? t.menopause?.decreasing || 'Decreasing' : t.menopause?.stable || 'Stable'}
+                  </Text>
+                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.avgPerDay.replace('{0}', vmsMetrics.avgHotFlashes)}</Text>
+                </View>
+
+                <View style={styles.vasomotorMetric}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.nightSweatFrequency || 'Night Sweats'}</Text>
+                  <Text style={styles.vasomotorMetricValue}>{vmsMetrics.nightSweatDays} {t.insights.ofSevenDays}</Text>
+                </View>
+
+                <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
+                  <Text style={styles.vasomotorMetricLabel}>{t.menopause?.vmsScore || 'VMS Score'}</Text>
+                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? colors.error : colors.success }]}>
+                    {vmsMetrics.vmsScore}
+                  </Text>
+                  <Text style={styles.vasomotorMetricSubtext}>{t.insights.symptomSeverityIndicator}</Text>
+                </View>
+              </View>
+            ) : null;
+          })()}
+
+          <View style={styles.phaseCard}>
+            <Text style={styles.phaseTitle}>{isNonCycleLifeStage ? (lifeStageOverride === 'pregnancy' ? t.onboarding.pregnant : lifeStageOverride === 'postpartum' ? t.phases.postpartumRecovery : lifeStageOverride === 'perimenopause' ? t.phases.perimenopauseTransition : t.phases.menopause) : t.insights.currentCyclePhase}</Text>
+            <Text style={styles.phaseValue}>{phaseGuidance.phaseName}</Text>
+            <Text style={styles.phaseDescription}>
+              {phaseGuidance.description}
+            </Text>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.guidanceCard}
+            onPress={() => setPhaseGuidanceExpanded(!phaseGuidanceExpanded)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.guidanceHeader}>
+              <View style={[styles.guidanceIconBox, { backgroundColor: phaseGuidance.color + "20" }]}>
+                {React.createElement(phaseGuidance.icon, { size: 24, color: phaseGuidance.color })}
+              </View>
+              <Text style={styles.guidanceTitle}>{t.insights.whatToExpect} {phaseGuidance.phaseName}</Text>
+              {phaseGuidanceExpanded ? (
+                <ChevronUp size={20} color={colors.textSecondary} />
+              ) : (
+                <ChevronDown size={20} color={colors.textSecondary} />
+              )}
+            </View>
+            {phaseGuidanceExpanded && (
+              <>
+                <View style={styles.guidanceSection}>
+                  <View style={styles.guidanceSectionHeader}>
+                    <Info size={16} color={colors.primary} />
+                    <Text style={styles.guidanceSectionTitle}>{t.insights.thisIsNormal}</Text>
+                  </View>
+                  {phaseGuidance.whatToExpect.map((item, index) => (
+                    <View key={index} style={styles.guidanceItem}>
+                      <View style={styles.guidanceBullet} />
+                      <Text style={styles.guidanceText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={styles.guidanceSection}>
+                  <View style={styles.guidanceSectionHeader}>
+                    <Lightbulb size={16} color={colors.success} />
+                    <Text style={[styles.guidanceSectionTitle, { color: colors.success }]}>{t.insights.howToOptimize}</Text>
+                  </View>
+                  {phaseGuidance.howToImprove.map((item, index) => (
+                    <View key={index} style={styles.guidanceItem}>
+                      <View style={[styles.guidanceBullet, { backgroundColor: colors.success }]} />
+                      <Text style={styles.guidanceText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+          </TouchableOpacity>
+
           {scans.length > 0 && (
             <>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.insights.physicalMarkers}</Text>
-                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                
+                <TouchableOpacity
+                  style={styles.collapsibleHeader}
+                  onPress={() => setShowPhysicalDetails(!showPhysicalDetails)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.collapsibleHeaderText}>
+                    <Text style={styles.sectionTitle}>{t.insights.physicalMarkers}</Text>
+                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                  </View>
+                  {showPhysicalDetails ? (
+                    <ChevronUp size={20} color={colors.textSecondary} />
+                  ) : (
+                    <ChevronDown size={20} color={colors.textSecondary} />
+                  )}
+                </TouchableOpacity>
+                {showPhysicalDetails && (
+                <>
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#A4C8E8" + "20" }]}>
                     <Droplets size={20} color="#A4C8E8" />
@@ -1350,12 +1367,28 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: "#F4C896" }]} />
                   </View>
                 </View>
+                </>
+                )}
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.insights.mentalEmotionalState}</Text>
-                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                
+                <TouchableOpacity
+                  style={styles.collapsibleHeader}
+                  onPress={() => setShowMentalDetails(!showMentalDetails)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.collapsibleHeaderText}>
+                    <Text style={styles.sectionTitle}>{t.insights.mentalEmotionalState}</Text>
+                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                  </View>
+                  {showMentalDetails ? (
+                    <ChevronUp size={20} color={colors.textSecondary} />
+                  ) : (
+                    <ChevronDown size={20} color={colors.textSecondary} />
+                  )}
+                </TouchableOpacity>
+                {showMentalDetails && (
+                <>
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#96E8D4" + "20" }]}>
                     <Brain size={20} color="#96E8D4" />
@@ -1471,12 +1504,28 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
                   </View>
                 </View>
+                </>
+                )}
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.insights.physiologicalInsights}</Text>
-                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                
+                <TouchableOpacity
+                  style={styles.collapsibleHeader}
+                  onPress={() => setShowPhysiologicalDetails(!showPhysiologicalDetails)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.collapsibleHeaderText}>
+                    <Text style={styles.sectionTitle}>{t.insights.physiologicalInsights}</Text>
+                    <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
+                  </View>
+                  {showPhysiologicalDetails ? (
+                    <ChevronUp size={20} color={colors.textSecondary} />
+                  ) : (
+                    <ChevronDown size={20} color={colors.textSecondary} />
+                  )}
+                </TouchableOpacity>
+                {showPhysiologicalDetails && (
+                <>
                 <View style={styles.detailCard}>
                   <View style={[styles.detailIcon, { backgroundColor: "#B4E4F4" + "20" }]}>
                     <Droplets size={20} color="#B4E4F4" />
@@ -1534,6 +1583,8 @@ export default function InsightsScreen() {
                     <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
                   </View>
                 </View>
+                </>
+                )}
               </View>
 
               <View style={styles.section}>
@@ -1984,6 +2035,16 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textSecondary,
     marginTop: -8,
     marginBottom: 16,
+  },
+  collapsibleHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    paddingVertical: 4,
+  },
+  collapsibleHeaderText: {
+    flex: 1,
+    marginRight: 8,
   },
   estimateDisclaimer: {
     fontSize: 11,

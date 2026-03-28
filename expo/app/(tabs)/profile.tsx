@@ -694,29 +694,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* Achievements Section */}
-              {milestones && milestones.length > 0 && (
-                <View style={styles.achievementsSection}>
-                  <Text style={styles.sectionTitle}>Achievements</Text>
-                  <View style={styles.milestonesGrid}>
-                    {milestones.map((milestone) => (
-                      <View
-                        key={milestone.id}
-                        style={[
-                          styles.milestoneCard,
-                          !milestone.unlocked && styles.milestoneCardLocked,
-                        ]}
-                      >
-                        <Text style={styles.milestoneIcon}>{milestone.icon}</Text>
-                        <Text style={styles.milestoneTitle}>{milestone.title}</Text>
-                        <Text style={[styles.milestoneDescription, !milestone.unlocked && styles.milestoneDescriptionLocked]}>
-                          {milestone.description}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              )}
+              {/* Achievements Section -- hidden for cleaner profile */}
 
               {/* Monthly Comparison Section */}
               {monthlyComparison && monthlyComparison.length > 0 && (
