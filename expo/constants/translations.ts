@@ -590,6 +590,15 @@ type Translations = {
     crossHeadacheFatigueMsg: string;
     crossLutealMoodTitle: string;
     crossLutealMoodMsg: string;
+    chartTrends: string;
+    chartPhysicalScores: string;
+    chartHydrationInflammation: string;
+    chartFatigue: string;
+    keepScanningTitle: string;
+    keepScanningText: string;
+    avgPerDay: string;
+    ofSevenDays: string;
+    symptomSeverityIndicator: string;
   };
   scanRecommendations: {
     stressHighRest: string;
@@ -1681,6 +1690,15 @@ const en: Translations = {
     crossHeadacheFatigueMsg: 'Headaches are often associated with elevated fatigue. Stay hydrated and consider rest.',
     crossLutealMoodTitle: 'Luteal Phase Mood Patterns',
     crossLutealMoodMsg: 'Lower mood during the luteal phase is a common experience. Your feelings are valid and temporary.',
+    chartTrends: 'Trends',
+    chartPhysicalScores: 'Physical Scores',
+    chartHydrationInflammation: 'Hydration & Inflammation',
+    chartFatigue: 'Fatigue',
+    keepScanningTitle: 'Keep scanning to see trends',
+    keepScanningText: 'Collect at least 2 data points to visualize your wellness trends',
+    avgPerDay: 'Avg {0} per day (last 7 days)',
+    ofSevenDays: 'of 7 days',
+    symptomSeverityIndicator: 'Symptom severity indicator',
   },
   programs: {
     title: 'Calendar',
@@ -2742,6 +2760,15 @@ const sv: Translations = {
     crossHeadacheFatigueMsg: 'Huvudvärk är ofta kopplat till förhöjd trötthet. Håll dig hydrerad.',
     crossLutealMoodTitle: 'Lutealfas Humörmönster',
     crossLutealMoodMsg: 'Lägre humör under lutealfasen är en vanlig hormonell respons. Dina känslor är giltiga.',
+    chartTrends: 'Trender',
+    chartPhysicalScores: 'Fysiska poäng',
+    chartHydrationInflammation: 'Hydrering & inflammation',
+    chartFatigue: 'Trötthet',
+    keepScanningTitle: 'Fortsätt skanna för att se trender',
+    keepScanningText: 'Samla minst 2 datapunkter för att se dina wellnesstrender',
+    avgPerDay: 'Snitt {0} per dag (senaste 7 dagarna)',
+    ofSevenDays: 'av 7 dagar',
+    symptomSeverityIndicator: 'Indikator för symptomens svårighetsgrad',
   },
   programs: {
     title: 'Kalender',
@@ -3803,6 +3830,15 @@ const de: Translations = {
     crossHeadacheFatigueMsg: 'Kopfschmerzen sind oft mit erhöhter Müdigkeit verbunden. Bleib hydriert.',
     crossLutealMoodTitle: 'Lutealphase Stimmungsmuster',
     crossLutealMoodMsg: 'Niedrigere Stimmung in der Lutealphase ist eine häufige hormonelle Reaktion.',
+    chartTrends: 'Trends',
+    chartPhysicalScores: 'Physische Werte',
+    chartHydrationInflammation: 'Hydration & Entzündung',
+    chartFatigue: 'Müdigkeit',
+    keepScanningTitle: 'Weiter scannen, um Trends zu sehen',
+    keepScanningText: 'Sammle mindestens 2 Datenpunkte, um deine Wellness-Trends zu sehen',
+    avgPerDay: 'Durchschn. {0} pro Tag (letzte 7 Tage)',
+    ofSevenDays: 'von 7 Tagen',
+    symptomSeverityIndicator: 'Symptom-Schweregrad-Indikator',
   },
   programs: {
     title: 'Kalender',
@@ -4864,6 +4900,15 @@ const fr: Translations = {
     crossHeadacheFatigueMsg: 'Les maux de tête sont souvent associés à une fatigue élevée. Restez hydratée.',
     crossLutealMoodTitle: 'Humeur en Phase Lutéale',
     crossLutealMoodMsg: 'Une humeur plus basse en phase lutéale est une réponse hormonale courante. Vos sentiments sont valides.',
+    chartTrends: 'Tendances',
+    chartPhysicalScores: 'Scores physiques',
+    chartHydrationInflammation: 'Hydratation & inflammation',
+    chartFatigue: 'Fatigue',
+    keepScanningTitle: 'Continuez a scanner pour voir les tendances',
+    keepScanningText: 'Collectez au moins 2 points de donnees pour visualiser vos tendances bien-etre',
+    avgPerDay: 'Moy. {0} par jour (7 derniers jours)',
+    ofSevenDays: 'sur 7 jours',
+    symptomSeverityIndicator: 'Indicateur de severite des symptomes',
   },
   programs: {
     title: 'Calendrier',
@@ -5925,6 +5970,15 @@ const es: Translations = {
     crossHeadacheFatigueMsg: 'Los dolores de cabeza suelen estar asociados con fatiga elevada. Manténte hidratada.',
     crossLutealMoodTitle: 'Patrones de Ánimo en Fase Lútea',
     crossLutealMoodMsg: 'Un ánimo más bajo en la fase lútea es una respuesta hormonal común. Tus sentimientos son válidos.',
+    chartTrends: 'Tendencias',
+    chartPhysicalScores: 'Puntuaciones fisicas',
+    chartHydrationInflammation: 'Hidratacion e inflamacion',
+    chartFatigue: 'Fatiga',
+    keepScanningTitle: 'Sigue escaneando para ver tendencias',
+    keepScanningText: 'Recopila al menos 2 puntos de datos para visualizar tus tendencias de bienestar',
+    avgPerDay: 'Prom. {0} por dia (ultimos 7 dias)',
+    ofSevenDays: 'de 7 dias',
+    symptomSeverityIndicator: 'Indicador de gravedad de sintomas',
   },
   programs: {
     title: 'Calendario',
@@ -6986,6 +7040,15 @@ const it: Translations = {
     crossHeadacheFatigueMsg: 'Il mal di testa è spesso associato a stanchezza elevata. Mantieniti idratata.',
     crossLutealMoodTitle: 'Umore in Fase Luteale',
     crossLutealMoodMsg: 'Un umore più basso nella fase luteale è una risposta ormonale comune. I tuoi sentimenti sono validi.',
+    chartTrends: 'Tendenze',
+    chartPhysicalScores: 'Punteggi fisici',
+    chartHydrationInflammation: 'Idratazione e infiammazione',
+    chartFatigue: 'Stanchezza',
+    keepScanningTitle: 'Continua a scansionare per vedere le tendenze',
+    keepScanningText: 'Raccogli almeno 2 punti dati per visualizzare le tue tendenze di benessere',
+    avgPerDay: 'Media {0} al giorno (ultimi 7 giorni)',
+    ofSevenDays: 'su 7 giorni',
+    symptomSeverityIndicator: 'Indicatore di gravita dei sintomi',
   },
   programs: {
     title: 'Calendario',
@@ -8047,6 +8110,15 @@ const nl: Translations = {
     crossHeadacheFatigueMsg: 'Hoofdpijn is vaak geassocieerd met verhoogde vermoeidheid. Blijf gehydrateerd.',
     crossLutealMoodTitle: 'Luteale Fase Stemmingspatronen',
     crossLutealMoodMsg: 'Een lager humeur in de luteale fase is een veelvoorkomende hormonale reactie.',
+    chartTrends: 'Trends',
+    chartPhysicalScores: 'Fysieke scores',
+    chartHydrationInflammation: 'Hydratatie & ontsteking',
+    chartFatigue: 'Vermoeidheid',
+    keepScanningTitle: 'Blijf scannen om trends te zien',
+    keepScanningText: 'Verzamel minstens 2 datapunten om je welzijnstrends te zien',
+    avgPerDay: 'Gem. {0} per dag (laatste 7 dagen)',
+    ofSevenDays: 'van 7 dagen',
+    symptomSeverityIndicator: 'Symptoom ernst-indicator',
   },
   programs: {
     title: 'Kalender',
@@ -9108,6 +9180,15 @@ const pl: Translations = {
     crossHeadacheFatigueMsg: 'Bóle głowy są często związane z podwyższonym zmęczeniem. Pij dużo wody.',
     crossLutealMoodTitle: 'Wzorce Nastroju w Fazie Lutealnej',
     crossLutealMoodMsg: 'Niższy nastrój w fazie lutealnej to powszechna reakcja hormonalna. Twoje uczucia są ważne.',
+    chartTrends: 'Trendy',
+    chartPhysicalScores: 'Wyniki fizyczne',
+    chartHydrationInflammation: 'Nawodnienie i stan zapalny',
+    chartFatigue: 'Zmeczenie',
+    keepScanningTitle: 'Skanuj dalej, aby zobaczyc trendy',
+    keepScanningText: 'Zbierz co najmniej 2 punkty danych, aby zwizualizowac swoje trendy wellness',
+    avgPerDay: 'Sr. {0} dziennie (ostatnie 7 dni)',
+    ofSevenDays: 'z 7 dni',
+    symptomSeverityIndicator: 'Wskaznik nasilenia objawow',
   },
   programs: {
     title: 'Kalendarz',
@@ -10169,6 +10250,15 @@ const pt: Translations = {
     crossHeadacheFatigueMsg: 'Dores de cabeça são frequentemente associadas a fadiga elevada. Mantenha-se hidratada.',
     crossLutealMoodTitle: 'Padrões de Humor na Fase Lútea',
     crossLutealMoodMsg: 'Humor mais baixo na fase lútea é uma resposta hormonal comum. Seus sentimentos são válidos.',
+    chartTrends: 'Tendencias',
+    chartPhysicalScores: 'Pontuacoes fisicas',
+    chartHydrationInflammation: 'Hidratacao e inflamacao',
+    chartFatigue: 'Fadiga',
+    keepScanningTitle: 'Continue escaneando para ver tendencias',
+    keepScanningText: 'Colete pelo menos 2 pontos de dados para visualizar suas tendencias de bem-estar',
+    avgPerDay: 'Media {0} por dia (ultimos 7 dias)',
+    ofSevenDays: 'de 7 dias',
+    symptomSeverityIndicator: 'Indicador de gravidade dos sintomas',
   },
   programs: {
     title: 'Calendário',

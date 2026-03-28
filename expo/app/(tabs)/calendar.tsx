@@ -773,31 +773,31 @@ export default function CalendarScreen() {
 
                     <View style={styles.scanMetricsGroup}>
                       <Text style={styles.scanGroupLabel}>{t.programs.physical}</Text>
-                      <ScanMetricBar label={t.habits.hydration} value={scan.hydrationLevel} color="#A4C8E8" icon={Droplets} />
-                      <ScanMetricBar label={t.programs.inflammation} value={scan.inflammation} color="#E89BA4" icon={AlertCircle} />
-                      <ScanMetricBar label={t.programs.fatigue} value={scan.fatigueLevel} color="#F4C896" icon={Moon} />
+                      <ScanMetricBar label={t.habits.hydration} value={scan.hydrationLevel} color={colors.habitHydration} icon={Droplets} />
+                      <ScanMetricBar label={t.programs.inflammation} value={scan.inflammation} color={colors.phaseMenstrual} icon={AlertCircle} />
+                      <ScanMetricBar label={t.programs.fatigue} value={scan.fatigueLevel} color={colors.phaseOvulation} icon={Moon} />
                     </View>
 
                     <View style={styles.scanMetricsGroup}>
                       <Text style={styles.scanGroupLabel}>{t.programs.mentalEmotional}</Text>
-                      <ScanMetricBar label={t.programs.cognitiveSharpness} value={scan.emotionalMentalState.cognitiveSharpness} color="#96E8D4" icon={Brain} />
-                      <ScanMetricBar label={t.programs.emotionalSensitivity} value={scan.emotionalMentalState.emotionalSensitivity} color="#F4C8D4" icon={Heart} />
-                      <ScanMetricBar label={t.programs.socialEnergy} value={scan.emotionalMentalState.socialEnergy} color="#E8B4D4" icon={Users} />
-                      <ScanMetricBar label={t.programs.moodVolatility} value={scan.emotionalMentalState.moodVolatilityRisk} color="#F4B896" icon={BarChart3} />
+                      <ScanMetricBar label={t.programs.cognitiveSharpness} value={scan.emotionalMentalState.cognitiveSharpness} color={colors.habitNutrition} icon={Brain} />
+                      <ScanMetricBar label={t.programs.emotionalSensitivity} value={scan.emotionalMentalState.emotionalSensitivity} color={colors.secondary} icon={Heart} />
+                      <ScanMetricBar label={t.programs.socialEnergy} value={scan.emotionalMentalState.socialEnergy} color={colors.habitRecovery} icon={Users} />
+                      <ScanMetricBar label={t.programs.moodVolatility} value={scan.emotionalMentalState.moodVolatilityRisk} color={colors.habitMovement} icon={BarChart3} />
                     </View>
 
                     <View style={styles.scanMetricsGroup}>
                       <Text style={styles.scanGroupLabel}>{t.programs.physiological}</Text>
-                      <ScanMetricBar label={t.programs.sympatheticActivation} value={scan.physiologicalStates.sympatheticActivation} color="#F4A4A4" icon={Wind} />
-                      <ScanMetricBar label={t.programs.cognitiveLoad} value={scan.physiologicalStates.cognitiveLoad} color="#A4D4F4" icon={Brain} />
-                      <ScanMetricBar label={t.programs.dehydrationTendency} value={scan.physiologicalStates.dehydrationTendency} color="#B4E4F4" icon={Droplets} />
-                      <ScanMetricBar label={t.programs.inflammatoryStress} value={scan.physiologicalStates.inflammatoryStress} color="#F4D4A4" icon={Flame} />
+                      <ScanMetricBar label={t.programs.sympatheticActivation} value={scan.physiologicalStates.sympatheticActivation} color={colors.error} icon={Wind} />
+                      <ScanMetricBar label={t.programs.cognitiveLoad} value={scan.physiologicalStates.cognitiveLoad} color={colors.info} icon={Brain} />
+                      <ScanMetricBar label={t.programs.dehydrationTendency} value={scan.physiologicalStates.dehydrationTendency} color={colors.habitMindfulness} icon={Droplets} />
+                      <ScanMetricBar label={t.programs.inflammatoryStress} value={scan.physiologicalStates.inflammatoryStress} color={colors.habitSkincare} icon={Flame} />
                     </View>
 
                     <View style={styles.scanMetricsGroup}>
                       <Text style={styles.scanGroupLabel}>{t.programs.skinBeauty}</Text>
-                      <ScanMetricBar label={t.programs.skinStress} value={scan.skinBeautySignals.skinStress} color="#F4C4E8" icon={Sparkles} />
-                      <ScanMetricBar label={t.programs.drynessTendency} value={scan.skinBeautySignals.drynessTendency} color="#E4D4F4" icon={Droplets} />
+                      <ScanMetricBar label={t.programs.skinStress} value={scan.skinBeautySignals.skinStress} color={colors.secondary} icon={Sparkles} />
+                      <ScanMetricBar label={t.programs.drynessTendency} value={scan.skinBeautySignals.drynessTendency} color={colors.primaryLight} icon={Droplets} />
                     </View>
                   </View>
                 )}
