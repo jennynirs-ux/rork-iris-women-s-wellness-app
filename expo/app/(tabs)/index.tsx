@@ -833,6 +833,7 @@ export default function HomeScreen() {
         <View style={styles.phaseBadgeRow}>
           <View style={[styles.phaseBadge, { backgroundColor: lifeStagePhase.color + "20" }]}>
             <lifeStagePhase.icon size={14} color={lifeStagePhase.color} />
+            <Text style={[styles.phaseBadgeText, { color: lifeStagePhase.color }]}>{lifeStagePhase.label}</Text>
           </View>
           {userProfile.lifeStage === 'regular' && (
             <TouchableOpacity
