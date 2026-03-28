@@ -7,24 +7,21 @@ import { useApp } from "@/contexts/AppContext";
 import { router } from "expo-router";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
-import { CheckCircle, Calendar } from "lucide-react-native";
+import { CheckCircle, Calendar, ClipboardCheck } from "lucide-react-native";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Helper to determine color based on score and metric type
-const getScoreColor = (value: number, metricType: 'good-high' | 'good-low', themeColors?: typeof Colors.light): string => {
-  const good = themeColors?.statusGood ?? '#8BC9A3';
-  const moderate = themeColors?.statusModerate ?? '#F4C896';
-  const attention = themeColors?.statusAttention ?? '#E89BA4';
+const getScoreColor = (value: number, metricType: 'good-high' | 'good-low'): string => {
   if (metricType === 'good-high') {
     // For energy, recovery, hydration: high is good
-    if (value >= 7) return good;
-    if (value >= 4) return moderate;
-    return attention;
+    if (value >= 7) return '#8BC9A3'; // green
+    if (value >= 4) return '#F4C896'; // yellow
+    return '#E89BA4'; // red
   } else {
     // For stress, fatigue, inflammation: low is good
-    if (value <= 3) return good;
-    if (value <= 6) return moderate;
-    return attention;
+    if (value <= 3) return '#8BC9A3'; // green
+    if (value <= 6) return '#F4C896'; // yellow
+    return '#E89BA4'; // red
   }
 };
 
@@ -34,7 +31,7 @@ const getInterpretation = (label: string, value: number): string => {
     case 'Energy':
       return value >= 7 ? 'Strong energy today' : value >= 4 ? 'Moderate energy' : 'Consider rest';
     case 'Stress':
-      return value <= 3 ? 'Stress is low' : value <= 6 ? 'Moderate stress levels' : 'Stress is elevated — consider a break';
+      return value <= 3 ? 'Stress is low' : value <= 6 ? 'Moderate stress levels' : 'Stress score is higher — consider a break';
     case 'Recovery':
       return value >= 7 ? 'Well recovered' : value >= 4 ? 'Moderate recovery' : 'Recovery needed';
     case 'Hydration':
@@ -42,7 +39,7 @@ const getInterpretation = (label: string, value: number): string => {
     case 'Fatigue':
       return value <= 3 ? 'Feeling energized' : value <= 6 ? 'Some fatigue present' : 'High fatigue — prioritize rest';
     case 'Inflammation':
-      return value <= 3 ? 'Low inflammation' : value <= 6 ? 'Moderate inflammation' : 'Elevated inflammation — watch diet';
+      return value <= 3 ? 'Low inflammation' : value <= 6 ? 'Moderate inflammation' : 'Higher score — consider comfort foods';
     default:
       return '';
   }
@@ -98,7 +95,7 @@ function ScoreGauge({ label, value, interpretation, color, colors, styles }: Sco
 }
 
 function ScanResultScreenInner() {
-  const { latestScan, updateLastPeriodDate, currentPhase, t } = useApp();
+  const { latestScan, updateLastPeriodDate, currentPhase, todayCheckIn, t } = useApp();
   const { colors } = useTheme();
   const styles = useMemo(() => createScanResultStyles(colors), [colors]);
   const [showMenstrualDialog, setShowMenstrualDialog] = useState(false);
@@ -130,8 +127,12 @@ function ScanResultScreenInner() {
     router.push("/(tabs)/insights" as any);
   }, []);
 
+  const handleCheckIn = useCallback(() => {
+    router.push("/check-in" as any);
+  }, []);
+
   const handleDone = useCallback(() => {
-    router.push("/(tabs)/home" as any);
+    router.push("/(tabs)" as any);
   }, []);
 
   if (!latestScan) {
@@ -145,12 +146,12 @@ function ScanResultScreenInner() {
   }
 
   const scores = [
-    { label: 'Energy', value: latestScan.energyScore, type: 'good-high' as const },
-    { label: 'Stress', value: latestScan.stressScore, type: 'good-low' as const },
-    { label: 'Recovery', value: latestScan.recoveryScore, type: 'good-high' as const },
-    { label: 'Hydration', value: latestScan.hydrationLevel, type: 'good-high' as const },
-    { label: 'Fatigue', value: latestScan.fatigueLevel, type: 'good-low' as const },
-    { label: 'Inflammation', value: latestScan.inflammation, type: 'good-low' as const },
+    { label: 'Energy', value: latestScan.energyScore ?? 5, type: 'good-high' as const },
+    { label: 'Stress', value: latestScan.stressScore ?? 5, type: 'good-low' as const },
+    { label: 'Recovery', value: latestScan.recoveryScore ?? 5, type: 'good-high' as const },
+    { label: 'Hydration', value: latestScan.hydrationLevel ?? 5, type: 'good-high' as const },
+    { label: 'Fatigue', value: latestScan.fatigueLevel ?? 5, type: 'good-low' as const },
+    { label: 'Inflammation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
   ];
 
   return (
@@ -172,7 +173,7 @@ function ScanResultScreenInner() {
 
           <Animated.View style={[styles.scoresGrid, { opacity: fadeAnim }]}>
             {scores.map((score, idx) => {
-              const color = getScoreColor(score.value, score.type, colors);
+              const color = getScoreColor(score.value, score.type);
               const interpretation = getInterpretation(score.label, score.value);
               return (
                 <ScoreGauge
@@ -202,6 +203,16 @@ function ScanResultScreenInner() {
             >
               <Text style={styles.primaryButtonText}>View Full Insights</Text>
             </TouchableOpacity>
+            {!todayCheckIn && (
+              <TouchableOpacity
+                style={styles.checkInButton}
+                onPress={handleCheckIn}
+                activeOpacity={0.8}
+              >
+                <ClipboardCheck size={20} color={colors.primary} />
+                <Text style={styles.checkInButtonText}>Complete Your Check-In</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.secondaryButton}
               onPress={handleDone}
@@ -372,6 +383,23 @@ function createScanResultStyles(colors: typeof Colors.light) {
       fontSize: 16,
       fontWeight: "700" as const,
       color: colors.card,
+    },
+    checkInButton: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      gap: 10,
+    },
+    checkInButtonText: {
+      fontSize: 16,
+      fontWeight: "600" as const,
+      color: colors.primary,
     },
     secondaryButton: {
       backgroundColor: colors.surface,

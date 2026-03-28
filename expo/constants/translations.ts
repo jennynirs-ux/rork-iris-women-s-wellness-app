@@ -344,6 +344,17 @@ type Translations = {
     updateLastPeriod: string;
     save: string;
     cancel: string;
+    welcome: string;
+    welcomeSubtitle: string;
+    startFirstScan: string;
+    goodMorning: string;
+    goodAfternoon: string;
+    goodEvening: string;
+    todaysProgress: string;
+    scan: string;
+    checkIn: string;
+    habits: string;
+    completeDailyCheck: string;
   };
   scan: {
     loadingCamera: string;
@@ -1424,6 +1435,17 @@ const en: Translations = {
     updateLastPeriod: 'Update Last Period Date',
     save: 'Save',
     cancel: 'Cancel',
+    welcome: 'Welcome to IRIS',
+    welcomeSubtitle: 'Start your first scan to unlock your personalized wellness dashboard',
+    startFirstScan: 'Start Your First Scan',
+    goodMorning: 'Good morning',
+    goodAfternoon: 'Good afternoon',
+    goodEvening: 'Good evening',
+    todaysProgress: "Today's Progress",
+    scan: 'Scan',
+    checkIn: 'Check-in',
+    habits: 'Habits',
+    completeDailyCheck: 'Complete your daily wellness check',
   },
   scan: {
     loadingCamera: 'Loading camera...',
@@ -2474,6 +2496,17 @@ const sv: Translations = {
     updateLastPeriod: 'Uppdatera senaste mensdatum',
     save: 'Spara',
     cancel: 'Avbryt',
+    welcome: 'Välkommen till IRIS',
+    welcomeSubtitle: 'Gör din första skanning för att låsa upp din personliga hälsopanel',
+    startFirstScan: 'Gör din första skanning',
+    goodMorning: 'God morgon',
+    goodAfternoon: 'God eftermiddag',
+    goodEvening: 'God kväll',
+    todaysProgress: 'Dagens framsteg',
+    scan: 'Skanning',
+    checkIn: 'Incheckning',
+    habits: 'Vanor',
+    completeDailyCheck: 'Slutför din dagliga hälsokontroll',
   },
   scan: {
     loadingCamera: 'Laddar kamera...',
@@ -3524,6 +3557,17 @@ const de: Translations = {
     updateLastPeriod: 'Letztes Periodendatum aktualisieren',
     save: 'Speichern',
     cancel: 'Abbrechen',
+    welcome: 'Willkommen bei IRIS',
+    welcomeSubtitle: 'Starte deinen ersten Scan, um dein persönliches Wellness-Dashboard freizuschalten',
+    startFirstScan: 'Ersten Scan starten',
+    goodMorning: 'Guten Morgen',
+    goodAfternoon: 'Guten Tag',
+    goodEvening: 'Guten Abend',
+    todaysProgress: 'Heutiger Fortschritt',
+    scan: 'Scan',
+    checkIn: 'Check-in',
+    habits: 'Gewohnheiten',
+    completeDailyCheck: 'Schließe deinen täglichen Wellness-Check ab',
   },
   scan: {
     loadingCamera: 'Kamera wird geladen...',
@@ -4574,6 +4618,17 @@ const fr: Translations = {
     updateLastPeriod: 'Mettre à jour la date des dernières règles',
     save: 'Enregistrer',
     cancel: 'Annuler',
+    welcome: 'Bienvenue sur IRIS',
+    welcomeSubtitle: 'Lancez votre premier scan pour accéder à votre tableau de bord bien-être personnalisé',
+    startFirstScan: 'Lancer votre premier scan',
+    goodMorning: 'Bonjour',
+    goodAfternoon: 'Bon après-midi',
+    goodEvening: 'Bonsoir',
+    todaysProgress: "Progrès d'aujourd'hui",
+    scan: 'Scan',
+    checkIn: 'Bilan',
+    habits: 'Habitudes',
+    completeDailyCheck: 'Complétez votre bilan bien-être quotidien',
   },
   scan: {
     loadingCamera: 'Chargement de la caméra...',
@@ -5624,6 +5679,17 @@ const es: Translations = {
     updateLastPeriod: 'Actualizar fecha del último período',
     save: 'Guardar',
     cancel: 'Cancelar',
+    welcome: 'Bienvenida a IRIS',
+    welcomeSubtitle: 'Realiza tu primer escaneo para desbloquear tu panel de bienestar personalizado',
+    startFirstScan: 'Realizar tu primer escaneo',
+    goodMorning: 'Buenos días',
+    goodAfternoon: 'Buenas tardes',
+    goodEvening: 'Buenas noches',
+    todaysProgress: 'Progreso de hoy',
+    scan: 'Escaneo',
+    checkIn: 'Registro',
+    habits: 'Hábitos',
+    completeDailyCheck: 'Completa tu chequeo de bienestar diario',
   },
   scan: {
     loadingCamera: 'Cargando cámara...',
@@ -6674,6 +6740,17 @@ const it: Translations = {
     updateLastPeriod: "Aggiorna data dell'ultimo ciclo",
     save: 'Salva',
     cancel: 'Annulla',
+    welcome: 'Benvenuta su IRIS',
+    welcomeSubtitle: 'Avvia la tua prima scansione per sbloccare la tua dashboard del benessere personalizzata',
+    startFirstScan: 'Avvia la prima scansione',
+    goodMorning: 'Buongiorno',
+    goodAfternoon: 'Buon pomeriggio',
+    goodEvening: 'Buonasera',
+    todaysProgress: 'Progressi di oggi',
+    scan: 'Scansione',
+    checkIn: 'Check-in',
+    habits: 'Abitudini',
+    completeDailyCheck: 'Completa il tuo check-in benessere quotidiano',
   },
   scan: {
     loadingCamera: 'Caricamento fotocamera...',
@@ -7724,6 +7801,17 @@ const nl: Translations = {
     updateLastPeriod: 'Datum laatste menstruatie bijwerken',
     save: 'Opslaan',
     cancel: 'Annuleren',
+    welcome: 'Welkom bij IRIS',
+    welcomeSubtitle: 'Start je eerste scan om je persoonlijke welzijnsdashboard te ontgrendelen',
+    startFirstScan: 'Start je eerste scan',
+    goodMorning: 'Goedemorgen',
+    goodAfternoon: 'Goedemiddag',
+    goodEvening: 'Goedenavond',
+    todaysProgress: 'Voortgang van vandaag',
+    scan: 'Scan',
+    checkIn: 'Check-in',
+    habits: 'Gewoontes',
+    completeDailyCheck: 'Voltooi je dagelijkse welzijnscheck',
   },
   scan: {
     loadingCamera: 'Camera laden...',
@@ -8774,6 +8862,17 @@ const pl: Translations = {
     updateLastPeriod: 'Aktualizuj datę ostatniej miesiączki',
     save: 'Zapisz',
     cancel: 'Anuluj',
+    welcome: 'Witaj w IRIS',
+    welcomeSubtitle: 'Wykonaj pierwszy skan, aby odblokować spersonalizowany panel zdrowia',
+    startFirstScan: 'Wykonaj pierwszy skan',
+    goodMorning: 'Dzień dobry',
+    goodAfternoon: 'Dzień dobry',
+    goodEvening: 'Dobry wieczór',
+    todaysProgress: 'Dzisiejsze postępy',
+    scan: 'Skan',
+    checkIn: 'Check-in',
+    habits: 'Nawyki',
+    completeDailyCheck: 'Wykonaj dzienny przegląd zdrowia',
   },
   scan: {
     loadingCamera: 'Ładowanie kamery...',
@@ -9824,6 +9923,17 @@ const pt: Translations = {
     updateLastPeriod: 'Atualizar data do último período',
     save: 'Salvar',
     cancel: 'Cancelar',
+    welcome: 'Bem-vinda ao IRIS',
+    welcomeSubtitle: 'Faça seu primeiro scan para desbloquear seu painel de bem-estar personalizado',
+    startFirstScan: 'Fazer seu primeiro scan',
+    goodMorning: 'Bom dia',
+    goodAfternoon: 'Boa tarde',
+    goodEvening: 'Boa noite',
+    todaysProgress: 'Progresso de hoje',
+    scan: 'Scan',
+    checkIn: 'Check-in',
+    habits: 'Hábitos',
+    completeDailyCheck: 'Complete seu check-in de bem-estar diário',
   },
   scan: {
     loadingCamera: 'Carregando câmera...',

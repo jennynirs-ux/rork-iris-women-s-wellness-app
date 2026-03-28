@@ -105,7 +105,11 @@ export default function TabLayout() {
               </View>
             </View>
           ),
-          tabBarLabel: () => null,
+          tabBarLabel: () => (
+            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '600', marginTop: 22 }}>
+              {t.tabs.scan}
+            </Text>
+          ),
           tabBarAccessibilityLabel: t.tabs.scan,
         }}
       />

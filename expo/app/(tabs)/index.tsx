@@ -39,6 +39,7 @@ import {
   ThumbsUp,
   Flag,
   Flame,
+  ClipboardCheck,
 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import CircularProgress from "@/components/CircularProgress";
@@ -47,25 +48,18 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { router } from "expo-router";
 import { Habit } from "@/types";
 import Colors from "@/constants/colors";
-import { generateCoachingTips, generatePatternBasedTips, CoachingTip } from "@/lib/coachingEngine";
+import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
 import { trpc } from "@/lib/trpc";
 import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
 
-const PHASE_ICONS = {
-  menstrual: Moon,
-  follicular: Sprout,
-  ovulation: Sparkles,
-  luteal: Flower2,
+const PHASE_INFO = {
+  menstrual: { color: "#E89BA4", icon: Moon },
+  follicular: { color: "#8BC9A3", icon: Sprout },
+  ovulation: { color: "#F4C896", icon: Sparkles },
+  luteal: { color: "#B8A4E8", icon: Flower2 },
 };
-
-const getPhaseColors = (colors: typeof Colors.light) => ({
-  menstrual: colors.phaseMenstrual,
-  follicular: colors.phaseFollicular,
-  ovulation: colors.phaseOvulation,
-  luteal: colors.phaseLuteal,
-});
 
 const HABIT_ICONS = {
   hydration: Droplets,
@@ -78,16 +72,16 @@ const HABIT_ICONS = {
   pelvicfloor: Activity,
 };
 
-const getHabitColors = (colors: typeof Colors.light) => ({
-  hydration: colors.habitHydration,
-  movement: colors.habitMovement,
-  nutrition: colors.habitNutrition,
-  recovery: colors.habitRecovery,
-  skincare: colors.habitSkincare,
-  mindfulness: colors.habitMindfulness,
-  selfcheck: colors.phaseMenstrual,
-  pelvicfloor: colors.phaseOvulation,
-});
+const HABIT_COLORS = {
+  hydration: "#A4C8E8",
+  movement: "#F4A896",
+  nutrition: "#8BC9A3",
+  recovery: "#B8A4E8",
+  skincare: "#F4C8D4",
+  mindfulness: "#96E8D4",
+  selfcheck: "#E89BA4",
+  pelvicfloor: "#F4C896",
+};
 
 const COMMUNITY_CATEGORY_ICONS = {
   nutrition: Apple,
@@ -97,13 +91,13 @@ const COMMUNITY_CATEGORY_ICONS = {
   sleep: Moon,
 };
 
-const getCommunityColors = (colors: typeof Colors.light) => ({
-  nutrition: colors.phaseFollicular,
-  exercise: colors.habitMovement,
-  selfcare: colors.habitSkincare,
-  mindfulness: colors.habitNutrition,
-  sleep: colors.phaseLuteal,
-});
+const COMMUNITY_CATEGORY_COLORS = {
+  nutrition: "#8BC9A3",
+  exercise: "#F4A896",
+  selfcare: "#F4C8D4",
+  mindfulness: "#96E8D4",
+  sleep: "#B8A4E8",
+};
 
 interface CommunityTip {
   id: string;
@@ -124,7 +118,7 @@ interface HabitCardProps {
 
 const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps) => {
   const IconComponent = HABIT_ICONS[habit.category];
-  const habitColor = getHabitColors(colors)[habit.category];
+  const habitColor = HABIT_COLORS[habit.category];
 
   return (
     <TouchableOpacity
@@ -163,14 +157,14 @@ interface CoachingTipCardProps {
 
 const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: CoachingTipCardProps) => {
   const categoryColors: Record<CoachingTip['category'], string> = {
-    stress: colors.stressHigh,
-    energy: colors.energyHigh,
-    recovery: colors.recoveryHigh,
-    hydration: colors.habitHydration,
-    inflammation: colors.habitMovement,
-    sleep: colors.phaseLuteal,
-    phase: colors.phaseMenstrual,
-    trend: colors.info,
+    stress: "#FF6B6B",
+    energy: "#FFD93D",
+    recovery: "#6BCB77",
+    hydration: "#4D96FF",
+    inflammation: "#FF8C42",
+    sleep: "#9D84B7",
+    phase: "#E89BA4",
+    trend: "#66C2FF",
   };
 
   const borderColor = categoryColors[tip.category];
@@ -209,7 +203,7 @@ interface CommunityTipCardProps {
 
 const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, isLiked }: CommunityTipCardProps) => {
   const IconComponent = COMMUNITY_CATEGORY_ICONS[tip.category];
-  const categoryColor = getCommunityColors(colors)[tip.category];
+  const categoryColor = COMMUNITY_CATEGORY_COLORS[tip.category];
 
   return (
     <View style={[styles.communityTipCard, { borderLeftColor: categoryColor }]}>
@@ -400,7 +394,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, t } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
@@ -479,14 +473,9 @@ export default function HomeScreen() {
   });
 
   const coachingTips = useMemo(() => {
-    const staticTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
-    const patternTips = generatePatternBasedTips(scans, checkIns, currentPhase, cycleHistory, t);
-    // Merge both sets, deduplicate by id, sort by priority, cap at 4
-    const merged = [...staticTips, ...patternTips];
-    const unique = Array.from(new Map(merged.map((tip) => [tip.id, tip])).values());
-    const sorted = unique.sort((a, b) => a.priority - b.priority).slice(0, 4);
-    return sorted.filter((tip) => !dismissedCoachingTips.has(tip.id));
-  }, [scans, checkIns, currentPhase, userProfile, cycleHistory, t, dismissedCoachingTips]);
+    const allTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
+    return allTips.filter((tip) => !dismissedCoachingTips.has(tip.id));
+  }, [scans, checkIns, currentPhase, userProfile, dismissedCoachingTips]);
 
   const handleDismissCoachingTip = useCallback((tipId: string) => {
     setDismissedCoachingTips((prev) => new Set([...prev, tipId]));
@@ -697,11 +686,9 @@ export default function HomeScreen() {
     if (override === 'menopause') {
       return { color: enrichedPhaseInfo.phaseColor, icon: Sparkles, label: enrichedPhaseInfo.phaseName };
     }
-    const phaseColors = getPhaseColors(colors);
-    const phaseColor = phaseColors[enrichedPhaseInfo.phase];
-    const phaseIcon = PHASE_ICONS[enrichedPhaseInfo.phase];
-    return { color: phaseColor, icon: phaseIcon, label: enrichedPhaseInfo.phaseName };
-  }, [enrichedPhaseInfo, colors]);
+    const info = PHASE_INFO[enrichedPhaseInfo.phase];
+    return { color: info.color, icon: info.icon, label: enrichedPhaseInfo.phaseName };
+  }, [enrichedPhaseInfo]);
 
   const handleHabitPress = useCallback((habitId: string, completed: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -742,11 +729,131 @@ export default function HomeScreen() {
     reportTipMutation.mutate({ tipId });
   }, [reportTipMutation]);
 
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    let greetingText: string;
+    if (hour < 12) {
+      greetingText = t.home?.goodMorning || 'Good morning';
+    } else if (hour < 17) {
+      greetingText = t.home?.goodAfternoon || 'Good afternoon';
+    } else {
+      greetingText = t.home?.goodEvening || 'Good evening';
+    }
+    if (userProfile.name) {
+      greetingText = `${greetingText}, ${userProfile.name}`;
+    }
+    return greetingText;
+  }, [t, userProfile.name]);
+
+  const isNewUser = useMemo(() => scans.length === 0 && !todayCheckIn, [scans.length, todayCheckIn]);
+
+  const progressScanDone = useMemo(() => {
+    if (!latestScan) return false;
+    return latestScan.date === todayStr;
+  }, [latestScan, todayStr]);
+
+  const progressCheckInDone = useMemo(() => !!todayCheckIn, [todayCheckIn]);
+
+  const habitsProgress = useMemo(() => {
+    const total = todayHabits.length;
+    const completed = todayHabits.filter(h => h.completed).length;
+    return { completed, total };
+  }, [todayHabits]);
+
   const renderHeaderComponent = useCallback(() => (
     <View>
+      {/* FIX 2: Personalized Greeting */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>IRIS</Text>
+        <View>
+          <Text style={styles.headerTitle}>{greeting}</Text>
+          {enrichedPhaseInfo?.phaseDay != null && enrichedPhaseInfo?.phaseName ? (
+            <Text style={styles.headerSubtitle}>
+              Day {enrichedPhaseInfo.phaseDay} · {enrichedPhaseInfo.phaseName}
+            </Text>
+          ) : null}
+        </View>
       </View>
+
+      {/* FIX 1: Welcome Card for new users */}
+      {isNewUser && (
+        <View style={styles.welcomeCard}>
+          <View style={styles.welcomeIconContainer}>
+            <Eye size={36} color={colors.primary} />
+          </View>
+          <Text style={styles.welcomeTitle}>
+            {t.home?.welcome || 'Welcome to IRIS'}
+          </Text>
+          <Text style={styles.welcomeSubtitle}>
+            {t.home?.welcomeSubtitle || 'Start your first scan to unlock your personalized wellness dashboard'}
+          </Text>
+          <TouchableOpacity
+            style={styles.welcomeButton}
+            onPress={() => router.push('/(tabs)/scan')}
+            activeOpacity={0.7}
+            accessibilityLabel="Start your first scan"
+            accessibilityRole="button"
+          >
+            <Text style={styles.welcomeButtonText}>
+              {t.home?.startFirstScan || 'Start Your First Scan'}
+            </Text>
+            <ArrowRight size={18} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* FIX 3: Today's Progress Widget */}
+      {!isNewUser && (
+        <View style={styles.progressCard}>
+          <Text style={styles.progressTitle}>
+            {t.home?.todaysProgress || "Today's Progress"}
+          </Text>
+          <View style={styles.progressRow}>
+            <View style={styles.progressItem}>
+              <View style={[styles.progressIconCircle, { backgroundColor: progressScanDone ? '#8BC9A320' : colors.surface }]}>
+                {progressScanDone ? (
+                  <CheckCircle2 size={20} color="#8BC9A3" />
+                ) : (
+                  <Eye size={20} color={colors.textTertiary} />
+                )}
+              </View>
+              <Text style={[styles.progressLabel, progressScanDone && { color: '#8BC9A3' }]}>
+                {t.home?.scan || 'Scan'}
+              </Text>
+            </View>
+            <View style={styles.progressItem}>
+              <View style={[styles.progressIconCircle, { backgroundColor: progressCheckInDone ? '#8BC9A320' : colors.surface }]}>
+                {progressCheckInDone ? (
+                  <CheckCircle2 size={20} color="#8BC9A3" />
+                ) : (
+                  <ClipboardCheck size={20} color={colors.textTertiary} />
+                )}
+              </View>
+              <Text style={[styles.progressLabel, progressCheckInDone && { color: '#8BC9A3' }]}>
+                {t.home?.checkIn || 'Check-in'}
+              </Text>
+            </View>
+            <View style={styles.progressItem}>
+              <View style={[styles.progressIconCircle, { backgroundColor: habitsProgress.completed > 0 ? '#8BC9A320' : colors.surface }]}>
+                {habitsProgress.completed === habitsProgress.total && habitsProgress.total > 0 ? (
+                  <CheckCircle2 size={20} color="#8BC9A3" />
+                ) : (
+                  <Activity size={20} color={habitsProgress.completed > 0 ? '#8BC9A3' : colors.textTertiary} />
+                )}
+              </View>
+              <Text style={[styles.progressLabel, habitsProgress.completed > 0 && { color: '#8BC9A3' }]}>
+                {habitsProgress.completed}/{habitsProgress.total}
+              </Text>
+            </View>
+          </View>
+          {!progressScanDone && !progressCheckInDone && (
+            <Text style={styles.progressCta}>
+              {t.home?.completeDailyCheck || 'Complete your daily wellness check'}
+            </Text>
+          )}
+        </View>
+      )}
 
       <View style={styles.summaryCard}>
         <View style={styles.phaseHeader}>
@@ -833,7 +940,7 @@ export default function HomeScreen() {
       {streakData && streakData.scanStreak > 0 && (
         <View style={styles.streakCard}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Flame size={18} color={colors.statusAttention} />
+            <Flame size={18} color="#FF6B6B" />
             <Text style={styles.streakText}>
               {streakData.scanStreak}-day scan streak!
             </Text>
@@ -846,12 +953,12 @@ export default function HomeScreen() {
           <View style={styles.suggestionIconRow}>
             <View style={[
               styles.suggestionIcon,
-              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? colors.phaseMenstrual + '20' : colors.phaseLuteal + '20' },
+              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? '#F4C8D420' : '#B8A4E820' },
             ]}>
               {lifeStageSuggestion.type === 'pregnancy' ? (
-                <Baby size={22} color={colors.phaseMenstrual} />
+                <Baby size={22} color="#E89BA4" />
               ) : (
-                <Thermometer size={22} color={colors.phaseLuteal} />
+                <Thermometer size={22} color="#B8A4E8" />
               )}
             </View>
             <TouchableOpacity
@@ -871,7 +978,7 @@ export default function HomeScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
-            <ArrowRight size={14} color={colors.card} />
+            <ArrowRight size={14} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -895,7 +1002,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.ritualButton}>
             <Text style={styles.ritualButtonText}>Start</Text>
-            <ArrowRight size={16} color={colors.card} />
+            <ArrowRight size={16} color="#FFFFFF" />
           </View>
         </TouchableOpacity>
       )}
@@ -953,7 +1060,7 @@ export default function HomeScreen() {
                 accessibilityLabel="Share a tip"
                 accessibilityRole="button"
               >
-                <Send size={16} color={colors.card} />
+                <Send size={16} color="#FFFFFF" />
                 <Text style={styles.communityShareButtonText}>Share a tip</Text>
               </TouchableOpacity>
             </View>
@@ -965,7 +1072,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, shouldShowDailyRitualCard, coachingTips, handleDismissCoachingTip, communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, greeting, enrichedPhaseInfo, isNewUser, progressScanDone, progressCheckInDone, habitsProgress, todayStr]);
 
   if (isLoading) {
     return (
@@ -1096,7 +1203,7 @@ export default function HomeScreen() {
                       <Text
                         style={[
                           styles.categoryButtonText,
-                          communityTipCategory === cat && { color: colors.card },
+                          communityTipCategory === cat && { color: "#FFFFFF" },
                         ]}
                       >
                         {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -1160,10 +1267,111 @@ function createStyles(colors: typeof Colors.light) {
       paddingVertical: 16,
     },
     headerTitle: {
-      fontSize: 28,
+      fontSize: 24,
       fontWeight: "700" as const,
-      color: colors.primary,
-      letterSpacing: 2,
+      color: colors.text,
+    },
+    headerSubtitle: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    welcomeCard: {
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      padding: 24,
+      marginBottom: 24,
+      alignItems: "center" as const,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 3,
+      borderWidth: 1,
+      borderColor: colors.primaryLight,
+    },
+    welcomeIconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: colors.primaryLight,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      marginBottom: 16,
+    },
+    welcomeTitle: {
+      fontSize: 22,
+      fontWeight: "700" as const,
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: "center" as const,
+    },
+    welcomeSubtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: "center" as const,
+      lineHeight: 20,
+      marginBottom: 20,
+      paddingHorizontal: 8,
+    },
+    welcomeButton: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 14,
+      borderRadius: 24,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 8,
+    },
+    welcomeButtonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "600" as const,
+    },
+    progressCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 16,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    progressTitle: {
+      fontSize: 15,
+      fontWeight: "600" as const,
+      color: colors.text,
+      marginBottom: 12,
+    },
+    progressRow: {
+      flexDirection: "row" as const,
+      justifyContent: "space-around" as const,
+      alignItems: "center" as const,
+    },
+    progressItem: {
+      alignItems: "center" as const,
+      gap: 6,
+    },
+    progressIconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+    },
+    progressLabel: {
+      fontSize: 12,
+      fontWeight: "600" as const,
+      color: colors.textSecondary,
+    },
+    progressCta: {
+      fontSize: 13,
+      color: colors.textTertiary,
+      textAlign: "center" as const,
+      marginTop: 12,
+      fontStyle: "italic" as const,
     },
     loadingContainer: {
       flex: 1,
@@ -1250,14 +1458,14 @@ function createStyles(colors: typeof Colors.light) {
       color: colors.primary,
     },
     streakCard: {
-      backgroundColor: colors.statusAttention + "20",
+      backgroundColor: "#FF6B6B20",
       borderRadius: 12,
       padding: 12,
       marginHorizontal: 20,
       marginTop: 16,
       marginBottom: 4,
       borderLeftWidth: 4,
-      borderLeftColor: colors.statusAttention,
+      borderLeftColor: "#FF6B6B",
     },
     streakText: {
       fontSize: 16,
@@ -1404,7 +1612,7 @@ function createStyles(colors: typeof Colors.light) {
       alignSelf: "flex-start" as const,
     },
     suggestionButtonText: {
-      color: colors.card,
+      color: "#FFFFFF",
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1415,7 +1623,7 @@ function createStyles(colors: typeof Colors.light) {
       alignItems: "center" as const,
     },
     saveButtonText: {
-      color: colors.card,
+      color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "600" as const,
     },
@@ -1469,7 +1677,7 @@ function createStyles(colors: typeof Colors.light) {
       gap: 4,
     },
     ritualButtonText: {
-      color: colors.card,
+      color: "#FFFFFF",
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1607,7 +1815,7 @@ function createStyles(colors: typeof Colors.light) {
       marginBottom: 8,
     },
     communityShareButtonText: {
-      color: colors.card,
+      color: "#FFFFFF",
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1669,7 +1877,7 @@ function createStyles(colors: typeof Colors.light) {
       opacity: 0.5,
     },
     submitTipButtonText: {
-      color: colors.card,
+      color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "600" as const,
     },
