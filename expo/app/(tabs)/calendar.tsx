@@ -517,9 +517,8 @@ export default function CalendarScreen() {
                         styles.dayContent,
                         { backgroundColor: phaseInfo.color + '30' },
                         isDueDate && styles.dueDateDayContent,
+                        selected && !today && styles.selectedContent,
                         today && styles.todayContent,
-              hasScan && styles.scanRingContent,
-                        selected && styles.selectedContent,
                       ]}
                       accessibilityLabel={`${day}, ${phaseInfo.label}${isDueDate ? `, ${t.programs.dueDate}` : ''}`}
                       accessibilityRole="button"
@@ -528,8 +527,8 @@ export default function CalendarScreen() {
                         style={[
                           styles.dayText,
                           isDueDate && styles.dueDateDayText,
+                          selected && !today && styles.selectedText,
                           today && styles.todayText,
-                          selected && styles.selectedText,
                         ]}
                       >
                         {day}
@@ -1178,18 +1177,14 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: "#E85D75",
   },
   todayContent: {
-    borderWidth: 2,
-    borderColor: colors.primary,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
   },
-  scanRingContent: {
-      borderWidth: 2,
-      borderColor: colors.primary,
-      borderRadius: 10,
-    },
-    selectedContent: {
-    backgroundColor: colors.primary + '30',
-    borderWidth: 2,
-    borderColor: colors.primary,
+  selectedContent: {
+    backgroundColor: colors.primary + '18',
+    borderWidth: 1.5,
+    borderColor: colors.primary + '60',
+    borderRadius: 10,
   },
   selectedText: {
     fontWeight: "700" as const,
@@ -1201,8 +1196,8 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.text,
   },
   todayText: {
-    fontWeight: "700" as const,
-    color: colors.primary,
+    fontWeight: "800" as const,
+    color: "#FFFFFF",
   },
   phaseIndicator: {
     flexDirection: "row" as const,
