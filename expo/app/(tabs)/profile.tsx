@@ -38,6 +38,10 @@ import {
   Thermometer,
   Eye,
   X,
+  Watch,
+  Stethoscope,
+  MessageCircle,
+  Brain,
 } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme, ThemeMode } from "@/contexts/ThemeContext";
@@ -51,8 +55,12 @@ import { areNotificationsEnabled, enableNotifications, disableNotifications } fr
 import { LANGUAGES } from "@/constants/translations";
 import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWeightInput, parseHeightInput } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { generateDoctorReport } from "@/lib/doctorReport";
 import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
+import { connectOura, disconnectOura, isOuraConnected, getOuraLastSync } from "@/lib/ouraIntegration";
+import { CONDITION_PROFILES, ConditionProfile } from "@/lib/conditionProfiles";
+import { conditionTranslations as ct } from "@/constants/conditionTranslations";
 
 function getTranslatedMonths(t: any): string[] {
   const m = t.calendar.months;
@@ -398,6 +406,15 @@ export default function ProfileScreen() {
   const [partnerCode] = useState(userProfile.partnerCode || '');
   const [partnerInputCode, setPartnerInputCode] = useState('');
 
+  // Oura Ring states
+  const [ouraConnected, setOuraConnected] = useState(false);
+  const [ouraLastSync, setOuraLastSync] = useState<string | null>(null);
+  const [ouraLoading, setOuraLoading] = useState(false);
+
+  // Condition profiles state
+  const [selectedConditions, setSelectedConditions] = useState<ConditionProfile[]>([]);
+  const [showConditionsModal, setShowConditionsModal] = useState(false);
+
   const styles = useMemo(() => createProfileStyles(colors), [colors]);
 
   // Calculate milestones and monthly comparison whenever scans, checkIns, or userProfile change
@@ -410,6 +427,69 @@ export default function ProfileScreen() {
     };
     loadGameification();
   }, [scans, checkIns, userProfile]);
+
+  // Load Oura connection state
+  useEffect(() => {
+    const loadOura = async () => {
+      const connected = await isOuraConnected();
+      setOuraConnected(connected);
+      if (connected) {
+        const lastSync = await getOuraLastSync();
+        setOuraLastSync(lastSync);
+      }
+    };
+    loadOura();
+  }, []);
+
+  // Load condition profiles from AsyncStorage
+  useEffect(() => {
+    const loadConditions = async () => {
+      try {
+        const raw = await AsyncStorage.getItem('iris_condition_profiles');
+        if (raw) {
+          setSelectedConditions(JSON.parse(raw));
+        }
+      } catch (e) {
+        logger.error('[Conditions] Failed to load:', e);
+      }
+    };
+    loadConditions();
+  }, []);
+
+  const handleToggleOura = async () => {
+    setOuraLoading(true);
+    try {
+      if (ouraConnected) {
+        await disconnectOura();
+        setOuraConnected(false);
+        setOuraLastSync(null);
+      } else {
+        const success = await connectOura();
+        if (success) {
+          setOuraConnected(true);
+          setOuraLastSync(new Date().toISOString());
+        } else {
+          Alert.alert('Connection Failed', 'Could not connect to Oura Ring. Please try again.');
+        }
+      }
+    } catch (e) {
+      logger.error('[Oura] Toggle error:', e);
+    } finally {
+      setOuraLoading(false);
+    }
+  };
+
+  const handleToggleCondition = async (condition: ConditionProfile) => {
+    const updated = selectedConditions.includes(condition)
+      ? selectedConditions.filter((c) => c !== condition)
+      : [...selectedConditions, condition];
+    setSelectedConditions(updated);
+    try {
+      await AsyncStorage.setItem('iris_condition_profiles', JSON.stringify(updated));
+    } catch (e) {
+      logger.error('[Conditions] Failed to save:', e);
+    }
+  };
 
   const calculateAge = (birthday: string): number => {
     if (!birthday) return 0;
@@ -627,6 +707,33 @@ export default function ProfileScreen() {
                 <ChevronRight size={20} color={colors.textTertiary} />
               </TouchableOpacity>
 
+              {/* Brain Wellness — shown for peri/menopause or age > 40 */}
+              {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause' || (() => {
+                if (!userProfile.birthday) return false;
+                const birth = new Date(userProfile.birthday);
+                if (isNaN(birth.getTime())) return false;
+                const now = new Date();
+                let age = now.getFullYear() - birth.getFullYear();
+                const m = now.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+                return age > 40;
+              })()) && (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => router.push('/cognitive-wellness' as any)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.menuIcon}>
+                    <Brain size={20} color="#9B85D6" />
+                  </View>
+                  <View style={styles.menuTextContainer}>
+                    <Text style={styles.menuText}>Brain Wellness</Text>
+                    <Text style={styles.menuSubtext}>Cognitive health and brain exercises</Text>
+                  </View>
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                </TouchableOpacity>
+              )}
+
               <View style={styles.referralDashboardCard}>
                 <View style={styles.referralDashboardHeader}>
                   <View style={styles.referralDashboardIconWrap}>
@@ -772,6 +879,50 @@ export default function ProfileScreen() {
                 <ChevronRight size={20} color={colors.textTertiary} />
               </TouchableOpacity>
               )}
+
+              {/* Oura Ring Integration */}
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={handleToggleOura}
+                disabled={ouraLoading}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.menuIcon, { backgroundColor: '#E8F0FF' }]}>
+                  <Watch size={20} color="#4A7DFF" />
+                </View>
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuText}>Oura Ring</Text>
+                  <Text style={styles.menuSubtext}>
+                    {ouraLoading
+                      ? 'Connecting...'
+                      : ouraConnected
+                        ? `Connected${ouraLastSync ? ' \u00B7 ' + new Date(ouraLastSync).toLocaleTimeString(language === 'en' ? 'en-US' : language, { hour: '2-digit', minute: '2-digit' } as Intl.DateTimeFormatOptions) : ''}`
+                        : 'Tap to connect'}
+                  </Text>
+                </View>
+                <View style={[styles.healthStatusDot, ouraConnected && styles.healthStatusDotConnected]} />
+                <ChevronRight size={20} color={colors.textTertiary} />
+              </TouchableOpacity>
+
+              {/* Health Conditions */}
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => setShowConditionsModal(true)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.menuIcon, { backgroundColor: '#FFF0E8' }]}>
+                  <Stethoscope size={20} color="#E87A4A" />
+                </View>
+                <View style={styles.menuTextContainer}>
+                  <Text style={styles.menuText}>Health Conditions</Text>
+                  <Text style={styles.menuSubtext}>
+                    {selectedConditions.length === 0
+                      ? 'None selected'
+                      : selectedConditions.map((c) => ct.conditions[c]?.name || c).join(', ')}
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={colors.textTertiary} />
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.menuItem}
@@ -2249,6 +2400,75 @@ export default function ProfileScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* Health Conditions Modal */}
+        <Modal
+          visible={showConditionsModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowConditionsModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.cycleModalContent, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalHeaderTitle}>Health Conditions</Text>
+                <TouchableOpacity onPress={() => setShowConditionsModal(false)}>
+                  <Text style={styles.modalCloseText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+                <View style={{ padding: 16 }}>
+                  <Text style={[styles.menuSubtext, { marginBottom: 16 }]}>
+                    Select any conditions you manage. This helps personalize your check-ins and wellness insights.
+                  </Text>
+
+                  {(['pcos', 'endometriosis', 'pmdd', 'fibroids'] as ConditionProfile[]).map((condId) => {
+                    const profile = CONDITION_PROFILES[condId];
+                    const isSelected = selectedConditions.includes(condId);
+                    const translation = ct.conditions[condId];
+                    return (
+                      <TouchableOpacity
+                        key={condId}
+                        style={[
+                          styles.conditionCard,
+                          isSelected && { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+                        ]}
+                        onPress={() => handleToggleCondition(condId)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.conditionHeader}>
+                          <Text style={styles.conditionIcon}>{profile.icon}</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.conditionName, isSelected && { color: colors.primary }]}>
+                              {translation?.name || condId}
+                            </Text>
+                            <Text style={styles.conditionDescription}>
+                              {translation?.description || ''}
+                            </Text>
+                          </View>
+                          {isSelected && <Check size={20} color={colors.primary} />}
+                        </View>
+                        {isSelected && profile.additionalSymptoms.length > 0 && (
+                          <View style={styles.conditionSymptoms}>
+                            {profile.additionalSymptoms.map((symptom, idx) => {
+                              const symptomName = ct.symptoms[symptom] || symptom;
+                              return (
+                                <View key={idx} style={styles.conditionSymptomChip}>
+                                  <Text style={styles.conditionSymptomText}>{symptomName}</Text>
+                                </View>
+                              );
+                            })}
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -3314,5 +3534,49 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     fontSize: 16,
     fontWeight: "700" as const,
     color: '#FFFFFF',
+  },
+  conditionCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: colors.border,
+  },
+  conditionHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 12,
+  },
+  conditionIcon: {
+    fontSize: 28,
+  },
+  conditionName: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+    color: colors.text,
+    marginBottom: 2,
+  },
+  conditionDescription: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  conditionSymptoms: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    marginTop: 12,
+    gap: 6,
+  },
+  conditionSymptomChip: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  conditionSymptomText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: "500" as const,
   },
 }); }

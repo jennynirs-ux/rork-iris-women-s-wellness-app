@@ -49,6 +49,9 @@ import {
   Leaf,
   Coffee,
   BedDouble,
+  BatteryLow,
+  Shield,
+  MessageCircle,
 } from "lucide-react-native";
 
 const COACHING_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -63,6 +66,7 @@ import { router } from "expo-router";
 import { Habit } from "@/types";
 import Colors from "@/constants/colors";
 import { generateCoachingTips, generatePatternBasedTips, CoachingTip } from "@/lib/coachingEngine";
+import { generatePredictiveAlerts, PredictiveAlert } from "@/lib/predictiveAlerts";
 import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
@@ -213,6 +217,59 @@ const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: Coaching
 });
 
 CoachingTipCard.displayName = 'CoachingTipCard';
+
+const ALERT_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+  BatteryLow, Heart, Moon, Zap, Droplets, Shield,
+};
+
+const ALERT_SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+  info: { bg: '#E8F4FD', border: '#4D96FF', text: '#2D6CB5' },
+  'heads-up': { bg: '#FFF8E8', border: '#F4A836', text: '#B87A1A' },
+  action: { bg: '#FFF0F2', border: '#E89BA4', text: '#C05B68' },
+};
+
+interface PredictiveAlertCardProps {
+  alert: PredictiveAlert;
+  colors: typeof Colors.light;
+  onDismiss: (alertId: string) => void;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const PredictiveAlertCard = React.memo(({ alert, colors, onDismiss, styles }: PredictiveAlertCardProps) => {
+  const severityStyle = ALERT_SEVERITY_COLORS[alert.severity] || ALERT_SEVERITY_COLORS.info;
+  const IconComp = ALERT_ICON_MAP[alert.icon];
+
+  return (
+    <View style={[styles.predictiveAlertCard, { backgroundColor: severityStyle.bg, borderLeftColor: severityStyle.border }]}>
+      <View style={styles.predictiveAlertContent}>
+        <View style={styles.predictiveAlertHeader}>
+          {IconComp && (
+            <View style={{ marginRight: 10 }}>
+              <IconComp size={20} color={severityStyle.border} />
+            </View>
+          )}
+          <Text style={[styles.predictiveAlertTitle, { color: severityStyle.text }]}>{alert.title}</Text>
+          <TouchableOpacity
+            onPress={() => onDismiss(alert.id)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel={`Dismiss ${alert.title}`}
+            accessibilityRole="button"
+          >
+            <X size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.predictiveAlertMessage, { color: severityStyle.text }]}>{alert.message}</Text>
+        {alert.daysUntil > 0 && (
+          <Text style={[styles.predictiveAlertDaysUntil, { color: severityStyle.border }]}>
+            In {alert.daysUntil} day{alert.daysUntil > 1 ? 's' : ''}
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+});
+
+PredictiveAlertCard.displayName = 'PredictiveAlertCard';
 
 interface CommunityTipCardProps {
   tip: CommunityTip;
@@ -512,6 +569,25 @@ export default function HomeScreen() {
 
   const handleDismissCoachingTip = useCallback((tipId: string) => {
     setDismissedCoachingTips((prev) => new Set([...prev, tipId]));
+  }, []);
+
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+
+  const predictiveAlerts = useMemo(() => {
+    const cycleDay = enrichedPhaseInfo?.cycleDay ?? 1;
+    const alerts = generatePredictiveAlerts(
+      scans,
+      checkIns,
+      cycleHistory,
+      currentPhase,
+      cycleDay,
+      userProfile.cycleLength,
+    );
+    return alerts.filter((a) => !dismissedAlerts.has(a.id));
+  }, [scans, checkIns, cycleHistory, currentPhase, enrichedPhaseInfo, userProfile.cycleLength, dismissedAlerts]);
+
+  const handleDismissAlert = useCallback((alertId: string) => {
+    setDismissedAlerts((prev) => new Set([...prev, alertId]));
   }, []);
 
   useEffect(() => {
@@ -980,11 +1056,43 @@ export default function HomeScreen() {
 
       {/* Daily Tips hidden — redundant with summary card's recommended focus */}
 
+      {predictiveAlerts.length > 0 && (
+        <View style={styles.predictiveAlertsSection}>
+          {predictiveAlerts.map((alert) => (
+            <PredictiveAlertCard
+              key={alert.id}
+              alert={alert}
+              colors={colors}
+              onDismiss={handleDismissAlert}
+              styles={styles}
+            />
+          ))}
+        </View>
+      )}
+
+      {/* Today's Meals Card */}
+      <TouchableOpacity
+        style={styles.quickNavCard}
+        onPress={() => router.push('/meal-plan' as any)}
+        activeOpacity={0.7}
+        accessibilityLabel="View today's meal plan"
+        accessibilityRole="button"
+      >
+        <View style={[styles.quickNavIconBox, { backgroundColor: '#8BC9A320' }]}>
+          <Apple size={20} color="#8BC9A3" />
+        </View>
+        <View style={styles.quickNavContent}>
+          <Text style={styles.quickNavTitle}>Today's Meals</Text>
+          <Text style={styles.quickNavSubtitle}>Cycle-synced nutrition for your phase</Text>
+        </View>
+        <ArrowRight size={18} color={colors.textTertiary} />
+      </TouchableOpacity>
+
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, coachingTips, handleDismissCoachingTip, greeting, enrichedPhaseInfo, isNewUser, phaseEstimate, streakData]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, coachingTips, handleDismissCoachingTip, greeting, enrichedPhaseInfo, isNewUser, phaseEstimate, streakData, predictiveAlerts, handleDismissAlert]);
 
   const renderFooterComponent = useCallback(() => (
     <View>
@@ -1267,6 +1375,17 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* Wellness Chat FAB */}
+        <TouchableOpacity
+          style={styles.chatFab}
+          onPress={() => router.push('/wellness-chat' as any)}
+          activeOpacity={0.8}
+          accessibilityLabel="Open wellness companion chat"
+          accessibilityRole="button"
+        >
+          <MessageCircle size={24} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -1818,6 +1937,95 @@ function createStyles(colors: typeof Colors.light) {
       color: "#FFFFFF",
       fontSize: 16,
       fontWeight: "600" as const,
+    },
+    predictiveAlertsSection: {
+      marginBottom: 16,
+    },
+    predictiveAlertCard: {
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 10,
+      borderLeftWidth: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    predictiveAlertContent: {
+      flex: 1,
+    },
+    predictiveAlertHeader: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      marginBottom: 6,
+    },
+    predictiveAlertTitle: {
+      fontSize: 15,
+      fontWeight: "600" as const,
+      flex: 1,
+    },
+    predictiveAlertMessage: {
+      fontSize: 13,
+      lineHeight: 19,
+      marginLeft: 30,
+    },
+    predictiveAlertDaysUntil: {
+      fontSize: 11,
+      fontWeight: "700" as const,
+      marginLeft: 30,
+      marginTop: 6,
+    },
+    chatFab: {
+      position: "absolute" as const,
+      bottom: 24,
+      right: 20,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.primary,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 6,
+      zIndex: 100,
+    },
+    quickNavCard: {
+      backgroundColor: colors.card,
+      borderRadius: 14,
+      padding: 16,
+      marginBottom: 16,
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 12,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.03,
+      shadowRadius: 4,
+      elevation: 1,
+    },
+    quickNavIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+    },
+    quickNavContent: {
+      flex: 1,
+    },
+    quickNavTitle: {
+      fontSize: 14,
+      fontWeight: "700" as const,
+      color: colors.text,
+    },
+    quickNavSubtitle: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
     },
   });
 }

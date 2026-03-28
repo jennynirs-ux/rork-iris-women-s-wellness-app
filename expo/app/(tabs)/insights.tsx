@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield } from "lucide-react-native";
+import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield, Apple } from "lucide-react-native";
 import Colors from "@/constants/colors";
 
 // Convert hex color to react-native-chart-kit callback format
@@ -1683,6 +1683,53 @@ export default function InsightsScreen() {
             </View>
           )}
 
+          {/* Meal Plan Card */}
+          <TouchableOpacity
+            style={styles.cognitiveNavCard}
+            onPress={() => router.push('/meal-plan' as any)}
+            activeOpacity={0.7}
+            accessibilityLabel="View today's meal plan"
+            accessibilityRole="button"
+          >
+            <View style={[styles.cognitiveNavIcon, { backgroundColor: '#8BC9A320' }]}>
+              <Apple size={22} color="#8BC9A3" />
+            </View>
+            <View style={styles.cognitiveNavContent}>
+              <Text style={styles.cognitiveNavTitle}>Today's Meals</Text>
+              <Text style={styles.cognitiveNavSubtitle}>Cycle-synced nutrition for your phase</Text>
+            </View>
+            <ArrowRight size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
+
+          {/* Cognitive Wellness Card — shown for peri/menopause or age > 40 */}
+          {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause' || (() => {
+            if (!userProfile.birthday) return false;
+            const birth = new Date(userProfile.birthday);
+            if (isNaN(birth.getTime())) return false;
+            const now = new Date();
+            let age = now.getFullYear() - birth.getFullYear();
+            const m = now.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+            return age > 40;
+          })()) && (
+            <TouchableOpacity
+              style={styles.cognitiveNavCard}
+              onPress={() => router.push('/cognitive-wellness' as any)}
+              activeOpacity={0.7}
+              accessibilityLabel="View brain wellness"
+              accessibilityRole="button"
+            >
+              <View style={[styles.cognitiveNavIcon, { backgroundColor: '#9B85D620' }]}>
+                <Brain size={22} color="#9B85D6" />
+              </View>
+              <View style={styles.cognitiveNavContent}>
+                <Text style={styles.cognitiveNavTitle}>Brain Wellness</Text>
+                <Text style={styles.cognitiveNavSubtitle}>Track cognitive health and brain exercises</Text>
+              </View>
+              <ArrowRight size={18} color={colors.textTertiary} />
+            </TouchableOpacity>
+          )}
+
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t.insights.scanHistory}</Text>
             <View style={styles.historyCard}>
@@ -3091,5 +3138,39 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 16,
     fontWeight: "700" as const,
     color: colors.card,
+  },
+  cognitiveNavCard: {
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 20,
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  cognitiveNavIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
+  },
+  cognitiveNavContent: {
+    flex: 1,
+  },
+  cognitiveNavTitle: {
+    fontSize: 15,
+    fontWeight: "700" as const,
+    color: colors.text,
+  },
+  cognitiveNavSubtitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 }); }

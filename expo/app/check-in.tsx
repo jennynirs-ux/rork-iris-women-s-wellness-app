@@ -8,7 +8,7 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb, Plus, ChevronDown, ChevronUp } from "lucide-react-native";
+import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb, Plus, ChevronDown, ChevronUp, Heart, Shield, Droplets, Flame, Eye, Activity, Brain, Trash2 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -18,6 +18,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { DailyCheckIn, BleedingLevel } from "@/types";
 import { getTranslation } from "@/constants/translations";
 import { translateSymptom } from "@/lib/symptomTranslation";
+import { getCustomSymptoms, addCustomSymptom, removeCustomSymptom, CustomSymptom } from "@/lib/customSymptoms";
 
 function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -126,6 +127,23 @@ const SYMPTOMS_IRREGULAR_CYCLE: string[] = [
   "Brain Fog",
 ];
 
+const ICON_PICKER_OPTIONS: { name: string; component: React.ComponentType<{ size?: number; color?: string }> }[] = [
+  { name: 'Heart', component: Heart },
+  { name: 'Zap', component: Zap },
+  { name: 'Moon', component: Moon },
+  { name: 'Flame', component: Flame },
+  { name: 'Droplets', component: Droplets },
+  { name: 'Shield', component: Shield },
+  { name: 'Eye', component: Eye },
+  { name: 'Activity', component: Activity },
+  { name: 'Brain', component: Brain },
+  { name: 'Thermometer', component: Thermometer },
+  { name: 'Coffee', component: Coffee },
+  { name: 'Sparkles', component: Sparkles },
+];
+
+const CUSTOM_SYMPTOM_CATEGORIES = ['Physical', 'Emotional', 'Digestive', 'Other'];
+
 export default function CheckInScreen() {
   const router = useRouter();
   const { colors } = useTheme();
@@ -170,6 +188,11 @@ export default function CheckInScreen() {
   const [tookHRT, setTookHRT] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeInfoModal, setActiveInfoModal] = useState<string | null>(null);
+  const [customSymptomsList, setCustomSymptomsList] = useState<CustomSymptom[]>([]);
+  const [showCustomSymptomModal, setShowCustomSymptomModal] = useState(false);
+  const [newSymptomName, setNewSymptomName] = useState('');
+  const [newSymptomIcon, setNewSymptomIcon] = useState('Heart');
+  const [newSymptomCategory, setNewSymptomCategory] = useState('Physical');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     essential: true,
     bleeding: true,
@@ -226,6 +249,37 @@ export default function CheckInScreen() {
         )}
       </TouchableOpacity>
     );
+  };
+
+  // Load custom symptoms on mount
+  useEffect(() => {
+    const loadCustom = async () => {
+      const loaded = await getCustomSymptoms();
+      setCustomSymptomsList(loaded);
+    };
+    loadCustom();
+  }, []);
+
+  const handleAddCustomSymptom = async () => {
+    if (!newSymptomName.trim()) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const created = await addCustomSymptom(newSymptomName, newSymptomIcon, newSymptomCategory);
+    setCustomSymptomsList((prev) => [...prev, created]);
+    setNewSymptomName('');
+    setNewSymptomIcon('Heart');
+    setNewSymptomCategory('Physical');
+    setShowCustomSymptomModal(false);
+  };
+
+  const handleRemoveCustomSymptom = async (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await removeCustomSymptom(id);
+    setCustomSymptomsList((prev) => prev.filter((s) => s.id !== id));
+    // Also remove from selected symptoms if present
+    const removed = customSymptomsList.find((s) => s.id === id);
+    if (removed && symptoms.includes(removed.name)) {
+      setSymptoms((prev) => prev.filter((s) => s !== removed.name));
+    }
   };
 
   useEffect(() => {
@@ -933,7 +987,53 @@ export default function CheckInScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
+            {customSymptomsList.map((cs) => {
+              const IconComp = ICON_PICKER_OPTIONS.find((o) => o.name === cs.icon)?.component;
+              return (
+                <View key={cs.id} style={styles.customSymptomWrapper}>
+                  <TouchableOpacity
+                    style={[
+                      styles.symptomChip,
+                      styles.customSymptomChip,
+                      symptoms.includes(cs.name) && styles.symptomChipActive,
+                    ]}
+                    onPress={() => handleSymptomToggle(cs.name)}
+                    accessibilityLabel={cs.name}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: symptoms.includes(cs.name) }}
+                  >
+                    {IconComp && <IconComp size={14} color={symptoms.includes(cs.name) ? colors.primary : colors.textSecondary} />}
+                    <Text
+                      style={[
+                        styles.symptomText,
+                        symptoms.includes(cs.name) && styles.symptomTextActive,
+                      ]}
+                    >
+                      {cs.name}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveCustomSymptom(cs.id)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityLabel={`Remove ${cs.name}`}
+                    accessibilityRole="button"
+                    style={styles.removeCustomSymptomButton}
+                  >
+                    <Trash2 size={14} color={colors.textTertiary} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
           </View>
+          <TouchableOpacity
+            style={styles.addCustomSymptomButton}
+            onPress={() => setShowCustomSymptomModal(true)}
+            accessibilityLabel="Add custom symptom"
+            accessibilityRole="button"
+          >
+            <Plus size={16} color={colors.primary} />
+            <Text style={styles.addCustomSymptomText}>Add Custom Symptom</Text>
+          </TouchableOpacity>
         </View>
         )}
 
@@ -956,6 +1056,100 @@ export default function CheckInScreen() {
           <Text style={styles.submitButtonText}>{isEditMode ? t.checkIn.updateCheckIn : t.checkIn.completeCheckIn}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal
+        visible={showCustomSymptomModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCustomSymptomModal(false)}
+      >
+        <View style={styles.customSymptomModalOverlay}>
+          <View style={styles.customSymptomModalContent}>
+            <View style={styles.customSymptomModalHeader}>
+              <Text style={styles.customSymptomModalTitle}>Add Custom Symptom</Text>
+              <TouchableOpacity
+                onPress={() => setShowCustomSymptomModal(false)}
+                accessibilityLabel="Close"
+                accessibilityRole="button"
+              >
+                <X size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.customSymptomLabel}>Name</Text>
+            <TextInput
+              style={styles.customSymptomInput}
+              placeholder="e.g. Dizziness, Palpitations..."
+              placeholderTextColor={colors.textTertiary}
+              value={newSymptomName}
+              onChangeText={setNewSymptomName}
+              maxLength={40}
+              autoFocus
+            />
+
+            <Text style={styles.customSymptomLabel}>Icon</Text>
+            <View style={styles.iconPickerGrid}>
+              {ICON_PICKER_OPTIONS.map((opt) => {
+                const isSelected = newSymptomIcon === opt.name;
+                return (
+                  <TouchableOpacity
+                    key={opt.name}
+                    style={[
+                      styles.iconPickerItem,
+                      isSelected && styles.iconPickerItemActive,
+                    ]}
+                    onPress={() => setNewSymptomIcon(opt.name)}
+                    accessibilityLabel={`Select ${opt.name} icon`}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                  >
+                    <opt.component size={20} color={isSelected ? colors.primary : colors.textSecondary} />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={styles.customSymptomLabel}>Category</Text>
+            <View style={styles.categoryPickerRow}>
+              {CUSTOM_SYMPTOM_CATEGORIES.map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.categoryPickerChip,
+                    newSymptomCategory === cat && styles.categoryPickerChipActive,
+                  ]}
+                  onPress={() => setNewSymptomCategory(cat)}
+                  accessibilityLabel={cat}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: newSymptomCategory === cat }}
+                >
+                  <Text
+                    style={[
+                      styles.categoryPickerText,
+                      newSymptomCategory === cat && styles.categoryPickerTextActive,
+                    ]}
+                  >
+                    {cat}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.customSymptomSaveButton,
+                !newSymptomName.trim() && styles.customSymptomSaveButtonDisabled,
+              ]}
+              onPress={handleAddCustomSymptom}
+              disabled={!newSymptomName.trim()}
+              accessibilityLabel="Save custom symptom"
+              accessibilityRole="button"
+            >
+              <Text style={styles.customSymptomSaveButtonText}>Add Symptom</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={activeInfoModal !== null}
@@ -1418,6 +1612,137 @@ function createCheckInStyles(colors: typeof Colors.light) { return StyleSheet.cr
   },
   hrtTextActive: {
     color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  customSymptomWrapper: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+  },
+  customSymptomChip: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 5,
+    borderStyle: "dashed" as const,
+  },
+  removeCustomSymptomButton: {
+    padding: 4,
+    marginLeft: -2,
+  },
+  addCustomSymptomButton: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderStyle: "dashed" as const,
+    alignSelf: "flex-start" as const,
+  },
+  addCustomSymptomText: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: colors.primary,
+  },
+  customSymptomModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end" as const,
+  },
+  customSymptomModalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  customSymptomModalHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+    marginBottom: 20,
+  },
+  customSymptomModalTitle: {
+    fontSize: 20,
+    fontWeight: "700" as const,
+    color: colors.text,
+  },
+  customSymptomLabel: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    color: colors.textSecondary,
+    marginBottom: 8,
+    marginTop: 12,
+  },
+  customSymptomInput: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 15,
+    color: colors.text,
+  },
+  iconPickerGrid: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 10,
+  },
+  iconPickerItem: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
+  iconPickerItemActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  categoryPickerRow: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
+  },
+  categoryPickerChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  categoryPickerChipActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  categoryPickerText: {
+    fontSize: 13,
+    fontWeight: "500" as const,
+    color: colors.textSecondary,
+  },
+  categoryPickerTextActive: {
+    color: colors.primary,
+    fontWeight: "600" as const,
+  },
+  customSymptomSaveButton: {
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: "center" as const,
+    marginTop: 20,
+  },
+  customSymptomSaveButtonDisabled: {
+    opacity: 0.5,
+  },
+  customSymptomSaveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "600" as const,
   },
 }); }

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { Heart, X, Info, Eye, RefreshCw, AlertTriangle, User, CheckCircle, Shield } from "lucide-react-native";
+import { Heart, X, Info, Eye, RefreshCw, AlertTriangle, User, CheckCircle, Shield, Zap, Droplets, Moon, Flame } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -51,6 +51,100 @@ function ScanScreenInner() {
   const faceCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCheckingFaceRef = useRef<boolean>(false);
   const consecutiveFailsRef = useRef<number>(0);
+
+  // AR Scan Overlay: 6 wellness metric badges
+  const AR_BADGES = useMemo(() => [
+    { key: 'energy', icon: Zap, label: 'Energy', color: colors.energyHigh },
+    { key: 'stress', icon: Heart, label: 'Stress', color: colors.stressHigh },
+    { key: 'recovery', icon: Shield, label: 'Recovery', color: colors.recoveryHigh },
+    { key: 'hydration', icon: Droplets, label: 'Hydration', color: '#4D96FF' },
+    { key: 'fatigue', icon: Moon, label: 'Fatigue', color: '#9D84B7' },
+    { key: 'inflammation', icon: Flame, label: 'Inflam.', color: '#FF8C42' },
+  ], [colors]);
+
+  const badgeOpacities = useRef(AR_BADGES.map(() => new Animated.Value(0))).current;
+  const badgeScales = useRef(AR_BADGES.map(() => new Animated.Value(0.3))).current;
+  const badgePulses = useRef(AR_BADGES.map(() => new Animated.Value(1))).current;
+  const [arScores, setArScores] = useState<number[] | null>(null);
+
+  // Animate AR badges appearing one-by-one when stage enters 'analyzing'
+  useEffect(() => {
+    if (stage === 'analyzing') {
+      setArScores(null);
+      // Stagger badge entrance animations
+      const animations = AR_BADGES.map((_, i) =>
+        Animated.sequence([
+          Animated.delay(i * 300),
+          Animated.parallel([
+            Animated.timing(badgeOpacities[i], {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(badgeScales[i], {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+        ])
+      );
+      Animated.parallel(animations).start(() => {
+        // After all badges appear, start gentle pulse
+        const pulseAnimations = AR_BADGES.map((_, i) =>
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(badgePulses[i], {
+                toValue: 1.15,
+                duration: 800 + i * 100,
+                useNativeDriver: true,
+              }),
+              Animated.timing(badgePulses[i], {
+                toValue: 1,
+                duration: 800 + i * 100,
+                useNativeDriver: true,
+              }),
+            ])
+          )
+        );
+        Animated.parallel(pulseAnimations).start();
+      });
+    } else {
+      // Reset badges when leaving analyzing
+      for (let i = 0; i < AR_BADGES.length; i++) {
+        badgeOpacities[i].stopAnimation();
+        badgeScales[i].stopAnimation();
+        badgePulses[i].stopAnimation();
+        badgeOpacities[i].setValue(0);
+        badgeScales[i].setValue(0.3);
+        badgePulses[i].setValue(1);
+      }
+      setArScores(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
+  /**
+   * Flash scores in the AR badges briefly before transition.
+   * Called from buildAndSaveScanResult with the final scores.
+   */
+  const flashArScores = useCallback((scores: {
+    energyScore: number;
+    stressScore: number;
+    recoveryScore: number;
+    hydrationLevel: number;
+    fatigueLevel: number;
+    inflammation: number;
+  }) => {
+    setArScores([
+      scores.energyScore,
+      scores.stressScore,
+      scores.recoveryScore,
+      scores.hydrationLevel,
+      scores.fatigueLevel,
+      scores.inflammation,
+    ]);
+  }, []);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -412,6 +506,16 @@ function ScanScreenInner() {
       scores: { stressScore, energyScore, recoveryScore, hydrationLevel, fatigueLevel, inflammation },
     });
 
+    // Flash actual scores in AR badges before transition
+    flashArScores({
+      energyScore,
+      stressScore,
+      recoveryScore,
+      hydrationLevel,
+      fatigueLevel,
+      inflammation,
+    });
+
     addScan(scanResult);
     fadeAnimation.stopAnimation();
     fadeAnimation.setValue(1);
@@ -587,6 +691,50 @@ function ScanScreenInner() {
               </View>
             ) : stage === 'analyzing' || stage === 'capturing' ? (
               <View style={styles.analyzingContainer}>
+                {stage === 'analyzing' && (
+                  <View style={styles.arBadgeRing}>
+                    {AR_BADGES.map((badge, i) => {
+                      // Position badges in a ring around center
+                      const angleOffset = -Math.PI / 2; // start from top
+                      const angle = angleOffset + (i / AR_BADGES.length) * 2 * Math.PI;
+                      const radiusX = 110;
+                      const radiusY = 130;
+                      const x = Math.cos(angle) * radiusX;
+                      const y = Math.sin(angle) * radiusY;
+                      const BadgeIcon = badge.icon;
+
+                      return (
+                        <Animated.View
+                          key={badge.key}
+                          style={[
+                            styles.arBadge,
+                            {
+                              transform: [
+                                { translateX: x },
+                                { translateY: y },
+                                { scale: Animated.multiply(badgeScales[i], badgePulses[i]) },
+                              ],
+                              opacity: badgeOpacities[i],
+                              borderColor: badge.color,
+                              backgroundColor: badge.color + '25',
+                            },
+                          ]}
+                        >
+                          <BadgeIcon size={18} color={badge.color} />
+                          {arScores && arScores[i] != null ? (
+                            <Text style={[styles.arBadgeScore, { color: badge.color }]}>
+                              {Math.round(arScores[i])}
+                            </Text>
+                          ) : (
+                            <Text style={[styles.arBadgeLabel, { color: badge.color }]}>
+                              {badge.label}
+                            </Text>
+                          )}
+                        </Animated.View>
+                      );
+                    })}
+                  </View>
+                )}
                 <Animated.View style={{ opacity: fadeAnimation }}>
                   <Eye size={56} color={colors.primary} />
                 </Animated.View>
@@ -965,6 +1113,38 @@ function createScanStyles(colors: typeof Colors.light) { return StyleSheet.creat
     fontSize: 17,
     fontWeight: "700" as const,
     color: colors.card,
+  },
+  arBadgeRing: {
+    position: "absolute" as const,
+    width: 280,
+    height: 320,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    zIndex: 5,
+  },
+  arBadge: {
+    position: "absolute" as const,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  arBadgeLabel: {
+    fontSize: 7,
+    fontWeight: "700" as const,
+    marginTop: 1,
+  },
+  arBadgeScore: {
+    fontSize: 12,
+    fontWeight: "800" as const,
+    marginTop: 1,
   },
 }); }
 
