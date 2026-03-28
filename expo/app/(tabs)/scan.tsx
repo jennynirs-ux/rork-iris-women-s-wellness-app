@@ -425,7 +425,12 @@ function ScanScreenInner() {
       }
     });
 
-    router.replace("/scan-result" as any);
+    // Skip scan-result page — go directly to check-in or insights
+    if (!todayCheckIn) {
+      router.replace("/check-in" as any);
+    } else {
+      router.replace("/(tabs)/insights" as any);
+    }
   };
 
   const generateRecommendations = (

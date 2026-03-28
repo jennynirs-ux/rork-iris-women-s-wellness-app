@@ -132,7 +132,7 @@ export default function CheckInScreen() {
   const styles = useMemo(() => createCheckInStyles(colors), [colors]);
   const params = useLocalSearchParams();
   const selectedDate = params.date as string | undefined;
-  const { addCheckIn, updateCheckIn, adaptiveQuestion, userProfile, checkIns, language } = useApp();
+  const { addCheckIn, updateCheckIn, adaptiveQuestion, userProfile, checkIns, scans, language } = useApp();
   const t = getTranslation(language);
   
   const getRelevantSymptoms = (): string[] => {
@@ -310,7 +310,14 @@ export default function CheckInScreen() {
       router.back();
     } else {
       addCheckIn(checkIn);
-      router.replace("/(tabs)");
+      // If user just scanned today, go to insights to see combined results
+      // Otherwise go to home
+      const hasTodayScan = scans.some(s => s.date === getLocalDateString());
+      if (hasTodayScan) {
+        router.replace("/(tabs)/insights" as any);
+      } else {
+        router.replace("/(tabs)");
+      }
     }
   };
 
