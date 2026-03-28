@@ -925,7 +925,7 @@ export default function CalendarScreen() {
             activeOpacity={0.85}
           >
             <Calendar size={14} color="#fff" />
-            <Text style={styles.todayPillText}>{t.programs.todayButton}</Text>
+            <Text style={styles.todayPillText}>{t.calendar?.today || 'Today'}</Text>
           </TouchableOpacity>
         )}
       </View>

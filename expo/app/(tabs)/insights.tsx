@@ -701,7 +701,7 @@ export default function InsightsScreen() {
         }
       ]
     };
-  }, [trendData]);
+  }, [trendData, colors, labelInterval, t]);
 
   const hydrationInflammationChartData = useMemo(() => {
     if (!trendData) return null;

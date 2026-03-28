@@ -62,7 +62,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { router } from "expo-router";
 import { Habit } from "@/types";
 import Colors from "@/constants/colors";
-import { generateCoachingTips, CoachingTip } from "@/lib/coachingEngine";
+import { generateCoachingTips, generatePatternBasedTips, CoachingTip } from "@/lib/coachingEngine";
 import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
@@ -502,9 +502,13 @@ export default function HomeScreen() {
   });
 
   const coachingTips = useMemo(() => {
-    const allTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
-    return allTips.filter((tip) => !dismissedCoachingTips.has(tip.id));
-  }, [scans, checkIns, currentPhase, userProfile, dismissedCoachingTips]);
+    const staticTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
+    const patternTips = generatePatternBasedTips(scans, checkIns, currentPhase, cycleHistory, t);
+    const merged = [...staticTips, ...patternTips];
+    const unique = Array.from(new Map(merged.map((tip) => [tip.id, tip])).values());
+    const sorted = unique.sort((a, b) => a.priority - b.priority).slice(0, 4);
+    return sorted.filter((tip) => !dismissedCoachingTips.has(tip.id));
+  }, [scans, checkIns, currentPhase, userProfile, cycleHistory, t, dismissedCoachingTips]);
 
   const handleDismissCoachingTip = useCallback((tipId: string) => {
     setDismissedCoachingTips((prev) => new Set([...prev, tipId]));

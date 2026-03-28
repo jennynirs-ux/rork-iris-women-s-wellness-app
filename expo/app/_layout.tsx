@@ -139,6 +139,9 @@ function RootLayoutNav() {
         <Stack.Screen name="programs" options={{ headerShown: false }} />
         <Stack.Screen name="program-detail" options={{ headerShown: false }} />
         <Stack.Screen name="journal" options={{ headerShown: false }} />
+        <Stack.Screen name="articles" options={{ headerShown: false }} />
+        <Stack.Screen name="article-detail" options={{ headerShown: false }} />
+        <Stack.Screen name="notification-settings" options={{ headerShown: false }} />
       </Stack>
     </OnboardingGate>
   );

@@ -363,7 +363,7 @@ export default function OnboardingScreen() {
       mainFocus: selectedFocus,
       cycleLength: parseInt(typicalCycleLength) || 28,
       cycleRegularity: cycleRegularity as any,
-      birthControlType: selectedBirthControl as any,
+      birthControl: selectedBirthControl as any,
       lastPeriodDate: lastPeriodISO,
       pregnancyDueDate: selectedLifeStage === "pregnancy" ? dueDateISO : undefined,
       weeksPregnant: selectedLifeStage === "pregnancy" && weeksPregnant ? parseInt(weeksPregnant) : undefined,
