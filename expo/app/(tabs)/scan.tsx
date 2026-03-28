@@ -39,7 +39,7 @@ function ScanScreenInner() {
   const [facing] = useState<CameraType>("front");
   const [permission, requestPermission] = useCameraPermissions();
   const [stage, setStage] = useState<ScanStage>('ready');
-  const { addScan, todayCheckIn, currentPhase, t } = useApp();
+  const { addScan, todayCheckIn, currentPhase, scans, t } = useApp();
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const fadeAnimation = useRef(new Animated.Value(1)).current;
   const cameraRef = useRef<CameraView>(null);
@@ -47,6 +47,7 @@ function ScanScreenInner() {
   const [cameraReady, setCameraReady] = useState(false);
   const [validationReason, setValidationReason] = useState<string>('');
   const [faceDetected, setFaceDetected] = useState<boolean>(false);
+  const [showBriefing, setShowBriefing] = useState(true);
   const faceCheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCheckingFaceRef = useRef<boolean>(false);
   const consecutiveFailsRef = useRef<number>(0);
@@ -89,6 +90,7 @@ function ScanScreenInner() {
       }
       isCheckingFaceRef.current = true;
       try {
+        if (!cameraRef.current) { isCheckingFaceRef.current = false; scheduleCheck(); return; }
         const snap = await cameraRef.current.takePictureAsync({
           quality: 0.1,
           base64: true,
@@ -122,7 +124,6 @@ function ScanScreenInner() {
         faceCheckTimerRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameraReady, stage]);
 
   useEffect(() => {
@@ -491,6 +492,41 @@ function ScanScreenInner() {
             <Text style={styles.permissionButtonText}>
               {showSettingsHint ? t.scan.openSettings : t.scan.grantPermission}
             </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (scans.length === 0 && showBriefing) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top", "bottom"]}>
+        <View style={styles.briefingContainer}>
+          <View style={styles.briefingIconWrapper}>
+            <Eye size={48} color={colors.primary} />
+          </View>
+          <Text style={styles.briefingTitle}>Your First Wellness Check</Text>
+          <View style={styles.briefingBullets}>
+            <View style={styles.briefingBulletRow}>
+              <CheckCircle size={18} color={colors.primary} />
+              <Text style={styles.briefingBulletText}>Takes about 5 seconds</Text>
+            </View>
+            <View style={styles.briefingBulletRow}>
+              <CheckCircle size={18} color={colors.primary} />
+              <Text style={styles.briefingBulletText}>We analyze your iris patterns for wellness estimates</Text>
+            </View>
+            <View style={styles.briefingBulletRow}>
+              <Shield size={18} color={colors.primary} />
+              <Text style={styles.briefingBulletText}>No photos are stored — everything stays on your device</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.briefingCta}
+            onPress={() => setShowBriefing(false)}
+            activeOpacity={0.8}
+          >
+            <Eye size={20} color={colors.card} />
+            <Text style={styles.briefingCtaText}>Ready, Start Camera</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -867,6 +903,63 @@ function createScanStyles(colors: typeof Colors.light) { return StyleSheet.creat
     color: "rgba(255,255,255,0.65)",
     textAlign: "center" as const,
     fontWeight: "500" as const,
+  },
+  briefingContainer: {
+    flex: 1,
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
+    paddingHorizontal: 32,
+  },
+  briefingIconWrapper: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    marginBottom: 28,
+  },
+  briefingTitle: {
+    fontSize: 26,
+    fontWeight: "700" as const,
+    color: colors.text,
+    marginBottom: 28,
+    textAlign: "center" as const,
+  },
+  briefingBullets: {
+    width: "100%" as any,
+    gap: 16,
+    marginBottom: 40,
+  },
+  briefingBulletRow: {
+    flexDirection: "row" as const,
+    alignItems: "flex-start" as const,
+    gap: 12,
+  },
+  briefingBulletText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    flex: 1,
+  },
+  briefingCta: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 18,
+    borderRadius: 16,
+    gap: 10,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  briefingCtaText: {
+    fontSize: 17,
+    fontWeight: "700" as const,
+    color: colors.card,
   },
 }); }
 

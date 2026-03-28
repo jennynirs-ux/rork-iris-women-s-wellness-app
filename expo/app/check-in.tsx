@@ -8,7 +8,7 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb, Plus } from "lucide-react-native";
+import { Coffee, Wine, Thermometer, Candy, Package, Info, X, Sparkles, Meh, BatteryLow, Smile, SmilePlus, Minus, Frown, CloudRain, Zap, Battery, RefreshCw, BatteryWarning, Moon, Lightbulb, Plus, ChevronDown, ChevronUp } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -170,6 +170,13 @@ export default function CheckInScreen() {
   const [tookHRT, setTookHRT] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeInfoModal, setActiveInfoModal] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    essential: true,
+    bleeding: true,
+    lifestyle: false,
+    symptoms: false,
+    menopause: false,
+  });
 
   const INFO_CONTENT: Record<string, { title: string; content: string }> = {
     sleep: {
@@ -196,6 +203,29 @@ export default function CheckInScreen() {
       title: t.checkIn.infoOvulationPainTitle,
       content: t.checkIn.infoOvulationPainContent,
     }
+  };
+
+  const toggleSection = (key: string) => {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const SectionHeader = ({ sectionKey, title }: { sectionKey: string; title: string }) => {
+    const isOpen = openSections[sectionKey] ?? false;
+    return (
+      <TouchableOpacity
+        style={styles.collapsibleHeader}
+        onPress={() => toggleSection(sectionKey)}
+        accessibilityLabel={`${title}, ${isOpen ? 'collapse' : 'expand'}`}
+        accessibilityRole="button"
+      >
+        <Text style={styles.collapsibleHeaderText}>{title}</Text>
+        {isOpen ? (
+          <ChevronUp size={20} color={colors.textSecondary} />
+        ) : (
+          <ChevronDown size={20} color={colors.textSecondary} />
+        )}
+      </TouchableOpacity>
+    );
   };
 
   useEffect(() => {
@@ -290,6 +320,8 @@ export default function CheckInScreen() {
         <Text style={styles.title}>{isEditMode ? t.checkIn.editCheckIn : t.checkIn.howAreYouFeeling}</Text>
         <Text style={styles.dateLabel}>{getDateDisplay()}</Text>
 
+        <SectionHeader sectionKey="essential" title={t.checkIn.sectionEssential} />
+        {openSections.essential && (<>
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.wakeUpRested}</Text>
@@ -426,8 +458,12 @@ export default function CheckInScreen() {
             })}
           </View>
         </View>
+        </>)}
 
         {userProfile.birthControl === "none" && userProfile.lifeStage === "regular" && (
+          <>
+          <SectionHeader sectionKey="bleeding" title={t.checkIn.sectionBleeding} />
+          {openSections.bleeding && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t.checkIn.bleedingStatus}</Text>
@@ -472,8 +508,12 @@ export default function CheckInScreen() {
               ))}
             </View>
           </View>
+          )}
+          </>
         )}
 
+        <SectionHeader sectionKey="lifestyle" title={t.checkIn.sectionLifestyle} />
+        {openSections.lifestyle && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.lifestyleFactors}</Text>
@@ -615,6 +655,7 @@ export default function CheckInScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        )}
 
         {adaptiveQuestion.shouldAsk && adaptiveQuestion.questionType === "cervicalMucus" && (
           <View style={[styles.section, styles.adaptiveSection]}>
@@ -726,6 +767,9 @@ export default function CheckInScreen() {
         )}
 
         {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause') && (
+          <>
+          <SectionHeader sectionKey="menopause" title={t.checkIn.sectionMenopause} />
+          {openSections.menopause && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
 
@@ -840,8 +884,12 @@ export default function CheckInScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+          )}
+          </>
         )}
 
+        <SectionHeader sectionKey="symptoms" title={t.checkIn.sectionSymptoms} />
+        {openSections.symptoms && (
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t.checkIn.anySymptoms}</Text>
@@ -880,6 +928,7 @@ export default function CheckInScreen() {
             ))}
           </View>
         </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.checkIn.notesOptional}</Text>
@@ -952,6 +1001,21 @@ function createCheckInStyles(colors: typeof Colors.light) { return StyleSheet.cr
   content: {
     padding: 20,
     paddingBottom: 40,
+  },
+  collapsibleHeader: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "space-between" as const,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  collapsibleHeaderText: {
+    fontSize: 17,
+    fontWeight: "700" as const,
+    color: colors.text,
   },
   title: {
     fontSize: 24,
