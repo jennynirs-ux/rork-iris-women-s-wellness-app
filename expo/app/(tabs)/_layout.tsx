@@ -54,7 +54,7 @@ export default function TabLayout() {
       gap: 8,
     },
     offlineBannerText: {
-      color: "#FFFFFF",
+      color: colors.card,
       fontSize: 13,
       fontWeight: "500" as const,
       flex: 1,
@@ -65,7 +65,7 @@ export default function TabLayout() {
     <View style={{ flex: 1 }}>
       {isOffline && (
         <View style={dynamicStyles.offlineBanner}>
-          <Wifi size={18} color="#FFFFFF" />
+          <Wifi size={18} color={colors.card} />
           <Text style={dynamicStyles.offlineBannerText}>You are offline</Text>
         </View>
       )}
@@ -101,7 +101,7 @@ export default function TabLayout() {
           tabBarIcon: () => (
             <View style={dynamicStyles.scanButtonContainer}>
               <View style={dynamicStyles.scanButton}>
-                <Scan color="#FFFFFF" size={28} />
+                <Scan color={colors.card} size={28} />
               </View>
             </View>
           ),

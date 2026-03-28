@@ -777,7 +777,7 @@ export default function InsightsScreen() {
                       {todayCheckIn.sleep >= 7 ? t.common.yes : todayCheckIn.sleep >= 4 ? t.common.somewhat : t.common.no}
                     </Text>
                     {todayCheckIn.sleep >= 7 ? (
-                      <Sparkles size={16} color="#F4C896" />
+                      <Sparkles size={16} color={colors.phaseOvulation} />
                     ) : todayCheckIn.sleep >= 4 ? (
                       <Minus size={16} color="#94A3B8" />
                     ) : (
@@ -929,7 +929,7 @@ export default function InsightsScreen() {
             return vmsMetrics ? (
               <View style={styles.vasomotorCard}>
                 <View style={styles.vasomotorHeader}>
-                  <Flame size={24} color="#E89BA4" />
+                  <Flame size={24} color={colors.phaseMenstrual} />
                   <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
                 </View>
 
@@ -948,7 +948,7 @@ export default function InsightsScreen() {
 
                 <View style={[styles.vasomotorMetric, { borderBottomWidth: 0 }]}>
                   <Text style={styles.vasomotorMetricLabel}>{t.menopause?.vmsScore || 'VMS Score'}</Text>
-                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? '#E89BA4' : '#10B981' }]}>
+                  <Text style={[styles.vasomotorMetricValue, { color: parseFloat(vmsMetrics.vmsScore) > 5 ? colors.phaseMenstrual : colors.statusGood }]}>
                     {vmsMetrics.vmsScore}
                   </Text>
                   <Text style={styles.vasomotorMetricSubtext}>Symptom severity indicator</Text>
@@ -1225,8 +1225,8 @@ export default function InsightsScreen() {
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4C896" + "20" }]}>
-                    <Moon size={20} color="#F4C896" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.phaseOvulation + "20" }]}>
+                    <Moon size={20} color={colors.phaseOvulation} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1249,7 +1249,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: "#F4C896" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: colors.phaseOvulation }]} />
                   </View>
                 </View>
               </View>
@@ -1259,8 +1259,8 @@ export default function InsightsScreen() {
                 <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
                 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#96E8D4" + "20" }]}>
-                    <Brain size={20} color="#96E8D4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitNutrition + "20" }]}>
+                    <Brain size={20} color={colors.habitNutrition} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1283,13 +1283,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: "#96E8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: colors.habitNutrition }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4C8D4" + "20" }]}>
-                    <Heart size={20} color="#F4C8D4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitSkincare + "20" }]}>
+                    <Heart size={20} color={colors.habitSkincare} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1312,13 +1312,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: "#F4C8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: colors.habitSkincare }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#E8B4D4" + "20" }]}>
-                    <Users size={20} color="#E8B4D4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitRecovery + "20" }]}>
+                    <Users size={20} color={colors.habitRecovery} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1341,13 +1341,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.socialEnergy || 0) / 10) * 100}%`, backgroundColor: "#E8B4D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.socialEnergy || 0) / 10) * 100}%`, backgroundColor: colors.habitRecovery }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4B896" + "20" }]}>
-                    <BarChart3 size={20} color="#F4B896" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitMovement + "20" }]}>
+                    <BarChart3 size={20} color={colors.habitMovement} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1370,7 +1370,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: colors.habitMovement }]} />
                   </View>
                 </View>
               </View>
@@ -1380,8 +1380,8 @@ export default function InsightsScreen() {
                 <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
                 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#B4E4F4" + "20" }]}>
-                    <Droplets size={20} color="#B4E4F4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitMindfulness + "20" }]}>
+                    <Droplets size={20} color={colors.habitMindfulness} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1404,13 +1404,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.dehydrationTendency || 0) / 10) * 100}%`, backgroundColor: "#B4E4F4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.dehydrationTendency || 0) / 10) * 100}%`, backgroundColor: colors.habitMindfulness }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4D4A4" + "20" }]}>
-                    <Flame size={20} color="#F4D4A4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitSkincare + "20" }]}>
+                    <Flame size={20} color={colors.habitSkincare} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1433,7 +1433,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: colors.habitSkincare }]} />
                   </View>
                 </View>
               </View>
@@ -1467,8 +1467,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {(Number(averages.pupilSymmetry) * 100).toFixed(0)}%</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('scleraYellowness')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#FEF3C720' }]}>
-                      <Eye size={18} color="#F59E0B" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.statusModerateBg }]}>
+                      <Eye size={18} color={colors.statusModerate} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.scleraClarity ?? 'Sclera Clarity'}</Text>
@@ -1478,8 +1478,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.scleraYellowness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('underEyeDarkness')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#F4C89620' }]}>
-                      <Moon size={18} color="#F4C896" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.phaseOvulation + '20' }]}>
+                      <Moon size={18} color={colors.phaseOvulation} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.underEyeVitality ?? 'Under-Eye Vitality'}</Text>
@@ -1489,8 +1489,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.underEyeDarkness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('eyeOpenness')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#10B98120' }]}>
-                      <Zap size={18} color="#10B981" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.statusGoodBg }]}>
+                      <Zap size={18} color={colors.statusGood} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.eyeAlertness ?? 'Eye Alertness'}</Text>
@@ -1500,8 +1500,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.eyeOpenness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('tearFilmQuality')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#A4C8E820' }]}>
-                      <Droplets size={18} color="#A4C8E8" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.habitHydration + '20' }]}>
+                      <Droplets size={18} color={colors.habitHydration} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.eyeMoisture ?? 'Eye Moisture'}</Text>
@@ -1525,8 +1525,8 @@ export default function InsightsScreen() {
               {patternAnalysis.pregnancyDetected >= 3 && (
                 <View style={styles.patternCard}>
                   <View style={styles.patternHeader}>
-                    <View style={[styles.patternIconBox, { backgroundColor: '#F4C8D420' }]}>
-                      <Baby size={22} color="#E89BA4" />
+                    <View style={[styles.patternIconBox, { backgroundColor: colors.phaseMenstrual + '20' }]}>
+                      <Baby size={22} color={colors.phaseMenstrual} />
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Pregnancy Indicators</Text>
@@ -1534,12 +1534,12 @@ export default function InsightsScreen() {
                     </View>
                     {patternAnalysis.hasAcceptedPregnancy ? (
                       <View style={styles.acceptedBadge}>
-                        <CheckCircle size={14} color="#10B981" />
+                        <CheckCircle size={14} color={colors.statusGood} />
                         <Text style={styles.acceptedBadgeText}>Active</Text>
                       </View>
                     ) : lifeStageSuggestion?.type === 'pregnancy' ? (
                       <View style={styles.pendingBadge}>
-                        <AlertCircle size={14} color="#F59E0B" />
+                        <AlertCircle size={14} color={colors.statusModerate} />
                         <Text style={styles.pendingBadgeText}>Review</Text>
                       </View>
                     ) : null}
@@ -1548,7 +1548,7 @@ export default function InsightsScreen() {
                     {patternAnalysis.pregnancyIndicators.map((ind, idx) => (
                       <View key={idx} style={styles.indicatorRow}>
                         {ind.detected ? (
-                          <CheckCircle size={14} color="#10B981" />
+                          <CheckCircle size={14} color={colors.statusGood} />
                         ) : (
                           <XCircle size={14} color={colors.textTertiary} />
                         )}
@@ -1563,12 +1563,12 @@ export default function InsightsScreen() {
                       activeOpacity={0.7}
                     >
                       <Text style={styles.patternActionText}>Update Life Stage</Text>
-                      <ArrowRight size={14} color="#FFFFFF" />
+                      <ArrowRight size={14} color={colors.card} />
                     </TouchableOpacity>
                   )}
                   {patternAnalysis.hasAcceptedPregnancy && (
                     <View style={styles.patternStatusRow}>
-                      <Shield size={14} color="#10B981" />
+                      <Shield size={14} color={colors.statusGood} />
                       <Text style={styles.patternStatusText}>Life stage set to Pregnancy — insights are tailored</Text>
                     </View>
                   )}
@@ -1578,8 +1578,8 @@ export default function InsightsScreen() {
               {patternAnalysis.periDetected >= 3 && (
                 <View style={styles.patternCard}>
                   <View style={styles.patternHeader}>
-                    <View style={[styles.patternIconBox, { backgroundColor: '#B8A4E820' }]}>
-                      <Thermometer size={22} color="#B8A4E8" />
+                    <View style={[styles.patternIconBox, { backgroundColor: colors.phaseLuteal + '20' }]}>
+                      <Thermometer size={22} color={colors.phaseLuteal} />
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Perimenopause Indicators</Text>
@@ -1587,12 +1587,12 @@ export default function InsightsScreen() {
                     </View>
                     {patternAnalysis.hasAcceptedPeri ? (
                       <View style={styles.acceptedBadge}>
-                        <CheckCircle size={14} color="#10B981" />
+                        <CheckCircle size={14} color={colors.statusGood} />
                         <Text style={styles.acceptedBadgeText}>Active</Text>
                       </View>
                     ) : lifeStageSuggestion?.type === 'perimenopause' ? (
                       <View style={styles.pendingBadge}>
-                        <AlertCircle size={14} color="#F59E0B" />
+                        <AlertCircle size={14} color={colors.statusModerate} />
                         <Text style={styles.pendingBadgeText}>Review</Text>
                       </View>
                     ) : null}
@@ -1601,7 +1601,7 @@ export default function InsightsScreen() {
                     {patternAnalysis.periIndicators.map((ind, idx) => (
                       <View key={idx} style={styles.indicatorRow}>
                         {ind.detected ? (
-                          <CheckCircle size={14} color="#10B981" />
+                          <CheckCircle size={14} color={colors.statusGood} />
                         ) : (
                           <XCircle size={14} color={colors.textTertiary} />
                         )}
@@ -1611,17 +1611,17 @@ export default function InsightsScreen() {
                   </View>
                   {!patternAnalysis.hasAcceptedPeri && (
                     <TouchableOpacity
-                      style={[styles.patternActionButton, { backgroundColor: '#B8A4E8' }]}
+                      style={[styles.patternActionButton, { backgroundColor: colors.phaseLuteal }]}
                       onPress={() => router.push('/profile' as any)}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.patternActionText}>Update Life Stage</Text>
-                      <ArrowRight size={14} color="#FFFFFF" />
+                      <ArrowRight size={14} color={colors.card} />
                     </TouchableOpacity>
                   )}
                   {patternAnalysis.hasAcceptedPeri && (
                     <View style={styles.patternStatusRow}>
-                      <Shield size={14} color="#10B981" />
+                      <Shield size={14} color={colors.statusGood} />
                       <Text style={styles.patternStatusText}>Life stage set to {userProfile.lifeStage === 'menopause' ? 'Menopause' : 'Perimenopause'} — insights are tailored</Text>
                     </View>
                   )}
@@ -2392,7 +2392,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
   disclaimerButtonText: {
     fontSize: 16,
     fontWeight: "700" as const,
-    color: "#FFFFFF",
+    color: colors.card,
   },
   checkInSummaryCard: {
     backgroundColor: colors.card,
@@ -2769,7 +2769,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
   acceptedBadge: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    backgroundColor: "#D1FAE5",
+    backgroundColor: colors.statusGoodBg,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -2778,12 +2778,12 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
   acceptedBadgeText: {
     fontSize: 11,
     fontWeight: "700" as const,
-    color: "#10B981",
+    color: colors.statusGood,
   },
   pendingBadge: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
-    backgroundColor: "#FEF3C7",
+    backgroundColor: colors.statusModerateBg,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -2792,7 +2792,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
   pendingBadgeText: {
     fontSize: 11,
     fontWeight: "700" as const,
-    color: "#F59E0B",
+    color: colors.statusModerate,
   },
   indicatorsList: {
     marginBottom: 16,
@@ -2813,7 +2813,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textTertiary,
   },
   patternActionButton: {
-    backgroundColor: "#E89BA4",
+    backgroundColor: colors.phaseMenstrual,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 20,
@@ -2824,7 +2824,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     alignSelf: "flex-start" as const,
   },
   patternActionText: {
-    color: "#FFFFFF",
+    color: colors.card,
     fontSize: 14,
     fontWeight: "600" as const,
   },
@@ -2832,14 +2832,14 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     flexDirection: "row" as const,
     alignItems: "center" as const,
     gap: 8,
-    backgroundColor: "#D1FAE5",
+    backgroundColor: colors.statusGoodBg,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
   },
   patternStatusText: {
     fontSize: 13,
-    color: "#065F46",
+    color: colors.statusGood,
     fontWeight: "500" as const,
     flex: 1,
   },
@@ -2884,7 +2884,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textSecondary,
   },
   timeRangeButtonTextActive: {
-    color: "#FFFFFF",
+    color: colors.card,
   },
   chartContainer: {
     marginBottom: 24,
@@ -2948,7 +2948,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: "#E89BA4",
+    shadowColor: colors.phaseMenstrual,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
