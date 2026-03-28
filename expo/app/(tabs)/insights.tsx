@@ -701,7 +701,7 @@ export default function InsightsScreen() {
   }, [scans, trendTimeRange]);
 
   const screenWidth = Dimensions.get('window').width;
-  const chartWidth = screenWidth - 32; // padding
+  const chartWidth = screenWidth - 64; // padding + card margins
 
   // Show only every Nth label to avoid clutter on 30d/90d
   const labelInterval = trendTimeRange <= 7 ? 1 : trendTimeRange <= 30 ? 5 : 15;
