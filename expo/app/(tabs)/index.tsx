@@ -1070,23 +1070,29 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Today's Meals Card */}
-      <TouchableOpacity
-        style={styles.quickNavCard}
-        onPress={() => router.push('/meal-plan' as any)}
-        activeOpacity={0.7}
-        accessibilityLabel="View today's meal plan"
-        accessibilityRole="button"
-      >
-        <View style={[styles.quickNavIconBox, { backgroundColor: '#8BC9A320' }]}>
-          <Apple size={20} color="#8BC9A3" />
-        </View>
-        <View style={styles.quickNavContent}>
-          <Text style={styles.quickNavTitle}>Today's Meals</Text>
-          <Text style={styles.quickNavSubtitle}>Cycle-synced nutrition for your phase</Text>
-        </View>
-        <ArrowRight size={18} color={colors.textTertiary} />
-      </TouchableOpacity>
+      {/* Quick Access Buttons */}
+      <View style={styles.quickAccessRow}>
+        <TouchableOpacity
+          style={[styles.quickAccessButton, { backgroundColor: colors.phaseFollicular + '20', borderColor: colors.phaseFollicular + '40' }]}
+          onPress={() => router.push('/meal-plan' as any)}
+          activeOpacity={0.7}
+        >
+          <Apple size={24} color={colors.phaseFollicular} />
+          <Text style={[styles.quickAccessLabel, { color: colors.phaseFollicular }]}>
+            {t.home?.todaysMeals || "Today's Meals"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickAccessButton, { backgroundColor: colors.phaseLuteal + '20', borderColor: colors.phaseLuteal + '40' }]}
+          onPress={() => router.push('/wellness-chat' as any)}
+          activeOpacity={0.7}
+        >
+          <Brain size={24} color={colors.phaseLuteal} />
+          <Text style={[styles.quickAccessLabel, { color: colors.phaseLuteal }]}>
+            {t.home?.askIris || 'Ask IRIS'}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.habitsList}>
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
@@ -2026,6 +2032,24 @@ function createStyles(colors: typeof Colors.light) {
       fontSize: 12,
       color: colors.textSecondary,
       marginTop: 2,
+    },
+    quickAccessRow: {
+      flexDirection: "row" as const,
+      gap: 12,
+      marginBottom: 16,
+    },
+    quickAccessButton: {
+      flex: 1,
+      borderRadius: 16,
+      borderWidth: 1,
+      paddingVertical: 16,
+      alignItems: "center" as const,
+      justifyContent: "center" as const,
+      gap: 8,
+    },
+    quickAccessLabel: {
+      fontSize: 13,
+      fontWeight: "600" as const,
     },
   });
 }
