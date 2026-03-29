@@ -1095,12 +1095,12 @@ export default function HomeScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.quickAccessButton, { backgroundColor: colors.phaseLuteal + '20', borderColor: colors.phaseLuteal + '40' }]}
-          onPress={() => router.push('/wellness-chat' as any)}
+          onPress={() => router.push('/journal' as any)}
           activeOpacity={0.7}
         >
-          <Brain size={24} color={colors.phaseLuteal} />
+          <Edit2 size={24} color={colors.phaseLuteal} />
           <Text style={[styles.quickAccessLabel, { color: colors.phaseLuteal }]}>
-            {t.home?.askIris || 'Ask IRIS'}
+            {t.home?.journal || 'Journal'}
           </Text>
         </TouchableOpacity>
       </View>
