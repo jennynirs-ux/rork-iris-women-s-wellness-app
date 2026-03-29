@@ -339,6 +339,323 @@ const PHASE_AVOID: Record<CyclePhase, string[]> = {
   luteal: ["Excess caffeine", "Refined sugar", "Alcohol", "Excess sodium"],
 };
 
+// ─── Life-stage Meal Database ───────────────────────────────────────────────
+
+const PREGNANCY_MEALS: MealSuggestion[] = [
+  {
+    id: "preg-b1",
+    mealType: "breakfast",
+    titleKey: "meal.pregnancy.breakfast1.title",
+    descriptionKey: "meal.pregnancy.breakfast1.description",
+    icon: "Leaf",
+    nutrients: ["Folate", "Iron", "Fiber"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "preg-b2",
+    mealType: "breakfast",
+    titleKey: "meal.pregnancy.breakfast2.title",
+    descriptionKey: "meal.pregnancy.breakfast2.description",
+    icon: "Egg",
+    nutrients: ["Protein", "Calcium", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "preg-l1",
+    mealType: "lunch",
+    titleKey: "meal.pregnancy.lunch1.title",
+    descriptionKey: "meal.pregnancy.lunch1.description",
+    icon: "Salad",
+    nutrients: ["Folate", "Iron", "Vitamin C"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "preg-l2",
+    mealType: "lunch",
+    titleKey: "meal.pregnancy.lunch2.title",
+    descriptionKey: "meal.pregnancy.lunch2.description",
+    icon: "Soup",
+    nutrients: ["Protein", "Fiber", "Iron"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "preg-d1",
+    mealType: "dinner",
+    titleKey: "meal.pregnancy.dinner1.title",
+    descriptionKey: "meal.pregnancy.dinner1.description",
+    icon: "Fish",
+    nutrients: ["Omega-3", "Protein", "DHA"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "preg-d2",
+    mealType: "dinner",
+    titleKey: "meal.pregnancy.dinner2.title",
+    descriptionKey: "meal.pregnancy.dinner2.description",
+    icon: "Leaf",
+    nutrients: ["Iron", "Calcium", "Protein"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "preg-s1",
+    mealType: "snack",
+    titleKey: "meal.pregnancy.snack1.title",
+    descriptionKey: "meal.pregnancy.snack1.description",
+    icon: "Apple",
+    nutrients: ["Calcium", "Protein", "Omega-3"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+];
+
+const POSTPARTUM_MEALS: MealSuggestion[] = [
+  {
+    id: "pp-b1",
+    mealType: "breakfast",
+    titleKey: "meal.postpartum.breakfast1.title",
+    descriptionKey: "meal.postpartum.breakfast1.description",
+    icon: "Egg",
+    nutrients: ["Iron", "Protein", "B12"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "pp-b2",
+    mealType: "breakfast",
+    titleKey: "meal.postpartum.breakfast2.title",
+    descriptionKey: "meal.postpartum.breakfast2.description",
+    icon: "Leaf",
+    nutrients: ["Omega-3", "Fiber", "Iron"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "pp-l1",
+    mealType: "lunch",
+    titleKey: "meal.postpartum.lunch1.title",
+    descriptionKey: "meal.postpartum.lunch1.description",
+    icon: "Soup",
+    nutrients: ["Protein", "Iron", "Collagen"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "pp-l2",
+    mealType: "lunch",
+    titleKey: "meal.postpartum.lunch2.title",
+    descriptionKey: "meal.postpartum.lunch2.description",
+    icon: "Salad",
+    nutrients: ["Iron", "Vitamin C", "Fiber"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "pp-d1",
+    mealType: "dinner",
+    titleKey: "meal.postpartum.dinner1.title",
+    descriptionKey: "meal.postpartum.dinner1.description",
+    icon: "Fish",
+    nutrients: ["Omega-3", "Protein", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "pp-d2",
+    mealType: "dinner",
+    titleKey: "meal.postpartum.dinner2.title",
+    descriptionKey: "meal.postpartum.dinner2.description",
+    icon: "Beef",
+    nutrients: ["Iron", "Protein", "Zinc"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "pp-s1",
+    mealType: "snack",
+    titleKey: "meal.postpartum.snack1.title",
+    descriptionKey: "meal.postpartum.snack1.description",
+    icon: "Cookie",
+    nutrients: ["Omega-3", "Magnesium", "Healthy Fats"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+];
+
+const PERIMENOPAUSE_MEALS: MealSuggestion[] = [
+  {
+    id: "peri-b1",
+    mealType: "breakfast",
+    titleKey: "meal.perimenopause.breakfast1.title",
+    descriptionKey: "meal.perimenopause.breakfast1.description",
+    icon: "Leaf",
+    nutrients: ["Phytoestrogens", "Fiber", "Calcium"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "peri-b2",
+    mealType: "breakfast",
+    titleKey: "meal.perimenopause.breakfast2.title",
+    descriptionKey: "meal.perimenopause.breakfast2.description",
+    icon: "Egg",
+    nutrients: ["Protein", "Vitamin D", "Calcium"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "peri-l1",
+    mealType: "lunch",
+    titleKey: "meal.perimenopause.lunch1.title",
+    descriptionKey: "meal.perimenopause.lunch1.description",
+    icon: "Salad",
+    nutrients: ["Phytoestrogens", "Magnesium", "Fiber"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "peri-l2",
+    mealType: "lunch",
+    titleKey: "meal.perimenopause.lunch2.title",
+    descriptionKey: "meal.perimenopause.lunch2.description",
+    icon: "Fish",
+    nutrients: ["Omega-3", "Calcium", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "peri-d1",
+    mealType: "dinner",
+    titleKey: "meal.perimenopause.dinner1.title",
+    descriptionKey: "meal.perimenopause.dinner1.description",
+    icon: "Leaf",
+    nutrients: ["Phytoestrogens", "Protein", "Magnesium"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "peri-d2",
+    mealType: "dinner",
+    titleKey: "meal.perimenopause.dinner2.title",
+    descriptionKey: "meal.perimenopause.dinner2.description",
+    icon: "Fish",
+    nutrients: ["Omega-3", "Protein", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "peri-s1",
+    mealType: "snack",
+    titleKey: "meal.perimenopause.snack1.title",
+    descriptionKey: "meal.perimenopause.snack1.description",
+    icon: "Cookie",
+    nutrients: ["Magnesium", "Antioxidants", "Healthy Fats"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+];
+
+const MENOPAUSE_MEALS: MealSuggestion[] = [
+  {
+    id: "meno-b1",
+    mealType: "breakfast",
+    titleKey: "meal.menopause.breakfast1.title",
+    descriptionKey: "meal.menopause.breakfast1.description",
+    icon: "Leaf",
+    nutrients: ["Calcium", "Fiber", "Antioxidants"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "meno-b2",
+    mealType: "breakfast",
+    titleKey: "meal.menopause.breakfast2.title",
+    descriptionKey: "meal.menopause.breakfast2.description",
+    icon: "Egg",
+    nutrients: ["Protein", "Omega-3", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "meno-l1",
+    mealType: "lunch",
+    titleKey: "meal.menopause.lunch1.title",
+    descriptionKey: "meal.menopause.lunch1.description",
+    icon: "Salad",
+    nutrients: ["Omega-3", "Antioxidants", "Protein"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "meno-l2",
+    mealType: "lunch",
+    titleKey: "meal.menopause.lunch2.title",
+    descriptionKey: "meal.menopause.lunch2.description",
+    icon: "Soup",
+    nutrients: ["Calcium", "Protein", "Vitamin K"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "meno-d1",
+    mealType: "dinner",
+    titleKey: "meal.menopause.dinner1.title",
+    descriptionKey: "meal.menopause.dinner1.description",
+    icon: "Fish",
+    nutrients: ["Omega-3", "Protein", "Vitamin D"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+  {
+    id: "meno-d2",
+    mealType: "dinner",
+    titleKey: "meal.menopause.dinner2.title",
+    descriptionKey: "meal.menopause.dinner2.description",
+    icon: "Leaf",
+    nutrients: ["Protein", "Calcium", "Fiber"],
+    phase: "menstrual",
+    isAntiInflammatory: false,
+  },
+  {
+    id: "meno-s1",
+    mealType: "snack",
+    titleKey: "meal.menopause.snack1.title",
+    descriptionKey: "meal.menopause.snack1.description",
+    icon: "Cherry",
+    nutrients: ["Antioxidants", "Fiber", "Vitamin C"],
+    phase: "menstrual",
+    isAntiInflammatory: true,
+  },
+];
+
+// ─── Life-stage Nutrition Info ──────────────────────────────────────────────
+
+const LIFESTAGE_NUTRIENTS: Record<string, string[]> = {
+  pregnancy: ["Folate", "Iron", "Calcium", "Omega-3 (DHA)", "Vitamin D"],
+  postpartum: ["Iron", "Protein", "Omega-3", "Vitamin D", "B Vitamins"],
+  perimenopause: ["Phytoestrogens", "Calcium", "Magnesium", "Vitamin D", "Omega-3"],
+  menopause: ["Calcium", "Omega-3", "Antioxidants", "Protein", "Vitamin D"],
+};
+
+const LIFESTAGE_AVOID: Record<string, string[]> = {
+  pregnancy: ["Raw fish & sushi", "Soft unpasteurized cheese", "Excessive caffeine", "Alcohol"],
+  postpartum: ["Excess caffeine", "Processed foods", "Alcohol", "Excess sugar"],
+  perimenopause: ["Excess caffeine", "Alcohol", "Spicy food (may trigger hot flashes)", "Refined sugar"],
+  menopause: ["Processed food", "Excess sugar", "Excess sodium", "Alcohol"],
+};
+
+const LIFESTAGE_MEALS: Record<string, MealSuggestion[]> = {
+  pregnancy: PREGNANCY_MEALS,
+  postpartum: POSTPARTUM_MEALS,
+  perimenopause: PERIMENOPAUSE_MEALS,
+  menopause: MENOPAUSE_MEALS,
+};
+
 const BASE_HYDRATION = 8; // glasses
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -381,7 +698,28 @@ export function generateDailyMealPlan(
   phaseDay: number,
   latestScan: ScanResult | null,
   todayCheckIn: DailyCheckIn | null,
+  lifeStage?: string,
 ): DailyMealPlan {
+  // ─── Life-stage override ──────────────────────────────────────────────
+  if (lifeStage && lifeStage !== 'regular' && LIFESTAGE_MEALS[lifeStage]) {
+    const lsMeals = LIFESTAGE_MEALS[lifeStage];
+    const selected = selectMealsForDay(lsMeals, phaseDay);
+    const meals = [selected.breakfast, selected.lunch, selected.dinner, selected.snack];
+
+    let hydrationGoal = lifeStage === 'pregnancy' ? 10
+      : lifeStage === 'postpartum' ? 10
+      : BASE_HYDRATION;
+
+    return {
+      phase,
+      phaseDay: clamp(phaseDay, 1, 99),
+      meals,
+      hydrationGoal,
+      keyNutrients: (LIFESTAGE_NUTRIENTS[lifeStage] || []).slice(0, 6),
+      avoidList: (LIFESTAGE_AVOID[lifeStage] || []).slice(0, 5),
+    };
+  }
+
   const phaseMeals = PHASE_MEALS[phase] || PHASE_MEALS.follicular;
   const selected = selectMealsForDay(phaseMeals, phaseDay);
 

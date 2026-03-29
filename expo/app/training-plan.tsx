@@ -83,7 +83,7 @@ function t(key: string, params?: Record<string, string | number>): string {
 export default function TrainingPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile } = useApp();
 
   const [expandedWarmup, setExpandedWarmup] = useState(false);
   const [expandedCooldown, setExpandedCooldown] = useState(false);
@@ -94,9 +94,12 @@ export default function TrainingPlanScreen() {
   const phaseConfig = PHASE_CONFIG[phase];
   const PhaseIcon = phaseConfig.icon;
 
+  const lifeStage = userProfile?.lifeStage ?? 'regular';
+  const weeksPregnant = userProfile?.weeksPregnant;
+
   const plan = useMemo(
-    () => generateDailyTrainingPlan(phase, phaseDay, latestScan ?? null, todayCheckIn ?? null),
-    [phase, phaseDay, latestScan, todayCheckIn],
+    () => generateDailyTrainingPlan(phase, phaseDay, latestScan ?? null, todayCheckIn ?? null, lifeStage, weeksPregnant),
+    [phase, phaseDay, latestScan, todayCheckIn, lifeStage, weeksPregnant],
   );
 
   // Check if workout was already completed today

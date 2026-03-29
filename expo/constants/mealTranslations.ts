@@ -157,6 +157,138 @@ export const mealTranslations = {
   "meal.luteal.snack1.title": "Dark Chocolate & Almonds",
   "meal.luteal.snack1.description":
     "Two squares of dark chocolate with raw almonds. Magnesium and healthy fats to support mood and curb cravings.",
+
+  // ─── Life-stage labels ────────────────────────────────────────────────────
+
+  phasePregnancy: "Pregnancy",
+  phasePostpartum: "Postpartum",
+  phasePerimenopause: "Perimenopause",
+  phaseMenopause: "Menopause",
+
+  phaseDescPregnancy: "Nutrient-dense foods rich in folate, iron, calcium, and omega-3 to support you and your baby.",
+  phaseDescPostpartum: "Recovery-focused meals with iron, protein, and anti-inflammatory foods to help your body heal.",
+  phaseDescPerimenopause: "Phytoestrogen-rich foods, calcium, and magnesium to support hormonal balance and bone health.",
+  phaseDescMenopause: "Bone-supporting calcium, heart-healthy omega-3, and antioxidant-rich foods for overall wellness.",
+
+  // ─── Pregnancy Meals ──────────────────────────────────────────────────────
+
+  "meal.pregnancy.breakfast1.title": "Lentil & Spinach Scramble",
+  "meal.pregnancy.breakfast1.description":
+    "Scrambled eggs with sauteed spinach and red lentils on whole grain toast. Packed with folate and iron for early development.",
+
+  "meal.pregnancy.breakfast2.title": "Calcium-Rich Yogurt Bowl",
+  "meal.pregnancy.breakfast2.description":
+    "Greek yogurt topped with sliced almonds, figs, and a drizzle of honey. Great source of calcium and protein.",
+
+  "meal.pregnancy.lunch1.title": "Leafy Green & Lentil Salad",
+  "meal.pregnancy.lunch1.description":
+    "Mixed greens with warm lentils, roasted beets, bell peppers, and lemon vinaigrette. Rich in folate, iron, and vitamin C.",
+
+  "meal.pregnancy.lunch2.title": "Nourishing Bean Soup",
+  "meal.pregnancy.lunch2.description":
+    "White bean and vegetable soup with kale and whole grain bread. Hearty, warming, and full of fiber and iron.",
+
+  "meal.pregnancy.dinner1.title": "Baked Salmon with Sweet Potato",
+  "meal.pregnancy.dinner1.description":
+    "Wild-caught salmon (fully cooked) with roasted sweet potato and steamed broccoli. Omega-3 and DHA for brain development.",
+
+  "meal.pregnancy.dinner2.title": "Iron-Rich Beef & Greens",
+  "meal.pregnancy.dinner2.description":
+    "Lean beef strips with sauteed spinach and calcium-fortified rice. Excellent source of iron, calcium, and protein.",
+
+  "meal.pregnancy.snack1.title": "Walnuts & Yogurt",
+  "meal.pregnancy.snack1.description":
+    "A small bowl of yogurt with crushed walnuts and a sprinkle of ground flaxseed. Calcium, omega-3, and protein in one snack.",
+
+  // ─── Postpartum Meals ─────────────────────────────────────────────────────
+
+  "meal.postpartum.breakfast1.title": "Iron-Boosting Eggs & Toast",
+  "meal.postpartum.breakfast1.description":
+    "Scrambled eggs with wilted spinach on iron-fortified toast. Helps replenish iron stores after birth.",
+
+  "meal.postpartum.breakfast2.title": "Omega-3 Overnight Oats",
+  "meal.postpartum.breakfast2.description":
+    "Oats soaked overnight with chia seeds, walnuts, and banana. Anti-inflammatory omega-3s and fiber to support recovery.",
+
+  "meal.postpartum.lunch1.title": "Bone Broth & Vegetable Bowl",
+  "meal.postpartum.lunch1.description":
+    "Rich bone broth with shredded chicken, sweet potato, and greens. Collagen and protein to support tissue healing.",
+
+  "meal.postpartum.lunch2.title": "Spinach & Quinoa Power Bowl",
+  "meal.postpartum.lunch2.description":
+    "Quinoa with baby spinach, roasted chickpeas, and lemon dressing. Iron and vitamin C for blood replenishment.",
+
+  "meal.postpartum.dinner1.title": "Salmon & Roasted Vegetables",
+  "meal.postpartum.dinner1.description":
+    "Baked salmon with a medley of roasted root vegetables. Omega-3 fatty acids for mood support and recovery.",
+
+  "meal.postpartum.dinner2.title": "Slow-Cooked Beef Stew",
+  "meal.postpartum.dinner2.description":
+    "Tender beef with carrots, potatoes, and herbs in a rich broth. Iron and zinc to support your body's healing.",
+
+  "meal.postpartum.snack1.title": "Trail Mix with Dark Chocolate",
+  "meal.postpartum.snack1.description":
+    "Walnuts, pumpkin seeds, and dark chocolate chips. Omega-3s and magnesium for energy and mood support.",
+
+  // ─── Perimenopause Meals ──────────────────────────────────────────────────
+
+  "meal.perimenopause.breakfast1.title": "Flaxseed & Soy Smoothie",
+  "meal.perimenopause.breakfast1.description":
+    "Soy milk blended with ground flaxseed, banana, and berries. Phytoestrogens and fiber to support hormonal balance.",
+
+  "meal.perimenopause.breakfast2.title": "Egg & Calcium Toast",
+  "meal.perimenopause.breakfast2.description":
+    "Poached eggs on fortified whole grain toast with a side of calcium-rich cheese. Protein and vitamin D for bone health.",
+
+  "meal.perimenopause.lunch1.title": "Edamame & Flax Grain Bowl",
+  "meal.perimenopause.lunch1.description":
+    "Quinoa with steamed edamame, ground flaxseed, roasted vegetables, and tahini. Phytoestrogens and magnesium combined.",
+
+  "meal.perimenopause.lunch2.title": "Sardine & Kale Salad",
+  "meal.perimenopause.lunch2.description":
+    "Kale salad with sardines, white beans, and lemon dressing. Omega-3, calcium, and vitamin D all in one bowl.",
+
+  "meal.perimenopause.dinner1.title": "Tofu & Vegetable Stir-Fry",
+  "meal.perimenopause.dinner1.description":
+    "Firm tofu with colorful vegetables in a ginger-soy sauce over brown rice. Phytoestrogens and magnesium for balance.",
+
+  "meal.perimenopause.dinner2.title": "Baked Mackerel with Greens",
+  "meal.perimenopause.dinner2.description":
+    "Omega-3 rich mackerel with sauteed dark leafy greens and roasted sweet potato. Heart and bone support in every bite.",
+
+  "meal.perimenopause.snack1.title": "Dark Chocolate & Mixed Nuts",
+  "meal.perimenopause.snack1.description":
+    "A square of dark chocolate with almonds and brazil nuts. Magnesium and antioxidants to ease tension and support sleep.",
+
+  // ─── Menopause Meals ──────────────────────────────────────────────────────
+
+  "meal.menopause.breakfast1.title": "Berry & Leafy Green Smoothie",
+  "meal.menopause.breakfast1.description":
+    "Blueberries, kale, and almond milk smoothie with ground flaxseed. Antioxidants and calcium for brain and bone support.",
+
+  "meal.menopause.breakfast2.title": "Omega-3 Egg Scramble",
+  "meal.menopause.breakfast2.description":
+    "Omega-3 enriched eggs scrambled with spinach and smoked salmon. Protein, healthy fats, and vitamin D.",
+
+  "meal.menopause.lunch1.title": "Salmon & Avocado Bowl",
+  "meal.menopause.lunch1.description":
+    "Grilled salmon over mixed greens with avocado, walnuts, and olive oil dressing. Heart-healthy omega-3 and antioxidants.",
+
+  "meal.menopause.lunch2.title": "Broccoli & White Bean Soup",
+  "meal.menopause.lunch2.description":
+    "Creamy broccoli soup with white beans and parmesan. Calcium, protein, and vitamin K for bone support.",
+
+  "meal.menopause.dinner1.title": "Grilled Fish with Vegetables",
+  "meal.menopause.dinner1.description":
+    "Grilled white fish with roasted mediterranean vegetables and quinoa. Lean protein, omega-3, and vitamin D.",
+
+  "meal.menopause.dinner2.title": "Chicken & Kale Bowl",
+  "meal.menopause.dinner2.description":
+    "Grilled chicken breast with massaged kale, roasted sweet potato, and tahini. Protein for muscle maintenance and calcium.",
+
+  "meal.menopause.snack1.title": "Mixed Berry Cup with Nuts",
+  "meal.menopause.snack1.description":
+    "Fresh mixed berries with a handful of walnuts. Antioxidants for brain health and omega-3 for heart support.",
 } as const;
 
 export type MealTranslationKey = keyof typeof mealTranslations;
