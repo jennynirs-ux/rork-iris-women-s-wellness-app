@@ -52,6 +52,7 @@ import {
   BatteryLow,
   Shield,
   MessageCircle,
+  Dumbbell,
 } from "lucide-react-native";
 
 const COACHING_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -1080,6 +1081,16 @@ export default function HomeScreen() {
           <Apple size={24} color={colors.phaseFollicular} />
           <Text style={[styles.quickAccessLabel, { color: colors.phaseFollicular }]}>
             {t.home?.todaysMeals || "Today's Meals"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickAccessButton, { backgroundColor: colors.phaseOvulation + '20', borderColor: colors.phaseOvulation + '40' }]}
+          onPress={() => router.push('/training-plan' as any)}
+          activeOpacity={0.7}
+        >
+          <Dumbbell size={24} color={colors.phaseOvulation} />
+          <Text style={[styles.quickAccessLabel, { color: colors.phaseOvulation }]}>
+            {t.home?.training || 'Training'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

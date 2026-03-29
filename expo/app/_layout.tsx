@@ -145,6 +145,7 @@ function RootLayoutNav() {
         <Stack.Screen name="wellness-chat" options={{ headerShown: false }} />
         <Stack.Screen name="cognitive-wellness" options={{ headerShown: false }} />
         <Stack.Screen name="meal-plan" options={{ headerShown: false }} />
+        <Stack.Screen name="training-plan" options={{ headerShown: false }} />
       </Stack>
     </OnboardingGate>
   );
