@@ -125,6 +125,16 @@ export default function TrainingPlanScreen() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const elapsedRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Refs for values accessed in timer callbacks to avoid stale closures
+  const currentExerciseIndexRef = useRef(currentExerciseIndex);
+  const currentSetRef = useRef(currentSet);
+  const isRestingRef = useRef(isResting);
+  const timerWorkoutRef = useRef(timerWorkout);
+  currentExerciseIndexRef.current = currentExerciseIndex;
+  currentSetRef.current = currentSet;
+  isRestingRef.current = isResting;
+  timerWorkoutRef.current = timerWorkout;
+
   const phase = enrichedPhaseInfo?.phase ?? "follicular";
   const phaseDay = enrichedPhaseInfo?.phaseDay ?? 1;
   const phaseConfig = PHASE_CONFIG[phase];
@@ -178,53 +188,68 @@ export default function TrainingPlanScreen() {
     };
   }, [timerActive, timerPaused]);
 
-  // ─── Auto-advance when timer reaches 0 ────────────────────────────────────
-  useEffect(() => {
-    if (!timerActive || timerPaused || secondsLeft > 0 || !timerWorkout) return;
-    // Timer just hit 0, decide what's next
-    const exercise = timerWorkout[currentExerciseIndex];
-    if (!exercise) return;
-
-    if (isResting) {
-      // Rest is over, move to next set or exercise
-      advanceToNext();
-    } else {
-      // Exercise portion done, start rest if there is one
-      if (exercise.restSeconds > 0 && (currentSet < exercise.sets || currentExerciseIndex < timerWorkout.length - 1)) {
-        setIsResting(true);
-        setSecondsLeft(exercise.restSeconds);
-      } else {
-        advanceToNext();
-      }
-    }
-  }, [secondsLeft, timerActive, timerPaused]);
+  const handleWorkoutComplete = useCallback(async () => {
+    setTimerActive(false);
+    setShowCompletion(true);
+    const todayStr = new Date().toISOString().split("T")[0];
+    await AsyncStorage.setItem(`training_completed_${todayStr}`, "true");
+    await AsyncStorage.setItem(`training_time_${todayStr}`, String(totalElapsed));
+    setWorkoutCompleted(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [totalElapsed]);
 
   const advanceToNext = useCallback(() => {
-    if (!timerWorkout) return;
-    const exercise = timerWorkout[currentExerciseIndex];
+    const workout = timerWorkoutRef.current;
+    if (!workout) return;
+    const idx = currentExerciseIndexRef.current;
+    const set = currentSetRef.current;
+    const exercise = workout[idx];
     if (!exercise) return;
 
-    if (currentSet < exercise.sets) {
+    if (set < exercise.sets) {
       // Next set of same exercise
       setCurrentSet((prev) => prev + 1);
       setIsResting(false);
       const secs = parseRepsToSeconds(exercise.reps);
       setSecondsLeft(secs ?? 30); // default 30s for rep-based
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } else if (currentExerciseIndex < timerWorkout.length - 1) {
+    } else if (idx < workout.length - 1) {
       // Next exercise
-      const nextIdx = currentExerciseIndex + 1;
+      const nextIdx = idx + 1;
       setCurrentExerciseIndex(nextIdx);
       setCurrentSet(1);
       setIsResting(false);
-      const secs = parseRepsToSeconds(timerWorkout[nextIdx].reps);
+      const secs = parseRepsToSeconds(workout[nextIdx].reps);
       setSecondsLeft(secs ?? 30);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } else {
       // Workout complete!
       handleWorkoutComplete();
     }
-  }, [timerWorkout, currentExerciseIndex, currentSet]);
+  }, [handleWorkoutComplete]);
+
+  // ─── Auto-advance when timer reaches 0 ────────────────────────────────────
+  useEffect(() => {
+    if (!timerActive || timerPaused || secondsLeft > 0) return;
+    const workout = timerWorkoutRef.current;
+    if (!workout) return;
+    // Timer just hit 0, decide what's next
+    const exercise = workout[currentExerciseIndexRef.current];
+    if (!exercise) return;
+
+    if (isRestingRef.current) {
+      // Rest is over, move to next set or exercise
+      advanceToNext();
+    } else {
+      // Exercise portion done, start rest if there is one
+      if (exercise.restSeconds > 0 && (currentSetRef.current < exercise.sets || currentExerciseIndexRef.current < workout.length - 1)) {
+        setIsResting(true);
+        setSecondsLeft(exercise.restSeconds);
+      } else {
+        advanceToNext();
+      }
+    }
+  }, [secondsLeft, timerActive, timerPaused, advanceToNext]);
 
   const handleStartTimer = useCallback((exercises: Exercise[]) => {
     setTimerWorkout(exercises);
@@ -239,16 +264,6 @@ export default function TrainingPlanScreen() {
     setTimerActive(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   }, []);
-
-  const handleWorkoutComplete = useCallback(async () => {
-    setTimerActive(false);
-    setShowCompletion(true);
-    const todayStr = new Date().toISOString().split("T")[0];
-    await AsyncStorage.setItem(`training_completed_${todayStr}`, "true");
-    await AsyncStorage.setItem(`training_time_${todayStr}`, String(totalElapsed));
-    setWorkoutCompleted(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [totalElapsed]);
 
   const handleEndWorkout = useCallback(() => {
     setTimerActive(false);

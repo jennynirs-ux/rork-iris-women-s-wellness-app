@@ -77,10 +77,6 @@ function ProgramDetailScreenInner() {
 
   const storageKey = `iris_program_${id}`;
 
-  useEffect(() => {
-    loadProgress();
-  }, [id]);
-
   const loadProgress = useCallback(async () => {
     try {
       const raw = await AsyncStorage.getItem(storageKey);
@@ -93,6 +89,10 @@ function ProgramDetailScreenInner() {
       setIsLoading(false);
     }
   }, [storageKey]);
+
+  useEffect(() => {
+    loadProgress();
+  }, [id, loadProgress]);
 
   const saveProgress = useCallback(
     async (newProgress: ProgramProgress) => {

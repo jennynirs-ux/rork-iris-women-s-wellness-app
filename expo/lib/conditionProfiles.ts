@@ -52,7 +52,7 @@ export const CONDITION_PROFILES: Record<ConditionProfile, ConditionConfig> = {
     id: 'pcos',
     nameKey: 'condition_pcos',
     descriptionKey: 'condition_pcos_desc',
-    icon: '\u{1F9EC}',  // DNA strand
+    icon: 'Activity',
     additionalSymptoms: [
       'Acne flare',
       'Hair thinning',
@@ -83,7 +83,7 @@ export const CONDITION_PROFILES: Record<ConditionProfile, ConditionConfig> = {
     id: 'endometriosis',
     nameKey: 'condition_endometriosis',
     descriptionKey: 'condition_endometriosis_desc',
-    icon: '\u{1FA79}',  // adhesive bandage
+    icon: 'Heart',
     additionalSymptoms: [
       'Deep pelvic pain',
       'Pain during exercise',
@@ -114,7 +114,7 @@ export const CONDITION_PROFILES: Record<ConditionProfile, ConditionConfig> = {
     id: 'pmdd',
     nameKey: 'condition_pmdd',
     descriptionKey: 'condition_pmdd_desc',
-    icon: '\u{1F327}\uFE0F',  // cloud with rain
+    icon: 'Cloud',
     additionalSymptoms: [
       'Overwhelming sadness',
       'Rage/irritability',
@@ -145,7 +145,7 @@ export const CONDITION_PROFILES: Record<ConditionProfile, ConditionConfig> = {
     id: 'fibroids',
     nameKey: 'condition_fibroids',
     descriptionKey: 'condition_fibroids_desc',
-    icon: '\u{1FA78}',  // drop of blood
+    icon: 'Droplets',
     additionalSymptoms: [
       'Heavy clotting',
       'Pelvic pressure',

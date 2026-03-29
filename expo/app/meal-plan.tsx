@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -28,6 +28,7 @@ import {
   Users,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -99,8 +100,33 @@ export default function MealPlanScreen() {
 
   const [waterCount, setWaterCount] = useState(0);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
+  const [hydrationLoaded, setHydrationLoaded] = useState(false);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  // Hydration date key for today
+  const todayDateStr = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }, []);
+  const hydrationKey = `iris_hydration_${todayDateStr}`;
+
+  // Load persisted hydration count on mount
+  useEffect(() => {
+    AsyncStorage.getItem(hydrationKey).then((val) => {
+      if (val !== null) {
+        const parsed = parseInt(val, 10);
+        if (!isNaN(parsed)) setWaterCount(parsed);
+      }
+      setHydrationLoaded(true);
+    }).catch(() => setHydrationLoaded(true));
+  }, [hydrationKey]);
+
+  // Persist hydration count when it changes
+  useEffect(() => {
+    if (!hydrationLoaded) return;
+    AsyncStorage.setItem(hydrationKey, String(waterCount)).catch(() => {});
+  }, [waterCount, hydrationKey, hydrationLoaded]);
 
   const currentPhase: CyclePhase = enrichedPhaseInfo?.phase ?? "follicular";
   const phaseDay = enrichedPhaseInfo?.phaseDay ?? 1;

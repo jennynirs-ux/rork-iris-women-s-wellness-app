@@ -39,6 +39,7 @@ import {
 import { useApp } from '@/contexts/AppContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import Colors from '@/constants/colors';
+import { getTranslation } from '@/constants/translations';
 import logger from '@/lib/logger';
 
 // ---------------------------------------------------------------------------
@@ -79,12 +80,14 @@ interface QuickReply {
   query: string;
 }
 
-const QUICK_REPLIES: QuickReply[] = [
-  { label: 'Why am I tired?', icon: Zap, query: 'Why am I tired?' },
-  { label: 'What should I eat?', icon: Coffee, query: 'What should I eat?' },
-  { label: "How's my stress?", icon: Heart, query: "How's my stress?" },
-  { label: 'Sleep tips', icon: Moon, query: 'Sleep tips' },
-];
+function getQuickReplies(ct: any): QuickReply[] {
+  return [
+    { label: ct?.quickTired || 'Why am I tired?', icon: Zap, query: 'Why am I tired?' },
+    { label: ct?.quickEat || 'What should I eat?', icon: Coffee, query: 'What should I eat?' },
+    { label: ct?.quickStress || "How's my stress?", icon: Heart, query: "How's my stress?" },
+    { label: ct?.quickSleep || 'Sleep tips', icon: Moon, query: 'Sleep tips' },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Response engine
@@ -320,7 +323,9 @@ function generateResponse(
 export default function WellnessChatScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { currentPhase, enrichedPhaseInfo, latestScan, todayCheckIn, scans, checkIns } = useApp();
+  const { currentPhase, enrichedPhaseInfo, latestScan, todayCheckIn, scans, checkIns, language } = useApp();
+  const translations = useMemo(() => getTranslation(language ?? 'en'), [language]);
+  const ct = translations.chat;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
@@ -328,6 +333,7 @@ export default function WellnessChatScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const phaseColor = PHASE_COLORS[currentPhase] || colors.primary;
+  const quickReplies = useMemo(() => getQuickReplies(ct), [ct]);
 
   // Load persisted messages
   useEffect(() => {
@@ -343,7 +349,7 @@ export default function WellnessChatScreen() {
             {
               id: 'welcome',
               role: 'assistant',
-              text: `Hi there! I'm your IRIS wellness companion. I use your cycle, scan, and check-in data to give you personalized wellness guidance. Ask me anything about your energy, nutrition, stress, sleep, or mood.`,
+              text: ct?.welcomeMessage || 'Hi there! I am your IRIS wellness companion. I use your cycle, scan, and check-in data to give you personalized wellness guidance. Ask me anything about your energy, nutrition, stress, sleep, or mood.',
               timestamp: Date.now(),
             },
           ]);
@@ -460,7 +466,7 @@ export default function WellnessChatScreen() {
           <Sparkles size={18} color={phaseColor} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Wellness Companion</Text>
+          <Text style={styles.headerTitle}>{ct?.headerTitle || 'Wellness Companion'}</Text>
           <Text style={styles.headerSubtitle}>
             {enrichedPhaseInfo?.phaseName || currentPhase} phase · Day {enrichedPhaseInfo?.cycleDay ?? '?'}
           </Text>
@@ -482,7 +488,7 @@ export default function WellnessChatScreen() {
 
       {/* Quick replies */}
       <View style={styles.quickRepliesContainer}>
-        {QUICK_REPLIES.map((qr) => (
+        {quickReplies.map((qr) => (
           <TouchableOpacity
             key={qr.query}
             style={[styles.quickReplyChip, { borderColor: phaseColor + '50' }]}
@@ -505,7 +511,7 @@ export default function WellnessChatScreen() {
             style={styles.input}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Ask about your wellness..."
+            placeholder={ct?.inputPlaceholder || 'Ask IRIS anything...'}
             placeholderTextColor={colors.textTertiary}
             multiline
             maxLength={500}

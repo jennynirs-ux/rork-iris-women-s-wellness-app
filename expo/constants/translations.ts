@@ -1122,6 +1122,18 @@ type Translations = {
     saturday: string;
     sunday: string;
   };
+  chat?: {
+    headerTitle: string;
+    inputPlaceholder: string;
+    quickTired: string;
+    quickEat: string;
+    quickStress: string;
+    quickSleep: string;
+    quickMood: string;
+    quickExercise: string;
+    quickSkin: string;
+    welcomeMessage: string;
+  };
 };
 
 const en: Translations = {
@@ -2233,6 +2245,18 @@ const en: Translations = {
     continueButton: 'Continue',
     purchaseNotAvailablePreview: 'In-app purchases are available in the full app downloaded from the App Store or Google Play. This preview environment does not support purchases.',
     restoreNotAvailablePreview: 'Restore is available in the full app downloaded from the App Store or Google Play.',
+  },
+  chat: {
+    headerTitle: 'Wellness Companion',
+    inputPlaceholder: 'Ask IRIS anything...',
+    quickTired: 'Why am I tired?',
+    quickEat: 'What should I eat?',
+    quickStress: "How's my stress?",
+    quickSleep: 'Sleep tips',
+    quickMood: 'Mood help',
+    quickExercise: 'Exercise ideas',
+    quickSkin: 'Skin tips',
+    welcomeMessage: 'Hi there! I am your IRIS wellness companion. I use your cycle, scan, and check-in data to give you personalized wellness guidance. Ask me anything about your energy, nutrition, stress, sleep, or mood.',
   },
 };
 
