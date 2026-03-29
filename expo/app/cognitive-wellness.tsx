@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -161,7 +161,7 @@ export default function CognitiveWellnessScreen() {
     return getPhaseBrainTip(enrichedPhaseInfo.phase);
   }, [enrichedPhaseInfo]);
 
-  const screenWidth = Dimensions.get("window").width;
+  const { width: screenWidth } = useWindowDimensions();
 
   // Not eligible
   if (!userProfile) {

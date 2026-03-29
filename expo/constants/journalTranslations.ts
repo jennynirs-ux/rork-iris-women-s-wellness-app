@@ -13,6 +13,7 @@ export const journalTranslationsEN: Record<string, string> = {
   promptOvulation: 'What are you most confident about right now?',
   promptLuteal: 'What would make today easier?',
   deleteConfirm: 'Delete this entry?',
+  deleteButton: 'Delete',
   characters: 'characters',
   entries: 'Past Entries',
 };

@@ -145,13 +145,13 @@ function ProgramDetailScreenInner() {
     return (
       <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
         <View style={styles.notFoundContainer}>
-          <Text style={styles.notFoundText}>Program not found</Text>
+          <Text style={styles.notFoundText}>{pt.programNotFound ?? "Program not found"}</Text>
           <TouchableOpacity
             style={styles.backButtonPrimary}
             onPress={handleBack}
             activeOpacity={0.7}
           >
-            <Text style={styles.backButtonPrimaryText}>Back</Text>
+            <Text style={styles.backButtonPrimaryText}>{pt.back ?? "Back"}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -215,9 +215,9 @@ function ProgramDetailScreenInner() {
             <View style={styles.premiumGateIcon}>
               <Lock size={32} color={colors.warning} />
             </View>
-            <Text style={styles.premiumGateTitle}>Premium Program</Text>
+            <Text style={styles.premiumGateTitle}>{pt.premiumProgram ?? "Premium Program"}</Text>
             <Text style={styles.premiumGateMessage}>
-              Upgrade to IRIS Premium to access this program
+              {pt.upgradeToPremium ?? "Upgrade to IRIS Premium to access this program"}
             </Text>
             <TouchableOpacity
               style={styles.upgradeButton}
@@ -363,7 +363,7 @@ function ProgramDetailScreenInner() {
 
             {/* All days list */}
             <View style={styles.allDaysContainer}>
-              <Text style={styles.allDaysTitle}>All Days</Text>
+              <Text style={styles.allDaysTitle}>{pt.allDays ?? "All Days"}</Text>
               {program.days.map((day) => {
                 const isDone = progress?.completedDays.includes(day.dayNumber);
                 return (
@@ -389,7 +389,7 @@ function ProgramDetailScreenInner() {
                             isDone && { color: categoryColor },
                           ]}
                         >
-                          Day {day.dayNumber}
+                          {pt.dayLabel ?? "Day"} {day.dayNumber}
                         </Text>
                         <Text style={styles.dayListDayTitle} numberOfLines={1}>
                           {pt[day.titleKey] ?? day.titleKey}

@@ -170,4 +170,8 @@ export const trainingTranslations: Record<string, string> = {
   greatJob: "Great job! You completed your workout.",
   nextExercise: "Next",
   elapsed: "Elapsed",
+
+  // ─── Misc labels ──────────────────────────────────────────────────────────
+  scanAdjusted: "Scan-adjusted",
+  day: "Day",
 };

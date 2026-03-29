@@ -45,11 +45,24 @@ function getLocalDateString(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
-function formatDisplayDate(dateStr: string): string {
+const LANGUAGE_LOCALE_MAP: Record<string, string> = {
+  en: "en-US",
+  sv: "sv-SE",
+  de: "de-DE",
+  fr: "fr-FR",
+  es: "es-ES",
+  it: "it-IT",
+  nl: "nl-NL",
+  pl: "pl-PL",
+  pt: "pt-PT",
+};
+
+function formatDisplayDate(dateStr: string, lang: string = "en"): string {
   try {
     const [year, month, day] = dateStr.split("-").map(Number);
     const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString("en-US", {
+    const locale = LANGUAGE_LOCALE_MAP[lang] || "en-US";
+    return date.toLocaleDateString(locale, {
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -79,7 +92,7 @@ function getPromptForPhase(phase: CyclePhase): string {
 function JournalScreenInner() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo } = useApp();
+  const { enrichedPhaseInfo, language, t } = useApp();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const jt = journalTranslationsEN;
@@ -174,9 +187,9 @@ function JournalScreenInner() {
   const handleDeleteEntry = useCallback(
     (date: string) => {
       Alert.alert(jt.deleteConfirm, "", [
-        { text: "Cancel", style: "cancel" },
+        { text: t.common?.cancel || "Cancel", style: "cancel" },
         {
-          text: "Delete",
+          text: jt.deleteButton || "Delete",
           style: "destructive",
           onPress: async () => {
             try {
@@ -221,7 +234,7 @@ function JournalScreenInner() {
       return (
         <View style={styles.entryCard}>
           <View style={styles.entryHeader}>
-            <Text style={styles.entryDate}>{formatDisplayDate(item.date)}</Text>
+            <Text style={styles.entryDate}>{formatDisplayDate(item.date, language)}</Text>
             {!isToday && (
               <TouchableOpacity
                 onPress={() => handleDeleteEntry(item.date)}
@@ -261,7 +274,7 @@ function JournalScreenInner() {
 
         {/* Today's entry section */}
         <View style={styles.todaySection}>
-          <Text style={styles.todayDate}>{formatDisplayDate(todayDate)}</Text>
+          <Text style={styles.todayDate}>{formatDisplayDate(todayDate, language)}</Text>
 
           {/* Phase-based prompt */}
           <View style={styles.promptContainer}>

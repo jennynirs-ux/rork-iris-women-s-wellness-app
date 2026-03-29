@@ -15,6 +15,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Share, ChevronLeft, Download } from "lucide-react-native";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useApp } from "@/contexts/AppContext";
 import Colors from "@/constants/colors";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import {
@@ -57,6 +58,7 @@ const PHASE_LABELS: Record<CyclePhase, string> = {
 function ShareRecapContent() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useApp();
   const params = useLocalSearchParams<ShareRecapParams>();
   const [isSharing, setIsSharing] = useState(false);
 
@@ -126,7 +128,7 @@ function ShareRecapContent() {
         >
           <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Cycle Recap</Text>
+        <Text style={styles.headerTitle}>{t.home?.cycleRecap || "Cycle Recap"}</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -151,7 +153,7 @@ function ShareRecapContent() {
               {cardData.cycleDays}
             </Text>
             <Text style={[styles.cycleDaysLabel, { color: colors.textSecondary }]}>
-              Days
+              {t.home?.days || "Days"}
             </Text>
             <View style={[styles.phaseTag, { backgroundColor: phaseColor + "22" }]}>
               <Text style={[styles.phaseTagText, { color: phaseColor }]}>
@@ -163,19 +165,19 @@ function ShareRecapContent() {
           {/* Metric badges */}
           <View style={styles.metricsRow}>
             <MetricBadge
-              label="Energy"
+              label={t.home?.energy || "Energy"}
               value={cardData.avgEnergy}
               colors={colors}
               accentColor="#8BC9A3"
             />
             <MetricBadge
-              label="Stress"
+              label={t.home?.stress || "Stress"}
               value={cardData.avgStress}
               colors={colors}
               accentColor="#E89BA4"
             />
             <MetricBadge
-              label="Recovery"
+              label={t.home?.recovery || "Recovery"}
               value={cardData.avgRecovery}
               colors={colors}
               accentColor="#B8A4E8"
@@ -209,7 +211,7 @@ function ShareRecapContent() {
           ) : (
             <>
               <Share size={20} color="#FFFFFF" />
-              <Text style={styles.shareButtonText}>Share to Stories</Text>
+              <Text style={styles.shareButtonText}>{t.home?.shareToStories || "Share to Stories"}</Text>
             </>
           )}
         </TouchableOpacity>

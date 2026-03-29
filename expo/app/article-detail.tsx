@@ -228,9 +228,7 @@ function ArticleDetailScreenInner() {
         {/* Disclaimer */}
         <View style={styles.disclaimerContainer}>
           <Text style={styles.disclaimerText}>
-            This content is for general wellness information only. It is not
-            medical advice, diagnosis, or treatment. Consult a healthcare
-            professional for medical concerns.
+            {t.common?.medicalDisclaimer || "This content is for general wellness information only. It is not medical advice, diagnosis, or treatment. Consult a healthcare professional for medical concerns."}
           </Text>
         </View>
       </ScrollView>

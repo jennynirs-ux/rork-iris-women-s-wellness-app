@@ -125,7 +125,7 @@ function ProgramsScreenInner() {
                 <View style={styles.durationBadge}>
                   <Clock size={12} color={colors.textSecondary} />
                   <Text style={styles.durationText}>
-                    {item.durationDays} days
+                    {item.durationDays} {pt.days ?? "days"}
                   </Text>
                 </View>
 

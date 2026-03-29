@@ -20,6 +20,9 @@ export const mealTranslations = {
   phaseDescOvulation: "Anti-inflammatory foods and raw veggies to support peak energy.",
   phaseDescLuteal: "Complex carbs and magnesium-rich foods to ease pre-period symptoms.",
 
+  // Badge labels
+  "mealPlan.antiInflammatory": "Anti-inflammatory",
+
   // Meal type labels
   breakfast: "Breakfast",
   lunch: "Lunch",

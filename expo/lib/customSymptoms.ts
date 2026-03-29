@@ -35,6 +35,14 @@ export async function addCustomSymptom(
 ): Promise<CustomSymptom> {
   const existing = await getCustomSymptoms();
 
+  // Prevent duplicates: if a symptom with the same name already exists, return it
+  const duplicate = existing.find(
+    (s) => s.name.trim().toLowerCase() === name.trim().toLowerCase()
+  );
+  if (duplicate) {
+    return duplicate;
+  }
+
   const symptom: CustomSymptom = {
     id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     name: name.trim(),

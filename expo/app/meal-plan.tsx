@@ -230,7 +230,7 @@ export default function MealPlanScreen() {
                     {meal.isAntiInflammatory && (
                       <View style={[styles.nutrientBadge, { backgroundColor: colors.statusGood + "20" }]}>
                         <Text style={[styles.nutrientBadgeText, { color: colors.statusGood }]}>
-                          Anti-inflammatory
+                          {mt["mealPlan.antiInflammatory"] || "Anti-inflammatory"}
                         </Text>
                       </View>
                     )}

@@ -318,7 +318,7 @@ export default function TrainingPlanScreen() {
           {isPrimary && plan.scanAdjustment && (
             <View style={styles.scanBadge}>
               <Info size={12} color={phaseConfig.color} />
-              <Text style={[styles.scanBadgeText, { color: phaseConfig.color }]}>Scan-adjusted</Text>
+              <Text style={[styles.scanBadgeText, { color: phaseConfig.color }]}>{t("scanAdjusted")}</Text>
             </View>
           )}
         </View>
@@ -459,7 +459,7 @@ export default function TrainingPlanScreen() {
           </View>
           <View style={styles.phaseInfo}>
             <Text style={[styles.phaseLabel, { color: phaseConfig.color }]}>{t(phaseConfig.labelKey)}</Text>
-            <Text style={styles.phaseDay}>Day {phaseDay}</Text>
+            <Text style={styles.phaseDay}>{t("day")} {phaseDay}</Text>
           </View>
         </View>
 

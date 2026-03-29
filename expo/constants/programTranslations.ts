@@ -18,6 +18,13 @@ export const programTranslationsEN: Record<string, string> = {
   available: 'Available',
   completeDay: 'Complete Today',
   dayCompleted: 'Day Complete',
+  days: 'days',
+  premiumProgram: 'Premium Program',
+  upgradeToPremium: 'Upgrade to IRIS Premium to access this program',
+  allDays: 'All Days',
+  dayLabel: 'Day',
+  programNotFound: 'Program not found',
+  back: 'Back',
 
   // ── 1. Sleep Reset ──────────────────────────────────────────────
   sleepResetTitle: 'Sleep Reset',
