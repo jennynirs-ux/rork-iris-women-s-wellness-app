@@ -1183,7 +1183,8 @@ export default function HomeScreen() {
           renderItem={({ item: habit }) => {
             if (habit.id === '__scan__' || habit.id === '__checkin__') {
               const isSpecialScan = habit.id === '__scan__';
-              const iconColor = habit.completed ? '#8BC9A3' : colors.primary;
+              const baseColor = isSpecialScan ? colors.phaseLuteal : colors.phaseOvulation;
+              const iconColor = habit.completed ? '#8BC9A3' : baseColor;
               return (
                 <TouchableOpacity
                   style={styles.habitCard}
@@ -1191,7 +1192,7 @@ export default function HomeScreen() {
                   accessibilityLabel={`${habit.title}, ${habit.completed ? 'completed' : 'not completed'}`}
                   accessibilityRole="button"
                 >
-                  <View style={[styles.habitIcon, { backgroundColor: (habit.completed ? '#8BC9A3' : colors.primary) + '20' }]}>
+                  <View style={[styles.habitIcon, { backgroundColor: (habit.completed ? '#8BC9A3' : baseColor) + '20' }]}>
                     {isSpecialScan ? (
                       <Eye size={20} color={iconColor} />
                     ) : (
