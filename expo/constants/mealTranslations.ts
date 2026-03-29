@@ -38,6 +38,16 @@ export const mealTranslations = {
   // Navigation
   viewMealPlan: "Today's Meals",
 
+  // Recipe
+  "mealPlan.ingredients": "Ingredients",
+  "mealPlan.steps": "How to Make",
+  "mealPlan.prepTime": "Prep",
+  "mealPlan.cookTime": "Cook",
+  "mealPlan.servings": "servings",
+  "mealPlan.viewRecipe": "View Recipe",
+  "mealPlan.hideRecipe": "Hide Recipe",
+  "mealPlan.minutes": "min",
+
   // ─── Menstrual Phase Meals ─────────────────────────────────────────────────
 
   "meal.menstrual.breakfast1.title": "Spinach & Berry Smoothie",

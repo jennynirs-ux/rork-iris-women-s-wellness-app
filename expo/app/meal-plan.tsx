@@ -24,6 +24,8 @@ import {
   Heart,
   Check,
   Minus,
+  Clock,
+  Users,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import Colors from "@/constants/colors";
@@ -207,6 +209,63 @@ export default function MealPlanScreen() {
                       </View>
                     )}
                   </View>
+
+                  {/* Recipe Section */}
+                  {meal.recipe && (
+                    <View style={styles.recipeSection}>
+                      {/* Time & Servings Badges */}
+                      <View style={styles.recipeBadgeRow}>
+                        {meal.recipe.prepMinutes > 0 && (
+                          <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
+                            <Clock size={12} color={mealColor} />
+                            <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
+                              {mt["mealPlan.prepTime"]} {meal.recipe.prepMinutes} {mt["mealPlan.minutes"]}
+                            </Text>
+                          </View>
+                        )}
+                        {meal.recipe.cookMinutes > 0 && (
+                          <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
+                            <Clock size={12} color={mealColor} />
+                            <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
+                              {mt["mealPlan.cookTime"]} {meal.recipe.cookMinutes} {mt["mealPlan.minutes"]}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
+                          <Users size={12} color={mealColor} />
+                          <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
+                            {meal.recipe.servings} {mt["mealPlan.servings"]}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Ingredients */}
+                      <Text style={styles.recipeSectionTitle}>
+                        {mt["mealPlan.ingredients"]}
+                      </Text>
+                      {meal.recipe.ingredients.map((ingredient, idx) => (
+                        <View key={idx} style={styles.ingredientRow}>
+                          <View style={[styles.ingredientBullet, { backgroundColor: mealColor }]} />
+                          <Text style={styles.ingredientText}>{ingredient}</Text>
+                        </View>
+                      ))}
+
+                      {/* Steps */}
+                      <Text style={[styles.recipeSectionTitle, { marginTop: 14 }]}>
+                        {mt["mealPlan.steps"]}
+                      </Text>
+                      {meal.recipe.steps.map((step, idx) => (
+                        <View key={idx} style={styles.stepRow}>
+                          <View style={[styles.stepNumber, { backgroundColor: mealColor + "20" }]}>
+                            <Text style={[styles.stepNumberText, { color: mealColor }]}>
+                              {idx + 1}
+                            </Text>
+                          </View>
+                          <Text style={styles.stepText}>{step}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
               )}
             </TouchableOpacity>
@@ -477,6 +536,79 @@ function createStyles(colors: typeof Colors.light) {
       borderRadius: 10,
       justifyContent: "center",
       alignItems: "center",
+    },
+
+    // Recipe
+    recipeSection: {
+      marginTop: 16,
+      paddingTop: 14,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.borderLight,
+    },
+    recipeBadgeRow: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+      marginBottom: 14,
+    },
+    recipeBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 8,
+    },
+    recipeBadgeText: {
+      fontSize: 11,
+      fontWeight: "600",
+    },
+    recipeSectionTitle: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: 8,
+    },
+    ingredientRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 6,
+      paddingLeft: 4,
+    },
+    ingredientBullet: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    ingredientText: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      flex: 1,
+    },
+    stepRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      gap: 10,
+      marginBottom: 10,
+    },
+    stepNumber: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 1,
+    },
+    stepNumberText: {
+      fontSize: 12,
+      fontWeight: "700",
+    },
+    stepText: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 19,
+      flex: 1,
     },
 
     // Tags
