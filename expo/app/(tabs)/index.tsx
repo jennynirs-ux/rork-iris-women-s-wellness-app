@@ -1215,7 +1215,7 @@ export default function HomeScreen() {
                     {habit.completed ? (
                       <CheckCircle2 size={24} color="#8BC9A3" />
                     ) : (
-                      <ArrowRight size={24} color={colors.primary} />
+                      <ArrowRight size={24} color={baseColor} />
                     )}
                   </View>
                 </TouchableOpacity>
