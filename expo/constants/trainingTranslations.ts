@@ -153,4 +153,21 @@ export const trainingTranslations: Record<string, string> = {
   phasePostpartum: "Postpartum",
   phasePerimenopause: "Perimenopause",
   phaseMenopause: "Menopause",
+
+  // ─── Workout timer & exercises ───────────────────────────────────────────
+  exercises: "Exercises",
+  sets: "{n} sets",
+  reps: "{n} reps",
+  restTime: "{n}s rest",
+  currentExercise: "Exercise {current} of {total}",
+  currentSet: "Set {current} of {total}",
+  resting: "Rest",
+  pause: "Pause",
+  resume: "Resume",
+  endWorkout: "End Workout",
+  workoutComplete: "Workout Complete!",
+  totalTime: "Total Time",
+  greatJob: "Great job! You completed your workout.",
+  nextExercise: "Next",
+  elapsed: "Elapsed",
 };

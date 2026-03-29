@@ -1,10 +1,11 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -25,13 +26,17 @@ import {
   Info,
   Clock,
   Flame,
+  Play,
+  Pause,
+  SkipForward,
+  X,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
-import { generateDailyTrainingPlan, WorkoutSuggestion, WorkoutIntensity } from "@/lib/trainingPlans";
+import { generateDailyTrainingPlan, WorkoutSuggestion, WorkoutIntensity, Exercise } from "@/lib/trainingPlans";
 import { trainingTranslations as tt } from "@/constants/trainingTranslations";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
@@ -40,7 +45,7 @@ import * as Haptics from "expo-haptics";
 
 const WORKOUT_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   Heart,
-  Footprints: Activity,
+  Footprints: Activity, // Footprints not in lucide-react-native
   Moon,
   Dumbbell,
   Music,
@@ -48,6 +53,7 @@ const WORKOUT_ICON_MAP: Record<string, React.ComponentType<{ size?: number; colo
   Activity,
   Sparkles,
   Flower2,
+  Flame,
 };
 
 const PHASE_CONFIG: Record<CyclePhase, { color: string; icon: React.ComponentType<{ size?: number; color?: string }>; labelKey: string }> = {
@@ -80,6 +86,22 @@ function t(key: string, params?: Record<string, string | number>): string {
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
+// ─── Helper: parse reps string to seconds (for timed exercises) ─────────────
+
+function parseRepsToSeconds(reps: string): number | null {
+  const secMatch = reps.match(/^(\d+)\s*sec/i);
+  if (secMatch) return parseInt(secMatch[1], 10);
+  const minMatch = reps.match(/^(\d+)\s*min/i);
+  if (minMatch) return parseInt(minMatch[1], 10) * 60;
+  return null; // rep-based, not timed
+}
+
+function formatTime(totalSeconds: number): string {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 export default function TrainingPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
@@ -88,6 +110,20 @@ export default function TrainingPlanScreen() {
   const [expandedWarmup, setExpandedWarmup] = useState(false);
   const [expandedCooldown, setExpandedCooldown] = useState(false);
   const [workoutCompleted, setWorkoutCompleted] = useState(false);
+  const [expandedExercises, setExpandedExercises] = useState<string | null>(null);
+
+  // ─── Timer state ──────────────────────────────────────────────────────────
+  const [timerActive, setTimerActive] = useState(false);
+  const [timerPaused, setTimerPaused] = useState(false);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentSet, setCurrentSet] = useState(1);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [totalElapsed, setTotalElapsed] = useState(0);
+  const [timerWorkout, setTimerWorkout] = useState<Exercise[] | null>(null);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const elapsedRef = useRef<NodeJS.Timeout | null>(null);
 
   const phase = enrichedPhaseInfo?.phase ?? "follicular";
   const phaseDay = enrichedPhaseInfo?.phaseDay ?? 1;
@@ -108,6 +144,118 @@ export default function TrainingPlanScreen() {
     AsyncStorage.getItem(`training_completed_${todayStr}`).then((val) => {
       if (val === "true") setWorkoutCompleted(true);
     });
+  }, []);
+
+  // ─── Timer countdown effect ───────────────────────────────────────────────
+  const isCounting = timerActive && !timerPaused && secondsLeft > 0;
+  useEffect(() => {
+    if (isCounting) {
+      timerRef.current = setInterval(() => {
+        setSecondsLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isCounting]);
+
+  // ─── Total elapsed timer ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (timerActive && !timerPaused) {
+      elapsedRef.current = setInterval(() => {
+        setTotalElapsed((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
+    };
+  }, [timerActive, timerPaused]);
+
+  // ─── Auto-advance when timer reaches 0 ────────────────────────────────────
+  useEffect(() => {
+    if (!timerActive || timerPaused || secondsLeft > 0 || !timerWorkout) return;
+    // Timer just hit 0, decide what's next
+    const exercise = timerWorkout[currentExerciseIndex];
+    if (!exercise) return;
+
+    if (isResting) {
+      // Rest is over, move to next set or exercise
+      advanceToNext();
+    } else {
+      // Exercise portion done, start rest if there is one
+      if (exercise.restSeconds > 0 && (currentSet < exercise.sets || currentExerciseIndex < timerWorkout.length - 1)) {
+        setIsResting(true);
+        setSecondsLeft(exercise.restSeconds);
+      } else {
+        advanceToNext();
+      }
+    }
+  }, [secondsLeft, timerActive, timerPaused]);
+
+  const advanceToNext = useCallback(() => {
+    if (!timerWorkout) return;
+    const exercise = timerWorkout[currentExerciseIndex];
+    if (!exercise) return;
+
+    if (currentSet < exercise.sets) {
+      // Next set of same exercise
+      setCurrentSet((prev) => prev + 1);
+      setIsResting(false);
+      const secs = parseRepsToSeconds(exercise.reps);
+      setSecondsLeft(secs ?? 30); // default 30s for rep-based
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } else if (currentExerciseIndex < timerWorkout.length - 1) {
+      // Next exercise
+      const nextIdx = currentExerciseIndex + 1;
+      setCurrentExerciseIndex(nextIdx);
+      setCurrentSet(1);
+      setIsResting(false);
+      const secs = parseRepsToSeconds(timerWorkout[nextIdx].reps);
+      setSecondsLeft(secs ?? 30);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    } else {
+      // Workout complete!
+      handleWorkoutComplete();
+    }
+  }, [timerWorkout, currentExerciseIndex, currentSet]);
+
+  const handleStartTimer = useCallback((exercises: Exercise[]) => {
+    setTimerWorkout(exercises);
+    setCurrentExerciseIndex(0);
+    setCurrentSet(1);
+    setIsResting(false);
+    setTotalElapsed(0);
+    setTimerPaused(false);
+    setShowCompletion(false);
+    const secs = parseRepsToSeconds(exercises[0].reps);
+    setSecondsLeft(secs ?? 30);
+    setTimerActive(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  }, []);
+
+  const handleWorkoutComplete = useCallback(async () => {
+    setTimerActive(false);
+    setShowCompletion(true);
+    const todayStr = new Date().toISOString().split("T")[0];
+    await AsyncStorage.setItem(`training_completed_${todayStr}`, "true");
+    await AsyncStorage.setItem(`training_time_${todayStr}`, String(totalElapsed));
+    setWorkoutCompleted(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [totalElapsed]);
+
+  const handleEndWorkout = useCallback(() => {
+    setTimerActive(false);
+    setTimerWorkout(null);
+    setShowCompletion(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (elapsedRef.current) clearInterval(elapsedRef.current);
   }, []);
 
   const handleStartWorkout = useCallback(async () => {
@@ -190,27 +338,81 @@ export default function TrainingPlanScreen() {
           </View>
         </View>
 
+        {/* Exercise List (expandable) */}
+        {workout.exercises && workout.exercises.length > 0 && (
+          <>
+            <TouchableOpacity
+              style={styles.exerciseToggle}
+              onPress={() => setExpandedExercises(expandedExercises === workout.id ? null : workout.id)}
+              activeOpacity={0.7}
+              accessibilityLabel="Toggle exercise list"
+              accessibilityRole="button"
+            >
+              <Text style={styles.exerciseToggleText}>{t("exercises")} ({workout.exercises.length})</Text>
+              {expandedExercises === workout.id ? (
+                <ChevronUp size={18} color={colors.textSecondary} />
+              ) : (
+                <ChevronDown size={18} color={colors.textSecondary} />
+              )}
+            </TouchableOpacity>
+
+            {expandedExercises === workout.id && (
+              <View style={styles.exerciseList}>
+                {workout.exercises.map((ex, i) => {
+                  const ExIcon = WORKOUT_ICON_MAP[ex.icon] || Activity;
+                  return (
+                    <View key={i} style={styles.exerciseRow}>
+                      <View style={[styles.exerciseIconCircle, { backgroundColor: workoutColor + "15" }]}>
+                        <ExIcon size={16} color={workoutColor} />
+                      </View>
+                      <View style={styles.exerciseInfo}>
+                        <Text style={styles.exerciseName}>{ex.name}</Text>
+                        <Text style={styles.exerciseMeta}>
+                          {t("sets", { n: ex.sets })} x {ex.reps}
+                          {ex.restSeconds > 0 ? ` | ${t("restTime", { n: ex.restSeconds })}` : ''}
+                        </Text>
+                        <Text style={styles.exerciseDesc}>{ex.description}</Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </>
+        )}
+
         {isPrimary && (
-          <TouchableOpacity
-            style={[
-              styles.startButton,
-              workoutCompleted && styles.startButtonCompleted,
-            ]}
-            onPress={handleStartWorkout}
-            disabled={workoutCompleted}
-            activeOpacity={0.7}
-            accessibilityLabel={workoutCompleted ? "Workout completed" : "Start workout"}
-            accessibilityRole="button"
-          >
-            {workoutCompleted ? (
-              <>
+          <View style={styles.buttonRow}>
+            {workout.exercises && workout.exercises.length > 0 && !workoutCompleted && (
+              <TouchableOpacity
+                style={[styles.startButton, { flex: 1 }]}
+                onPress={() => handleStartTimer(workout.exercises!)}
+                activeOpacity={0.7}
+                accessibilityLabel="Start workout timer"
+                accessibilityRole="button"
+              >
+                <Play size={18} color="#FFFFFF" />
+                <Text style={styles.startButtonText}>{t("startWorkout")}</Text>
+              </TouchableOpacity>
+            )}
+            {workoutCompleted && (
+              <View style={[styles.startButton, styles.startButtonCompleted, { flex: 1 }]}>
                 <Check size={18} color="#FFFFFF" />
                 <Text style={styles.startButtonText}>{t("completed")}</Text>
-              </>
-            ) : (
-              <Text style={styles.startButtonText}>{t("startWorkout")}</Text>
+              </View>
             )}
-          </TouchableOpacity>
+            {!workout.exercises?.length && !workoutCompleted && (
+              <TouchableOpacity
+                style={[styles.startButton, { flex: 1 }]}
+                onPress={handleStartWorkout}
+                activeOpacity={0.7}
+                accessibilityLabel="Mark workout complete"
+                accessibilityRole="button"
+              >
+                <Text style={styles.startButtonText}>{t("startWorkout")}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         )}
       </View>
     );
@@ -332,6 +534,148 @@ export default function TrainingPlanScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* ─── Workout Timer Modal ─────────────────────────────────────────── */}
+      <Modal
+        visible={timerActive || showCompletion}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.timerContainer} edges={["top", "bottom"]}>
+          {showCompletion ? (
+            /* ─── Completion Screen ──────────────────────────────────────── */
+            <View style={styles.completionContainer}>
+              <View style={[styles.completionIconCircle, { backgroundColor: "#8BC9A3" + "20" }]}>
+                <Check size={48} color="#8BC9A3" />
+              </View>
+              <Text style={styles.completionTitle}>{t("workoutComplete")}</Text>
+              <Text style={styles.completionSubtitle}>{t("greatJob")}</Text>
+              <View style={styles.completionTimeBox}>
+                <Clock size={20} color={phaseConfig.color} />
+                <Text style={styles.completionTimeLabel}>{t("totalTime")}</Text>
+                <Text style={[styles.completionTime, { color: phaseConfig.color }]}>
+                  {formatTime(totalElapsed)}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.timerButton, { backgroundColor: phaseConfig.color, marginTop: 32 }]}
+                onPress={handleEndWorkout}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.timerButtonText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          ) : timerWorkout ? (
+            /* ─── Active Timer ───────────────────────────────────────────── */
+            <View style={styles.timerContent}>
+              {/* Header */}
+              <View style={styles.timerHeader}>
+                <TouchableOpacity onPress={handleEndWorkout} style={styles.timerCloseBtn}>
+                  <X size={24} color={colors.text} />
+                </TouchableOpacity>
+                <View style={styles.timerElapsed}>
+                  <Clock size={14} color={colors.textSecondary} />
+                  <Text style={styles.timerElapsedText}>
+                    {t("elapsed")}: {formatTime(totalElapsed)}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Progress indicator */}
+              <Text style={styles.timerProgress}>
+                {t("currentExercise", { current: currentExerciseIndex + 1, total: timerWorkout.length })}
+              </Text>
+              <Text style={styles.timerSetProgress}>
+                {t("currentSet", { current: currentSet, total: timerWorkout[currentExerciseIndex]?.sets ?? 1 })}
+              </Text>
+
+              {/* Progress bar */}
+              <View style={styles.progressBarBg}>
+                <View
+                  style={[
+                    styles.progressBarFill,
+                    {
+                      backgroundColor: phaseConfig.color,
+                      width: `${((currentExerciseIndex / timerWorkout.length) * 100)}%`,
+                    },
+                  ]}
+                />
+              </View>
+
+              {/* Current exercise */}
+              <View style={styles.timerExerciseBox}>
+                {(() => {
+                  const ex = timerWorkout[currentExerciseIndex];
+                  if (!ex) return null;
+                  const ExIcon = WORKOUT_ICON_MAP[ex.icon] || Activity;
+                  return (
+                    <>
+                      <View style={[styles.timerExIconCircle, { backgroundColor: phaseConfig.color + "20" }]}>
+                        <ExIcon size={32} color={phaseConfig.color} />
+                      </View>
+                      <Text style={styles.timerExName}>
+                        {isResting ? t("resting") : ex.name}
+                      </Text>
+                      {!isResting && (
+                        <Text style={styles.timerExDesc}>{ex.description}</Text>
+                      )}
+                    </>
+                  );
+                })()}
+              </View>
+
+              {/* Countdown */}
+              <Text style={[styles.timerCountdown, { color: isResting ? "#F4C896" : phaseConfig.color }]}>
+                {formatTime(secondsLeft)}
+              </Text>
+
+              {/* Controls */}
+              <View style={styles.timerControls}>
+                <TouchableOpacity
+                  style={[styles.timerControlBtn, { backgroundColor: colors.surface }]}
+                  onPress={handleEndWorkout}
+                  activeOpacity={0.7}
+                >
+                  <X size={20} color={colors.error} />
+                  <Text style={[styles.timerControlLabel, { color: colors.error }]}>
+                    {t("endWorkout")}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.timerControlBtn, { backgroundColor: phaseConfig.color + "20" }]}
+                  onPress={() => {
+                    setTimerPaused(!timerPaused);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  {timerPaused ? (
+                    <Play size={20} color={phaseConfig.color} />
+                  ) : (
+                    <Pause size={20} color={phaseConfig.color} />
+                  )}
+                  <Text style={[styles.timerControlLabel, { color: phaseConfig.color }]}>
+                    {timerPaused ? t("resume") : t("pause")}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.timerControlBtn, { backgroundColor: colors.surface }]}
+                  onPress={() => {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    setSecondsLeft(0);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <SkipForward size={20} color={colors.text} />
+                  <Text style={styles.timerControlLabel}>{t("nextExercise")}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : null}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -639,6 +983,240 @@ function createStyles(colors: typeof Colors.light, phaseColor: string) {
       fontSize: 14,
       color: colors.textSecondary,
       lineHeight: 20,
+    },
+
+    // Exercise list
+    exerciseToggle: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 10,
+      paddingHorizontal: 4,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderLight,
+      marginTop: 4,
+    },
+    exerciseToggleText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    exerciseList: {
+      gap: 12,
+      paddingTop: 8,
+    },
+    exerciseRow: {
+      flexDirection: "row",
+      gap: 10,
+      alignItems: "flex-start",
+    },
+    exerciseIconCircle: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 2,
+    },
+    exerciseInfo: {
+      flex: 1,
+    },
+    exerciseName: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 2,
+    },
+    exerciseMeta: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 2,
+    },
+    exerciseDesc: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      fontStyle: "italic",
+    },
+    buttonRow: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 4,
+    },
+
+    // Timer modal
+    timerContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    timerContent: {
+      flex: 1,
+      paddingHorizontal: 24,
+      paddingTop: 8,
+    },
+    timerHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    timerCloseBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    timerElapsed: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: colors.surface,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    timerElapsedText: {
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontWeight: "500",
+    },
+    timerProgress: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: colors.textSecondary,
+      textAlign: "center",
+      marginBottom: 4,
+    },
+    timerSetProgress: {
+      fontSize: 13,
+      color: colors.textTertiary,
+      textAlign: "center",
+      marginBottom: 12,
+    },
+    progressBarBg: {
+      height: 4,
+      backgroundColor: colors.borderLight,
+      borderRadius: 2,
+      marginBottom: 32,
+      overflow: "hidden",
+    },
+    progressBarFill: {
+      height: 4,
+      borderRadius: 2,
+    },
+    timerExerciseBox: {
+      alignItems: "center",
+      marginBottom: 24,
+    },
+    timerExIconCircle: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 16,
+    },
+    timerExName: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: colors.text,
+      textAlign: "center",
+      marginBottom: 8,
+    },
+    timerExDesc: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 20,
+      paddingHorizontal: 20,
+    },
+    timerCountdown: {
+      fontSize: 72,
+      fontWeight: "700",
+      textAlign: "center",
+      marginBottom: 40,
+      fontVariant: ["tabular-nums"],
+    },
+    timerControls: {
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 16,
+      marginTop: "auto",
+      paddingBottom: 24,
+    },
+    timerControlBtn: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 14,
+      paddingHorizontal: 20,
+      borderRadius: 16,
+      gap: 6,
+      minWidth: 90,
+    },
+    timerControlLabel: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    timerButton: {
+      paddingVertical: 16,
+      paddingHorizontal: 48,
+      borderRadius: 16,
+      alignItems: "center",
+    },
+    timerButtonText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+
+    // Completion screen
+    completionContainer: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 32,
+    },
+    completionIconCircle: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 24,
+    },
+    completionTitle: {
+      fontSize: 28,
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: 8,
+    },
+    completionSubtitle: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: "center",
+      marginBottom: 32,
+      lineHeight: 22,
+    },
+    completionTimeBox: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: colors.surface,
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      borderRadius: 16,
+    },
+    completionTimeLabel: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: "500",
+    },
+    completionTime: {
+      fontSize: 20,
+      fontWeight: "700",
+      fontVariant: ["tabular-nums"],
     },
   });
 }
