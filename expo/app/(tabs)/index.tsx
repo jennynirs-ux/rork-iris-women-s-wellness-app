@@ -885,7 +885,9 @@ export default function HomeScreen() {
       completed: progressCheckInDone,
       icon: 'ClipboardCheck',
     };
-    return [scanHabit, checkInHabit, ...todayHabits];
+    // Filter out nutrition/movement habits — covered by Meals & Training buttons
+    const filteredHabits = todayHabits.filter(h => h.category !== 'nutrition' && h.category !== 'movement');
+    return [scanHabit, checkInHabit, ...filteredHabits];
   }, [todayHabits, progressScanDone, progressCheckInDone, t]);
 
   const handleSpecialHabitPress = useCallback((habitId: string) => {
@@ -1091,16 +1093,6 @@ export default function HomeScreen() {
           <Dumbbell size={24} color={colors.phaseOvulation} />
           <Text style={[styles.quickAccessLabel, { color: colors.phaseOvulation }]}>
             {t.home?.training || 'Training'}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.quickAccessButton, { backgroundColor: colors.phaseLuteal + '20', borderColor: colors.phaseLuteal + '40' }]}
-          onPress={() => router.push('/journal' as any)}
-          activeOpacity={0.7}
-        >
-          <Edit2 size={24} color={colors.phaseLuteal} />
-          <Text style={[styles.quickAccessLabel, { color: colors.phaseLuteal }]}>
-            {t.home?.journal || 'Journal'}
           </Text>
         </TouchableOpacity>
       </View>
