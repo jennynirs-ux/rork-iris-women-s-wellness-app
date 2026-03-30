@@ -37,7 +37,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
 import { generateDailyTrainingPlan, WorkoutSuggestion, WorkoutIntensity, Exercise } from "@/lib/trainingPlans";
-import { trainingTranslations as tt } from "@/constants/trainingTranslations";
+import { trainingTranslations } from "@/constants/trainingTranslations";
 import ExerciseSketch from "@/components/ExerciseSketch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
@@ -73,18 +73,6 @@ const INTENSITY_COLORS: Record<WorkoutIntensity, string> = {
   intense: "#E89BA4",
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function t(key: string, params?: Record<string, string | number>): string {
-  let value = tt[key] ?? key;
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      value = value.replace(`{${k}}`, String(v));
-    });
-  }
-  return value;
-}
-
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 // ─── Helper: parse reps string to seconds (for timed exercises) ─────────────
@@ -106,7 +94,56 @@ function formatTime(totalSeconds: number): string {
 export default function TrainingPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
+
+  const tt = trainingTranslations[language ?? 'en'] ?? trainingTranslations.en;
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+    let value = tt[key] ?? key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        value = value.replace(`{${k}}`, String(v));
+      });
+    }
+    return value;
+  }, [tt]);
+
+  // Normalize exercise name to camelCase key
+  const toExKey = useCallback((name: string): string => {
+    return name
+      .replace(/['']/g, '')
+      .replace(/[^a-zA-Z0-9 ]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .map((w, i) => i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join('');
+  }, []);
+
+  const tExName = useCallback((name: string): string => {
+    const key = `ex.${toExKey(name)}.name`;
+    return tt[key] ?? name;
+  }, [tt, toExKey]);
+
+  const tExDesc = useCallback((desc: string, name: string): string => {
+    const key = `ex.${toExKey(name)}.desc`;
+    return tt[key] ?? desc;
+  }, [tt, toExKey]);
+
+  const mgKeyMap: Record<string, string> = useMemo(() => ({
+    'Core': 'mg.core', 'Hips': 'mg.hips', 'Back': 'mg.back', 'Full Body': 'mg.fullBody',
+    'Chest': 'mg.chest', 'Legs': 'mg.legs', 'Glutes': 'mg.glutes', 'Triceps': 'mg.triceps',
+    'Quads': 'mg.quads', 'Hamstrings': 'mg.hamstrings', 'Shoulders': 'mg.shoulders', 'Arms': 'mg.arms',
+    'Obliques': 'mg.obliques', 'Abs': 'mg.abs', 'Balance': 'mg.balance', 'Ankles': 'mg.ankles',
+    'Cardio': 'mg.cardio', 'Pelvic Floor': 'mg.pelvicFloor', 'Spine': 'mg.spine', 'Neck': 'mg.neck',
+    'Calves': 'mg.calves', 'Flexibility': 'mg.flexibility', 'Breathwork': 'mg.breathwork',
+    'Relaxation': 'mg.relaxation', 'Lower Body': 'mg.lowerBody', 'Upper Body': 'mg.upperBody',
+    'Cardiovascular': 'mg.cardiovascular', 'Hip Flexors': 'mg.hipFlexors',
+    'Hip Abductors': 'mg.hipAbductors', 'Inner Thighs': 'mg.innerThighs', 'Diaphragm': 'mg.diaphragm',
+  }), []);
+
+  const tMuscleGroup = useCallback((mg: string): string => {
+    const key = mgKeyMap[mg];
+    return key ? (tt[key] ?? mg) : mg;
+  }, [tt, mgKeyMap]);
 
   const [expandedWarmup, setExpandedWarmup] = useState(true);
   const [expandedCooldown, setExpandedCooldown] = useState(true);
@@ -372,15 +409,15 @@ export default function TrainingPlanScreen() {
                     </View>
                   )}
                   <View style={styles.exerciseInfo}>
-                    <Text style={styles.exerciseName}>{ex.name}</Text>
+                    <Text style={styles.exerciseName}>{tExName(ex.name)}</Text>
                     <Text style={styles.exerciseMeta}>
                       {t("sets", { n: ex.sets })} × {ex.reps}
                       {ex.restSeconds > 0 ? ` · ${t("restTime", { n: ex.restSeconds })}` : ''}
                     </Text>
                     {ex.muscleGroups && ex.muscleGroups.length > 0 && (
-                      <Text style={styles.exerciseMuscles}>{ex.muscleGroups.join(' · ')}</Text>
+                      <Text style={styles.exerciseMuscles}>{ex.muscleGroups.map(tMuscleGroup).join(' · ')}</Text>
                     )}
-                    <Text style={styles.exerciseDesc}>{ex.description}</Text>
+                    <Text style={styles.exerciseDesc}>{tExDesc(ex.description, ex.name)}</Text>
                   </View>
                 </View>
               ))}
@@ -569,7 +606,7 @@ export default function TrainingPlanScreen() {
                 onPress={handleEndWorkout}
                 activeOpacity={0.7}
               >
-                <Text style={styles.timerButtonText}>Done</Text>
+                <Text style={styles.timerButtonText}>{t("done")}</Text>
               </TouchableOpacity>
             </View>
           ) : timerWorkout ? (
@@ -621,10 +658,10 @@ export default function TrainingPlanScreen() {
                         <ExIcon size={32} color={phaseConfig.color} />
                       </View>
                       <Text style={styles.timerExName}>
-                        {isResting ? t("resting") : ex.name}
+                        {isResting ? t("resting") : tExName(ex.name)}
                       </Text>
                       {!isResting && (
-                        <Text style={styles.timerExDesc}>{ex.description}</Text>
+                        <Text style={styles.timerExDesc}>{tExDesc(ex.description, ex.name)}</Text>
                       )}
                     </>
                   );

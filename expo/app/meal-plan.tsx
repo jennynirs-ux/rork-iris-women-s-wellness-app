@@ -34,7 +34,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
 import { generateDailyMealPlan, DailyMealPlan, MealSuggestion } from "@/lib/mealPlans";
-import { mealTranslations as mt } from "@/constants/mealTranslations";
+import { mealTranslations } from "@/constants/mealTranslations";
 
 // ─── Icon Map ────────────────────────────────────────────────────────────────
 // Map meal icon strings to available lucide-react-native icons
@@ -55,11 +55,47 @@ const MEAL_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?:
   Beef: Zap,            // Beef mapped to Zap
 };
 
-const PHASE_INFO: Record<CyclePhase, { color: string; icon: React.ComponentType<{ size?: number; color?: string }>; label: string; description: string }> = {
-  menstrual: { color: "#E89BA4", icon: Moon, label: mt.phaseMenstrual, description: mt.phaseDescMenstrual },
-  follicular: { color: "#8BC9A3", icon: Sprout, label: mt.phaseFollicular, description: mt.phaseDescFollicular },
-  ovulation: { color: "#F4C896", icon: Sparkles, label: mt.phaseOvulation, description: mt.phaseDescOvulation },
-  luteal: { color: "#B8A4E8", icon: Flower2, label: mt.phaseLuteal, description: mt.phaseDescLuteal },
+const PHASE_COLORS: Record<CyclePhase, string> = {
+  menstrual: "#E89BA4",
+  follicular: "#8BC9A3",
+  ovulation: "#F4C896",
+  luteal: "#B8A4E8",
+};
+
+const PHASE_ICONS: Record<CyclePhase, React.ComponentType<{ size?: number; color?: string }>> = {
+  menstrual: Moon,
+  follicular: Sprout,
+  ovulation: Sparkles,
+  luteal: Flower2,
+};
+
+// Nutrient name → translation key mapping
+const NUTRIENT_KEY_MAP: Record<string, string> = {
+  "Iron": "nutrient.iron", "Vitamin C": "nutrient.vitaminC", "Magnesium": "nutrient.magnesium",
+  "Zinc": "nutrient.zinc", "B12": "nutrient.b12", "Fiber": "nutrient.fiber",
+  "Protein": "nutrient.protein", "Omega-3": "nutrient.omega3", "Probiotics": "nutrient.probiotics",
+  "Selenium": "nutrient.selenium", "Vitamin A": "nutrient.vitaminA", "Antioxidants": "nutrient.antioxidants",
+  "Vitamin E": "nutrient.vitaminE", "Folate": "nutrient.folate", "Calcium": "nutrient.calcium",
+  "Vitamin D": "nutrient.vitaminD", "DHA": "nutrient.dha", "Collagen": "nutrient.collagen",
+  "Vitamin K": "nutrient.vitaminK", "Phytoestrogens": "nutrient.phytoestrogens",
+  "B Vitamins": "nutrient.bVitamins", "Lean Protein": "nutrient.leanProtein",
+  "Complex Carbs": "nutrient.complexCarbs", "B6": "nutrient.b6",
+  "Healthy Fats": "nutrient.healthyFats", "Tryptophan": "nutrient.tryptophan",
+  "Omega-3 (DHA)": "nutrient.omega3Dha",
+};
+
+// Avoid item → translation key mapping
+const AVOID_KEY_MAP: Record<string, string> = {
+  "Excess caffeine": "avoid.excessCaffeine", "Salty processed foods": "avoid.saltyProcessedFoods",
+  "Alcohol": "avoid.alcohol", "Refined sugar": "avoid.refinedSugar",
+  "Heavy fried foods": "avoid.heavyFriedFoods", "Excess dairy": "avoid.excessDairy",
+  "Processed snacks": "avoid.processedSnacks", "Inflammatory oils": "avoid.inflammatoryOils",
+  "Excess sugar": "avoid.excessSugar", "Processed meats": "avoid.processedMeats",
+  "Excess sodium": "avoid.excessSodium", "Caffeine after noon": "avoid.caffeineAfterNoon",
+  "Raw fish & sushi": "avoid.rawFishSushi", "Soft unpasteurized cheese": "avoid.softCheese",
+  "Excessive caffeine": "avoid.excessiveCaffeine", "Processed foods": "avoid.processedFoods",
+  "Spicy food (may trigger hot flashes)": "avoid.spicyFood", "Processed food": "avoid.processedFood",
+  "Excess caffeine": "avoid.excessCaffeine",
 };
 
 const MEAL_TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -78,25 +114,32 @@ const MEAL_TYPE_COLORS: Record<string, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getMealTypeLabel(type: MealSuggestion["mealType"]): string {
-  switch (type) {
-    case "breakfast": return mt.breakfast;
-    case "lunch": return mt.lunch;
-    case "dinner": return mt.dinner;
-    case "snack": return mt.snack;
-  }
-}
-
-function getMealTranslation(key: string): string {
-  return (mt as Record<string, string>)[key] || key;
-}
-
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MealPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
+
+  const mt = mealTranslations[language ?? 'en'] ?? mealTranslations.en;
+
+  const t = useCallback((key: string): string => {
+    return mt[key] ?? key;
+  }, [mt]);
+
+  const translateNutrient = useCallback((nutrient: string): string => {
+    const key = NUTRIENT_KEY_MAP[nutrient];
+    return key ? (mt[key] ?? nutrient) : nutrient;
+  }, [mt]);
+
+  const translateAvoid = useCallback((item: string): string => {
+    const key = AVOID_KEY_MAP[item];
+    return key ? (mt[key] ?? item) : item;
+  }, [mt]);
+
+  const getMealTypeLabel = useCallback((type: MealSuggestion["mealType"]): string => {
+    return mt[type] ?? type;
+  }, [mt]);
 
   const [waterCount, setWaterCount] = useState(0);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
@@ -130,9 +173,31 @@ export default function MealPlanScreen() {
 
   const currentPhase: CyclePhase = enrichedPhaseInfo?.phase ?? "follicular";
   const phaseDay = enrichedPhaseInfo?.phaseDay ?? 1;
-  const phaseInfo = PHASE_INFO[currentPhase];
+  const phaseColor = PHASE_COLORS[currentPhase];
+  const PhaseIcon = PHASE_ICONS[currentPhase];
+
+  const phaseLabelKeys: Record<CyclePhase, string> = {
+    menstrual: "phaseMenstrual", follicular: "phaseFollicular",
+    ovulation: "phaseOvulation", luteal: "phaseLuteal",
+  };
+  const phaseDescKeys: Record<CyclePhase, string> = {
+    menstrual: "phaseDescMenstrual", follicular: "phaseDescFollicular",
+    ovulation: "phaseDescOvulation", luteal: "phaseDescLuteal",
+  };
 
   const lifeStage = userProfile?.lifeStage ?? 'regular';
+
+  const LIFESTAGE_LABEL_KEYS: Record<string, string> = {
+    pregnancy: "phasePregnancy", postpartum: "phasePostpartum",
+    perimenopause: "phasePerimenopause", menopause: "phaseMenopause",
+  };
+  const LIFESTAGE_DESC_KEYS: Record<string, string> = {
+    pregnancy: "phaseDescPregnancy", postpartum: "phaseDescPostpartum",
+    perimenopause: "phaseDescPerimenopause", menopause: "phaseDescMenopause",
+  };
+  const isLifeStage = lifeStage !== 'regular' && LIFESTAGE_LABEL_KEYS[lifeStage];
+  const bannerLabel = isLifeStage ? t(LIFESTAGE_LABEL_KEYS[lifeStage]) : t(phaseLabelKeys[currentPhase]);
+  const bannerDesc = isLifeStage ? t(LIFESTAGE_DESC_KEYS[lifeStage]) : t(phaseDescKeys[currentPhase]);
 
   const mealPlan: DailyMealPlan = useMemo(() => {
     return generateDailyMealPlan(currentPhase, phaseDay, latestScan, todayCheckIn, lifeStage, healthData);
@@ -150,15 +215,13 @@ export default function MealPlanScreen() {
     setExpandedMeal((prev) => (prev === mealId ? null : mealId));
   }, []);
 
-  const PhaseIcon = phaseInfo.icon;
-
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{mt.screenTitle}</Text>
+        <Text style={styles.headerTitle}>{t("screenTitle")}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -168,13 +231,13 @@ export default function MealPlanScreen() {
       >
         {/* Phase Badge */}
         <View style={styles.phaseBanner}>
-          <View style={[styles.phaseBadge, { backgroundColor: phaseInfo.color + "20" }]}>
-            <PhaseIcon size={16} color={phaseInfo.color} />
-            <Text style={[styles.phaseBadgeText, { color: phaseInfo.color }]}>
-              {phaseInfo.label}
+          <View style={[styles.phaseBadge, { backgroundColor: phaseColor + "20" }]}>
+            <PhaseIcon size={16} color={phaseColor} />
+            <Text style={[styles.phaseBadgeText, { color: phaseColor }]}>
+              {bannerLabel}
             </Text>
           </View>
-          <Text style={styles.phaseDescription}>{phaseInfo.description}</Text>
+          <Text style={styles.phaseDescription}>{bannerDesc}</Text>
         </View>
 
         {/* Meal Cards */}
@@ -190,7 +253,7 @@ export default function MealPlanScreen() {
               style={styles.mealCard}
               onPress={() => toggleMealExpand(meal.id)}
               activeOpacity={0.7}
-              accessibilityLabel={`${getMealTypeLabel(meal.mealType)}: ${getMealTranslation(meal.titleKey)}`}
+              accessibilityLabel={`${getMealTypeLabel(meal.mealType)}: ${t(meal.titleKey)}`}
               accessibilityRole="button"
             >
               <View style={styles.mealCardHeader}>
@@ -202,7 +265,7 @@ export default function MealPlanScreen() {
                     {getMealTypeLabel(meal.mealType)}
                   </Text>
                   <Text style={styles.mealTitle}>
-                    {getMealTranslation(meal.titleKey)}
+                    {t(meal.titleKey)}
                   </Text>
                 </View>
                 <View style={styles.mealCardChevron}>
@@ -217,20 +280,20 @@ export default function MealPlanScreen() {
               {isExpanded && (
                 <View style={styles.mealCardBody}>
                   <Text style={styles.mealDescription}>
-                    {getMealTranslation(meal.descriptionKey)}
+                    {t(meal.descriptionKey)}
                   </Text>
                   <View style={styles.nutrientRow}>
                     {meal.nutrients.map((nutrient, idx) => (
                       <View key={idx} style={[styles.nutrientBadge, { backgroundColor: mealColor + "15" }]}>
                         <Text style={[styles.nutrientBadgeText, { color: mealColor }]}>
-                          {nutrient}
+                          {translateNutrient(nutrient)}
                         </Text>
                       </View>
                     ))}
                     {meal.isAntiInflammatory && (
                       <View style={[styles.nutrientBadge, { backgroundColor: colors.statusGood + "20" }]}>
                         <Text style={[styles.nutrientBadgeText, { color: colors.statusGood }]}>
-                          {mt["mealPlan.antiInflammatory"] || "Anti-inflammatory"}
+                          {t("mealPlan.antiInflammatory")}
                         </Text>
                       </View>
                     )}
@@ -245,7 +308,7 @@ export default function MealPlanScreen() {
                           <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
                             <Clock size={12} color={mealColor} />
                             <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
-                              {mt["mealPlan.prepTime"]} {meal.recipe.prepMinutes} {mt["mealPlan.minutes"]}
+                              {t("mealPlan.prepTime")} {meal.recipe.prepMinutes} {t("mealPlan.minutes")}
                             </Text>
                           </View>
                         )}
@@ -253,43 +316,49 @@ export default function MealPlanScreen() {
                           <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
                             <Clock size={12} color={mealColor} />
                             <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
-                              {mt["mealPlan.cookTime"]} {meal.recipe.cookMinutes} {mt["mealPlan.minutes"]}
+                              {t("mealPlan.cookTime")} {meal.recipe.cookMinutes} {t("mealPlan.minutes")}
                             </Text>
                           </View>
                         )}
                         <View style={[styles.recipeBadge, { backgroundColor: mealColor + "12" }]}>
                           <Users size={12} color={mealColor} />
                           <Text style={[styles.recipeBadgeText, { color: mealColor }]}>
-                            {meal.recipe.servings} {mt["mealPlan.servings"]}
+                            {meal.recipe.servings} {t("mealPlan.servings")}
                           </Text>
                         </View>
                       </View>
 
                       {/* Ingredients */}
                       <Text style={styles.recipeSectionTitle}>
-                        {mt["mealPlan.ingredients"]}
+                        {t("mealPlan.ingredients")}
                       </Text>
-                      {meal.recipe.ingredients.map((ingredient, idx) => (
-                        <View key={idx} style={styles.ingredientRow}>
-                          <View style={[styles.ingredientBullet, { backgroundColor: mealColor }]} />
-                          <Text style={styles.ingredientText}>{ingredient}</Text>
-                        </View>
-                      ))}
+                      {meal.recipe.ingredients.map((ingredient, idx) => {
+                        const ingKey = meal.titleKey.replace(".title", `.ingredient.${idx}`);
+                        return (
+                          <View key={idx} style={styles.ingredientRow}>
+                            <View style={[styles.ingredientBullet, { backgroundColor: mealColor }]} />
+                            <Text style={styles.ingredientText}>{t(ingKey)}</Text>
+                          </View>
+                        );
+                      })}
 
                       {/* Steps */}
                       <Text style={[styles.recipeSectionTitle, { marginTop: 14 }]}>
-                        {mt["mealPlan.steps"]}
+                        {t("mealPlan.steps")}
                       </Text>
-                      {meal.recipe.steps.map((step, idx) => (
-                        <View key={idx} style={styles.stepRow}>
-                          <View style={[styles.stepNumber, { backgroundColor: mealColor + "20" }]}>
-                            <Text style={[styles.stepNumberText, { color: mealColor }]}>
-                              {idx + 1}
-                            </Text>
+                      {meal.recipe.steps.map((step, idx) => {
+                        const stepKey = meal.titleKey.replace(".title", `.step.${idx}`);
+                        return (
+                          <View key={idx} style={styles.stepRow}>
+                            <View style={[styles.stepNumber, { backgroundColor: mealColor + "20" }]}>
+                              <Text style={[styles.stepNumberText, { color: mealColor }]}>
+                                {idx + 1}
+                              </Text>
+                            </View>
+                            <Text style={styles.stepText}>{t(stepKey)}</Text>
                           </View>
-                          <Text style={styles.stepText}>{step}</Text>
-                        </View>
-                      ))}
+                        );
+                      })}
                     </View>
                   )}
                 </View>
@@ -302,10 +371,10 @@ export default function MealPlanScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.hydrationHeader}>
             <Droplets size={20} color="#4D96FF" />
-            <Text style={styles.sectionTitle}>{mt.hydrationTitle}</Text>
+            <Text style={styles.sectionTitle}>{t("hydrationTitle")}</Text>
           </View>
           <Text style={styles.hydrationSubtext}>
-            {waterCount} {mt.hydrationGlassesOf} {mealPlan.hydrationGoal} {mt.hydrationUnit}
+            {waterCount} {t("hydrationGlassesOf")} {mealPlan.hydrationGoal} {t("hydrationUnit")}
           </Text>
           <View style={styles.hydrationGlassRow}>
             {Array.from({ length: mealPlan.hydrationGoal }).map((_, i) => (
@@ -344,12 +413,12 @@ export default function MealPlanScreen() {
 
         {/* Key Nutrients */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{mt.keyNutrientsTitle}</Text>
+          <Text style={styles.sectionTitle}>{t("keyNutrientsTitle")}</Text>
           <View style={styles.tagRow}>
             {mealPlan.keyNutrients.map((nutrient, i) => (
               <View key={i} style={[styles.tagBadge, { backgroundColor: colors.statusGood + "15" }]}>
                 <Check size={12} color={colors.statusGood} />
-                <Text style={[styles.tagText, { color: colors.statusGood }]}>{nutrient}</Text>
+                <Text style={[styles.tagText, { color: colors.statusGood }]}>{translateNutrient(nutrient)}</Text>
               </View>
             ))}
           </View>
@@ -358,12 +427,12 @@ export default function MealPlanScreen() {
         {/* Avoid List */}
         {mealPlan.avoidList.length > 0 && (
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>{mt.avoidTitle}</Text>
+            <Text style={styles.sectionTitle}>{t("avoidTitle")}</Text>
             <View style={styles.tagRow}>
               {mealPlan.avoidList.map((item, i) => (
                 <View key={i} style={[styles.tagBadge, { backgroundColor: colors.error + "15" }]}>
                   <AlertCircle size={12} color={colors.error} />
-                  <Text style={[styles.tagText, { color: colors.error }]}>{item}</Text>
+                  <Text style={[styles.tagText, { color: colors.error }]}>{translateAvoid(item)}</Text>
                 </View>
               ))}
             </View>
