@@ -85,9 +85,75 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     skinOvulation: "you are likely at your most radiant. Estrogen peaks create a natural glow. Keep your routine simple and enjoy it.",
 
     // Catch-all
-    fallbackIntro: "I can help with questions about your energy, nutrition, stress, sleep, mood, exercise, and skin care \u2014 all personalized to your {phaseName} phase (day {cycleDay} of {totalDays}).",
+    // Hydration responses
+    hydrationIntro: "Staying well-hydrated is important during the {phaseName} phase. ",
+    hydrationVeryLow: "Your hydration level is {hydration}/10 — that's quite low. Try to drink a glass of water right now and set reminders throughout the day. ",
+    hydrationLow: "Your hydration level is {hydration}/10 — a bit below optimal. Aim for at least 8 glasses today. ",
+    hydrationGood: "Your hydration level is {hydration}/10 — you're doing well! Keep it up. ",
+    hydrationMenstrual: "During menstruation, you lose extra fluids. Warm herbal teas (ginger, chamomile) count toward hydration and can ease cramps too.",
+    hydrationOvulation: "Around ovulation, your body temperature rises slightly. Increase water intake and add electrolytes if you're active.",
+    hydrationLuteal: "In the luteal phase, progesterone can cause water retention. Paradoxically, drinking MORE water helps reduce bloating.",
+    hydrationFollicular: "The follicular phase is a great time to build hydration habits. Try infusing water with lemon, cucumber, or berries for variety.",
+
+    // Cramps/pain responses
+    crampsIntro: "Let's talk about managing discomfort during the {phaseName} phase (day {cycleDay}). ",
+    crampsMenstrual: "Menstrual cramps are caused by prostaglandins. Things that can help: a heating pad on your lower abdomen, gentle walking, magnesium-rich foods (dark chocolate, bananas), and anti-inflammatory teas like ginger or chamomile. Gentle yoga poses like child's pose and cat-cow can also ease tension.",
+    crampsLuteal: "Pre-menstrual discomfort is common in the luteal phase. Magnesium supplements (200-400mg), calcium-rich foods, regular gentle exercise, and reducing caffeine and salt can all help manage PMS symptoms.",
+    crampsOvulation: "Some people experience mittelschmerz — a brief, sharp pain during ovulation. This is normal. A warm compress and light movement usually help. If pain is severe or persistent, consult your healthcare provider.",
+    crampsFollicular: "The follicular phase is typically the most comfortable phase. If you're experiencing unusual discomfort, consider tracking it — patterns can help you and your doctor identify any concerns.",
+
+    // Libido/intimacy responses
+    libidoIntro: "Libido naturally fluctuates with your cycle. During the {phaseName} phase: ",
+    libidoOvulation: "libido tends to peak around ovulation due to high estrogen and testosterone. This is your body's natural fertility window. Enjoy this increased desire and confidence.",
+    libidoFollicular: "rising estrogen in the follicular phase gradually increases desire and arousal. You may feel more socially energized and attracted to others.",
+    libidoLuteal: "progesterone rises and can lower libido for many people. This is normal. Focus on emotional intimacy, and don't pressure yourself. Cuddling and connection are just as valid.",
+    libidoMenstrual: "libido varies during menstruation — some feel increased desire while others don't. Both are completely normal. Listen to your body and do what feels right for you.",
+
+    // Supplements responses
+    supplementsIntro: "Here are supplement considerations for the {phaseName} phase (always consult your doctor first): ",
+    supplementsMenstrual: "Iron (especially if you have heavy periods), magnesium (200-400mg for cramps and mood), vitamin C (to boost iron absorption), and omega-3 fatty acids (anti-inflammatory). B-complex vitamins can also support energy.",
+    supplementsFollicular: "Probiotics to support gut health and estrogen metabolism, vitamin D (especially if you get limited sun), zinc for immune support, and B vitamins for energy. This is a good time to focus on building nutrient stores.",
+    supplementsOvulation: "Antioxidants like vitamin E and C, omega-3 fatty acids, and zinc. NAC (N-acetyl cysteine) may support healthy ovulation. Stay well-hydrated and focus on whole foods over supplements when possible.",
+    supplementsLuteal: "Magnesium glycinate (for sleep and mood), vitamin B6 (may help with PMS), calcium (1000mg shown to reduce PMS symptoms), and evening primrose oil. Chasteberry (vitex) is also used by some for PMS, but consult your doctor first.",
+
+    // Focus/productivity responses
+    focusIntro: "Your cognitive patterns shift with your cycle. In the {phaseName} phase (day {cycleDay}): ",
+    focusFollicular: "rising estrogen enhances verbal skills, creativity, and learning. This is your best time for brainstorming, starting new projects, planning, and absorbing new information. Schedule important meetings and creative work now.",
+    focusOvulation: "your communication skills and social intelligence peak. Great time for presentations, negotiations, collaborations, and networking. You may find it easier to multitask and think on your feet.",
+    focusLuteal: "progesterone shifts your brain toward detail-oriented, methodical thinking. Use this for editing, proofreading, organizing, finishing projects, and administrative tasks. Avoid starting entirely new projects if possible.",
+    focusMenstrual: "your brain is in a reflective, evaluative state. This is actually ideal for strategic thinking, reviewing goals, journaling, and making decisions based on intuition. Don't force high-output creative work — instead, plan and reflect.",
+    focusLowEnergy: " Your energy is low today — try working in short 25-minute focus blocks (Pomodoro technique) with 5-minute breaks.",
+
+    // Cycle knowledge responses
+    cycleIntro: "You're on day {cycleDay} of {totalDays} in your cycle, currently in the {phaseName} phase. ",
+    cycleMenstrual: "The menstrual phase (typically days 1-5) is when your uterine lining sheds. Hormone levels (estrogen and progesterone) are at their lowest. Your body is focused on renewal. Think of this as your inner winter — a time for rest, reflection, and gentle self-care.",
+    cycleFollicular: "The follicular phase (typically days 6-13) is when your body prepares a new egg. Estrogen steadily rises, boosting energy, mood, and creativity. Think of this as your inner spring — a time of growth and new beginnings.",
+    cycleOvulation: "The ovulation phase (typically days 14-16) is when a mature egg is released. Estrogen peaks and luteinizing hormone surges. You may feel most social, confident, and energetic. Think of this as your inner summer — your peak performance window.",
+    cycleLuteal: "The luteal phase (typically days 17-28) is when progesterone rises to prepare for possible implantation. If pregnancy doesn't occur, hormones drop and the cycle begins again. Think of this as your inner autumn — a time for winding down and nesting.",
+
+    // Quick reply additions
+    quickCramps: "Help with cramps",
+    quickFocus: "Focus tips",
+
+    // Catch-all
+    fallbackIntro: "I can help with questions about your energy, nutrition, stress, sleep, mood, exercise, skin, hydration, cramps, supplements, focus, and your cycle \u2014 all personalized to your {phaseName} phase (day {cycleDay} of {totalDays}).",
     fallbackScan: "\n\nYour latest scan shows: energy {energy}/10, stress {stress}/10, recovery {recovery}/10.",
-    fallbackSuggestions: "\n\nTry asking me things like:\n- Why am I tired?\n- What should I eat?\n- How is my stress?\n- Give me sleep tips\n- What workout should I do?\n- How is my skin this week?",
+    fallbackSuggestions: "\n\nTry asking me things like:\n- Why am I tired?\n- What should I eat?\n- How is my stress?\n- Give me sleep tips\n- Help with cramps\n- Focus tips for today\n- What supplements should I take?\n- Tell me about my cycle",
+
+    // Keyword matching (pipe-delimited)
+    "kw.energy": "tired|energy|fatigue|exhausted",
+    "kw.food": "eat|food|nutrition|diet",
+    "kw.stress": "stress|anxious|anxiety|overwhelm",
+    "kw.sleep": "sleep|insomnia|rest",
+    "kw.mood": "mood|sad|happy|emotional",
+    "kw.exercise": "exercise|workout|movement|gym",
+    "kw.skin": "skin|acne|glow|breakout",
+    "kw.hydration": "hydration|water|thirsty|dehydrated|drink",
+    "kw.cramps": "cramps|pain|ache|bloating|pms|discomfort|period pain",
+    "kw.libido": "libido|sex|intimacy|desire|arousal",
+    "kw.supplements": "supplement|vitamin|mineral|magnesium|iron|zinc",
+    "kw.focus": "focus|concentration|productivity|brain fog|mental|cognitive",
+    "kw.cycle": "cycle|period|phase|ovulation|menstrual|luteal|follicular",
   },
 
   sv: {
@@ -167,6 +233,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Jag kan hj\u00e4lpa med fr\u00e5gor om din energi, kost, stress, s\u00f6mn, hum\u00f6r, tr\u00e4ning och hudv\u00e5rd \u2014 allt anpassat till din {phaseName}fas (dag {cycleDay} av {totalDays}).",
     fallbackScan: "\n\nDin senaste skanning visar: energi {energy}/10, stress {stress}/10, \u00e5terh\u00e4mtning {recovery}/10.",
     fallbackSuggestions: "\n\nProva att fr\u00e5ga mig saker som:\n- Varf\u00f6r \u00e4r jag tr\u00f6tt?\n- Vad ska jag \u00e4ta?\n- Hur \u00e4r min stress?\n- Ge mig s\u00f6mntips\n- Vilken tr\u00e4ning ska jag g\u00f6ra?\n- Hur m\u00e5r min hud den h\u00e4r veckan?",
+
+    "kw.energy": "tr\u00f6tt|energi|utmattad|uttr\u00f6ttad|orkeslös|sliten",
+    "kw.food": "\u00e4ta|mat|kost|n\u00e4ring|diet",
+    "kw.stress": "stress|stressad|oro|\u00e5ngest|\u00f6verväldigad",
+    "kw.sleep": "s\u00f6mn|s\u00f6mnl\u00f6s|sova|vila|insomni",
+    "kw.mood": "hum\u00f6r|ledsen|glad|k\u00e4nslom\u00e4ssig|nedst\u00e4md",
+    "kw.exercise": "tr\u00e4ning|tr\u00e4na|motion|gym|r\u00f6relse",
+    "kw.skin": "hud|akne|finnar|utslag|gl\u00f6d",
+
+    // Hydration responses
+    hydrationIntro: "Att h\u00e5lla sig v\u00e4lhydrerad \u00e4r viktigt under {phaseName}fasen. ",
+    hydrationVeryLow: "Din v\u00e4tskeniv\u00e5 \u00e4r {hydration}/10 \u2014 det \u00e4r ganska l\u00e5gt. F\u00f6rs\u00f6k dricka ett glas vatten nu direkt och s\u00e4tt p\u00e5minnelser under dagen. ",
+    hydrationLow: "Din v\u00e4tskeniv\u00e5 \u00e4r {hydration}/10 \u2014 lite under optimalt. Sikta p\u00e5 minst 8 glas idag. ",
+    hydrationGood: "Din v\u00e4tskeniv\u00e5 \u00e4r {hydration}/10 \u2014 du g\u00f6r bra ifr\u00e5n dig! Forts\u00e4tt s\u00e5. ",
+    hydrationMenstrual: "Under menstruationen f\u00f6rlorar du extra v\u00e4tska. Varma \u00f6rtt\u00e9er (ingef\u00e4ra, kamomill) r\u00e4knas till v\u00e4tskeintaget och kan lindra kramper ocks\u00e5.",
+    hydrationOvulation: "Runt \u00e4gglossningen stiger kroppstemperaturen n\u00e5got. \u00d6ka vattenintaget och tills\u00e4tt elektrolyter om du \u00e4r aktiv.",
+    hydrationLuteal: "I lutealfasen kan progesteron orsaka v\u00e4tskeretention. Paradoxalt nog hj\u00e4lper det att dricka MER vatten mot uppbl\u00e5sthet.",
+    hydrationFollicular: "Follikul\u00e4rfasen \u00e4r en bra tid att bygga v\u00e4tskevanor. Prova att smaks\u00e4tta vatten med citron, gurka eller b\u00e4r f\u00f6r variation.",
+
+    // Cramps/pain responses
+    crampsIntro: "L\u00e5t oss prata om att hantera obehag under {phaseName}fasen (dag {cycleDay}). ",
+    crampsMenstrual: "Menstruationskramper orsakas av prostaglandiner. Saker som kan hj\u00e4lpa: en v\u00e4rmedyna p\u00e5 nedre delen av magen, l\u00e4tta promenader, magnesiumrik mat (m\u00f6rk choklad, bananer) och antiinflammatoriska t\u00e9er som ingef\u00e4ra eller kamomill. Milda yogast\u00e4llningar som barnets st\u00e4llning och katt-ko kan ocks\u00e5 l\u00e4tta p\u00e5 sp\u00e4nningen.",
+    crampsLuteal: "Premenstruellt obehag \u00e4r vanligt i lutealfasen. Magnesiumtillskott (200-400mg), kalciumrik mat, regelbunden mild motion och minskat koffein- och saltintag kan alla hj\u00e4lpa till att hantera PMS-symtom.",
+    crampsOvulation: "Vissa upplever mittelschmerz \u2014 en kort, skarp sm\u00e4rta vid \u00e4gglossning. Detta \u00e4r normalt. Ett varmt omslag och l\u00e4tt r\u00f6relse hj\u00e4lper vanligtvis. Om sm\u00e4rtan \u00e4r sv\u00e5r eller ih\u00e5llande, kontakta din v\u00e5rdgivare.",
+    crampsFollicular: "Follikul\u00e4rfasen \u00e4r vanligtvis den mest bekv\u00e4ma fasen. Om du upplever ovanligt obehag, \u00f6verv\u00e4g att sp\u00e5ra det \u2014 m\u00f6nster kan hj\u00e4lpa dig och din l\u00e4kare att identifiera eventuella problem.",
+
+    // Libido/intimacy responses
+    libidoIntro: "Libido varierar naturligt med din cykel. Under {phaseName}fasen: ",
+    libidoOvulation: "libido tenderar att toppa runt \u00e4gglossningen p\u00e5 grund av h\u00f6gt \u00f6strogen och testosteron. Detta \u00e4r kroppens naturliga fertila f\u00f6nster. Njut av denna \u00f6kade lust och sj\u00e4lvf\u00f6rtroende.",
+    libidoFollicular: "stigande \u00f6strogen i follikul\u00e4rfasen \u00f6kar gradvis lust och upphetsning. Du kan k\u00e4nna dig mer socialt energisk och attraherad av andra.",
+    libidoLuteal: "progesteron stiger och kan s\u00e4nka libido f\u00f6r m\u00e5nga. Detta \u00e4r normalt. Fokusera p\u00e5 emotionell intimitet och pressa inte dig sj\u00e4lv. Kelande och n\u00e4rhet \u00e4r lika viktiga.",
+    libidoMenstrual: "libido varierar under menstruationen \u2014 vissa k\u00e4nner \u00f6kad lust medan andra inte g\u00f6r det. B\u00e5da \u00e4r helt normalt. Lyssna p\u00e5 din kropp och g\u00f6r det som k\u00e4nns r\u00e4tt f\u00f6r dig.",
+
+    // Supplements responses
+    supplementsIntro: "H\u00e4r \u00e4r tillskotts\u00f6verv\u00e4ganden f\u00f6r {phaseName}fasen (r\u00e5dg\u00f6r alltid med din l\u00e4kare f\u00f6rst): ",
+    supplementsMenstrual: "J\u00e4rn (s\u00e4rskilt vid rikliga menstruationer), magnesium (200-400mg f\u00f6r kramper och hum\u00f6r), vitamin C (f\u00f6r att \u00f6ka j\u00e4rnupptaget) och omega-3-fettsyror (antiinflammatoriskt). B-vitaminkomplex kan ocks\u00e5 st\u00f6dja energin.",
+    supplementsFollicular: "Probiotika f\u00f6r att st\u00f6dja tarmh\u00e4lsa och \u00f6strogenmetabolism, vitamin D (s\u00e4rskilt om du f\u00e5r begr\u00e4nsat med sol), zink f\u00f6r immunst\u00f6d och B-vitaminer f\u00f6r energi. Det h\u00e4r \u00e4r en bra tid att fokusera p\u00e5 att bygga n\u00e4ringsf\u00f6rr\u00e5d.",
+    supplementsOvulation: "Antioxidanter som vitamin E och C, omega-3-fettsyror och zink. NAC (N-acetylcystein) kan st\u00f6dja h\u00e4lsosam \u00e4gglossning. H\u00e5ll dig v\u00e4lhydrerad och fokusera p\u00e5 hel mat framf\u00f6r tillskott n\u00e4r det \u00e4r m\u00f6jligt.",
+    supplementsLuteal: "Magnesiumglycinat (f\u00f6r s\u00f6mn och hum\u00f6r), vitamin B6 (kan hj\u00e4lpa mot PMS), kalcium (1000mg har visats minska PMS-symtom) och nattljusolja. Munkpeppar (vitex) anv\u00e4nds ocks\u00e5 av vissa mot PMS, men r\u00e5dg\u00f6r med din l\u00e4kare f\u00f6rst.",
+
+    // Focus/productivity responses
+    focusIntro: "Dina kognitiva m\u00f6nster f\u00f6r\u00e4ndras med din cykel. I {phaseName}fasen (dag {cycleDay}): ",
+    focusFollicular: "stigande \u00f6strogen f\u00f6rb\u00e4ttrar verbala f\u00f6rm\u00e5gor, kreativitet och inl\u00e4rning. Det h\u00e4r \u00e4r din b\u00e4sta tid f\u00f6r brainstorming, starta nya projekt, planering och att ta in ny information. Planera viktiga m\u00f6ten och kreativt arbete nu.",
+    focusOvulation: "dina kommunikationsf\u00f6rm\u00e5gor och sociala intelligens toppar. Bra tid f\u00f6r presentationer, f\u00f6rhandlingar, samarbeten och n\u00e4tverkande. Du kan tycka att det \u00e4r l\u00e4ttare att multitaska och t\u00e4nka snabbt.",
+    focusLuteal: "progesteron skiftar din hj\u00e4rna mot detaljorienterat, metodiskt t\u00e4nkande. Anv\u00e4nd detta f\u00f6r redigering, korrekturl\u00e4sning, organisering, avsluta projekt och administrativa uppgifter. Undvik att starta helt nya projekt om m\u00f6jligt.",
+    focusMenstrual: "din hj\u00e4rna \u00e4r i ett reflekterande, utv\u00e4rderande tillst\u00e5nd. Det h\u00e4r \u00e4r faktiskt idealiskt f\u00f6r strategiskt t\u00e4nkande, granska m\u00e5l, journalf\u00f6ring och att fatta beslut baserat p\u00e5 intuition. Tvinga inte fram h\u00f6gpresterande kreativt arbete \u2014 planera och reflektera ist\u00e4llet.",
+    focusLowEnergy: " Din energi \u00e4r l\u00e5g idag \u2014 prova att arbeta i korta 25-minuters fokusblock (Pomodoroteknik) med 5 minuters pauser.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Du \u00e4r p\u00e5 dag {cycleDay} av {totalDays} i din cykel, f\u00f6r n\u00e4rvarande i {phaseName}fasen. ",
+    cycleMenstrual: "Menstruationsfasen (vanligtvis dag 1-5) \u00e4r n\u00e4r livmoderslemhinnan st\u00f6ts ut. Hormonniv\u00e5erna (\u00f6strogen och progesteron) \u00e4r som l\u00e4gst. Din kropp fokuserar p\u00e5 f\u00f6rnyelse. T\u00e4nk p\u00e5 detta som din inre vinter \u2014 en tid f\u00f6r vila, reflektion och mild egenv\u00e5rd.",
+    cycleFollicular: "Follikul\u00e4rfasen (vanligtvis dag 6-13) \u00e4r n\u00e4r kroppen f\u00f6rbereder ett nytt \u00e4gg. \u00d6strogen stiger stadigt och \u00f6kar energi, hum\u00f6r och kreativitet. T\u00e4nk p\u00e5 detta som din inre v\u00e5r \u2014 en tid av tillv\u00e4xt och nya b\u00f6rjan.",
+    cycleOvulation: "Ovulationsfasen (vanligtvis dag 14-16) \u00e4r n\u00e4r ett moget \u00e4gg frig\u00f6rs. \u00d6strogen toppar och luteiniserande hormon \u00f6kar kraftigt. Du kan k\u00e4nna dig som mest social, sj\u00e4lvs\u00e4ker och energisk. T\u00e4nk p\u00e5 detta som din inre sommar \u2014 ditt toppresultatf\u00f6nster.",
+    cycleLuteal: "Lutealfasen (vanligtvis dag 17-28) \u00e4r n\u00e4r progesteron stiger f\u00f6r att f\u00f6rbereda f\u00f6r eventuell implantation. Om graviditet inte sker sjunker hormonerna och cykeln b\u00f6rjar om. T\u00e4nk p\u00e5 detta som din inre h\u00f6st \u2014 en tid att varva ner och bygga bo.",
+
+    // Quick reply additions
+    quickCramps: "Hj\u00e4lp med kramper",
+    quickFocus: "Fokustips",
+
+    // New keyword arrays
+    "kw.hydration": "v\u00e4tska|vatten|t\u00f6rstig|uttorkad|dricka",
+    "kw.cramps": "kramper|sm\u00e4rta|ont|uppbl\u00e5st|pms|obehag|menssm\u00e4rta",
+    "kw.libido": "libido|sex|intimitet|lust|upphetsning",
+    "kw.supplements": "kosttillskott|vitamin|mineral|magnesium|j\u00e4rn|zink",
+    "kw.focus": "fokus|koncentration|produktivitet|hj\u00e4rndimma|mental|kognitiv",
+    "kw.cycle": "cykel|mens|fas|\u00e4gglossning|menstruation|luteal|follikul\u00e4r",
   },
 
   de: {
@@ -246,6 +378,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Ich kann bei Fragen zu deiner Energie, Ern\u00e4hrung, Stress, Schlaf, Stimmung, Bewegung und Hautpflege helfen \u2014 alles personalisiert f\u00fcr deine {phaseName}-Phase (Tag {cycleDay} von {totalDays}).",
     fallbackScan: "\n\nDein letzter Scan zeigt: Energie {energy}/10, Stress {stress}/10, Erholung {recovery}/10.",
     fallbackSuggestions: "\n\nProbiere, mich Dinge zu fragen wie:\n- Warum bin ich m\u00fcde?\n- Was soll ich essen?\n- Wie ist mein Stress?\n- Gib mir Schlaftipps\n- Welches Training soll ich machen?\n- Wie ist meine Haut diese Woche?",
+
+    "kw.energy": "m\u00fcde|energie|ersch\u00f6pft|m\u00fcdigkeit|kraftlos|schlapp",
+    "kw.food": "essen|ern\u00e4hrung|nahrung|di\u00e4t|lebensmittel",
+    "kw.stress": "stress|\u00e4ngstlich|angst|\u00fcberfordert|\u00fcberw\u00e4ltigt",
+    "kw.sleep": "schlaf|schlaflos|schlafen|ruhe|insomnie",
+    "kw.mood": "stimmung|traurig|gl\u00fccklich|emotional|niedergeschlagen",
+    "kw.exercise": "training|sport|bewegung|fitnessstudio|\u00fcbung",
+    "kw.skin": "haut|akne|gl\u00e4nzen|pickel|unreinheiten",
+
+    // Hydration responses
+    hydrationIntro: "Gut hydriert zu bleiben ist w\u00e4hrend der {phaseName}-Phase wichtig. ",
+    hydrationVeryLow: "Dein Hydrationslevel ist {hydration}/10 \u2014 das ist ziemlich niedrig. Versuche jetzt gleich ein Glas Wasser zu trinken und stelle dir Erinnerungen f\u00fcr den Tag ein. ",
+    hydrationLow: "Dein Hydrationslevel ist {hydration}/10 \u2014 etwas unter dem Optimum. Strebe heute mindestens 8 Gl\u00e4ser an. ",
+    hydrationGood: "Dein Hydrationslevel ist {hydration}/10 \u2014 du machst das gut! Weiter so. ",
+    hydrationMenstrual: "W\u00e4hrend der Menstruation verlierst du zus\u00e4tzliche Fl\u00fcssigkeit. Warme Kr\u00e4utertees (Ingwer, Kamille) z\u00e4hlen zur Fl\u00fcssigkeitszufuhr und k\u00f6nnen auch Kr\u00e4mpfe lindern.",
+    hydrationOvulation: "Um den Eisprung steigt die K\u00f6rpertemperatur leicht an. Erh\u00f6he die Wasseraufnahme und f\u00fcge Elektrolyte hinzu, wenn du aktiv bist.",
+    hydrationLuteal: "In der Lutealphase kann Progesteron Wassereinlagerungen verursachen. Paradoxerweise hilft es, MEHR Wasser zu trinken, um Bl\u00e4hungen zu reduzieren.",
+    hydrationFollicular: "Die Follikelphase ist eine gute Zeit, um Trinkgewohnheiten aufzubauen. Versuche Wasser mit Zitrone, Gurke oder Beeren zu aromatisieren.",
+
+    // Cramps/pain responses
+    crampsIntro: "Lass uns \u00fcber den Umgang mit Beschwerden w\u00e4hrend der {phaseName}-Phase (Tag {cycleDay}) sprechen. ",
+    crampsMenstrual: "Menstruationskr\u00e4mpfe werden durch Prostaglandine verursacht. Was helfen kann: ein Heizkissen auf dem Unterbauch, sanftes Spazierengehen, magnesiumreiche Lebensmittel (dunkle Schokolade, Bananen) und entz\u00fcndungshemmende Tees wie Ingwer oder Kamille. Sanfte Yoga-Posen wie die Kindshaltung und Katze-Kuh k\u00f6nnen auch Verspannungen l\u00f6sen.",
+    crampsLuteal: "Pr\u00e4menstruelle Beschwerden sind in der Lutealphase h\u00e4ufig. Magnesiumpr\u00e4parate (200-400mg), kalziumreiche Lebensmittel, regelm\u00e4\u00dfige sanfte Bewegung und die Reduzierung von Koffein und Salz k\u00f6nnen helfen, PMS-Symptome zu lindern.",
+    crampsOvulation: "Manche erleben Mittelschmerz \u2014 einen kurzen, stechenden Schmerz beim Eisprung. Das ist normal. Ein warmer Umschlag und leichte Bewegung helfen meist. Wenn der Schmerz stark oder anhaltend ist, konsultiere deinen Arzt.",
+    crampsFollicular: "Die Follikelphase ist normalerweise die beschwerdefreieste Phase. Wenn du ungew\u00f6hnliche Beschwerden hast, erw\u00e4ge sie zu dokumentieren \u2014 Muster k\u00f6nnen dir und deinem Arzt helfen, Bedenken zu identifizieren.",
+
+    // Libido/intimacy responses
+    libidoIntro: "Die Libido schwankt nat\u00fcrlich mit deinem Zyklus. W\u00e4hrend der {phaseName}-Phase: ",
+    libidoOvulation: "die Libido erreicht tendenziell um den Eisprung ihren H\u00f6hepunkt, bedingt durch hohes \u00d6strogen und Testosteron. Dies ist das nat\u00fcrliche Fruchtbarkeitsfenster deines K\u00f6rpers. Genie\u00dfe dieses gesteigerte Verlangen und Selbstvertrauen.",
+    libidoFollicular: "steigendes \u00d6strogen in der Follikelphase erh\u00f6ht allm\u00e4hlich Verlangen und Erregung. Du f\u00fchlst dich m\u00f6glicherweise sozial energischer und angezogener von anderen.",
+    libidoLuteal: "Progesteron steigt und kann die Libido bei vielen senken. Das ist normal. Konzentriere dich auf emotionale N\u00e4he und setze dich nicht unter Druck. Kuscheln und Verbundenheit sind genauso wertvoll.",
+    libidoMenstrual: "die Libido variiert w\u00e4hrend der Menstruation \u2014 manche empfinden gesteigertes Verlangen, andere nicht. Beides ist v\u00f6llig normal. H\u00f6re auf deinen K\u00f6rper und tue, was sich richtig anf\u00fchlt.",
+
+    // Supplements responses
+    supplementsIntro: "Hier sind Erg\u00e4nzungsmittel-Empfehlungen f\u00fcr die {phaseName}-Phase (sprich immer zuerst mit deinem Arzt): ",
+    supplementsMenstrual: "Eisen (besonders bei starker Periode), Magnesium (200-400mg f\u00fcr Kr\u00e4mpfe und Stimmung), Vitamin C (um die Eisenaufnahme zu verbessern) und Omega-3-Fetts\u00e4uren (entz\u00fcndungshemmend). B-Komplex-Vitamine k\u00f6nnen auch die Energie unterst\u00fctzen.",
+    supplementsFollicular: "Probiotika zur Unterst\u00fctzung der Darmgesundheit und des \u00d6strogenstoffwechsels, Vitamin D (besonders bei wenig Sonne), Zink f\u00fcr die Immunabwehr und B-Vitamine f\u00fcr Energie. Dies ist eine gute Zeit, um N\u00e4hrstoffspeicher aufzubauen.",
+    supplementsOvulation: "Antioxidantien wie Vitamin E und C, Omega-3-Fetts\u00e4uren und Zink. NAC (N-Acetylcystein) kann einen gesunden Eisprung unterst\u00fctzen. Bleibe gut hydriert und bevorzuge Vollwertkost gegen\u00fcber Nahrungserg\u00e4nzungsmitteln, wenn m\u00f6glich.",
+    supplementsLuteal: "Magnesiumglycinat (f\u00fcr Schlaf und Stimmung), Vitamin B6 (kann bei PMS helfen), Kalzium (1000mg hat sich als PMS-lindernd erwiesen) und Nachtkerzen\u00f6l. M\u00f6nchspfeffer (Vitex) wird von manchen bei PMS verwendet, aber sprich zuerst mit deinem Arzt.",
+
+    // Focus/productivity responses
+    focusIntro: "Deine kognitiven Muster ver\u00e4ndern sich mit deinem Zyklus. In der {phaseName}-Phase (Tag {cycleDay}): ",
+    focusFollicular: "steigendes \u00d6strogen verbessert verbale F\u00e4higkeiten, Kreativit\u00e4t und Lernf\u00e4higkeit. Dies ist deine beste Zeit f\u00fcr Brainstorming, neue Projekte starten, Planung und neue Informationen aufnehmen. Plane jetzt wichtige Meetings und kreative Arbeit.",
+    focusOvulation: "deine Kommunikationsf\u00e4higkeiten und soziale Intelligenz erreichen ihren H\u00f6hepunkt. Gute Zeit f\u00fcr Pr\u00e4sentationen, Verhandlungen, Zusammenarbeit und Networking. Du kannst m\u00f6glicherweise leichter multitasken und schnell denken.",
+    focusLuteal: "Progesteron lenkt dein Gehirn in Richtung detailorientiertes, methodisches Denken. Nutze dies f\u00fcr Lektorat, Korrekturlesen, Organisation, Projekte abschlie\u00dfen und Verwaltungsaufgaben. Vermeide es, wenn m\u00f6glich, v\u00f6llig neue Projekte zu starten.",
+    focusMenstrual: "dein Gehirn ist in einem reflektierenden, bewertenden Zustand. Das ist eigentlich ideal f\u00fcr strategisches Denken, Ziele \u00fcberpr\u00fcfen, Journaling und intuitive Entscheidungen. Erzwinge keine hochproduktive kreative Arbeit \u2014 plane und reflektiere stattdessen.",
+    focusLowEnergy: " Deine Energie ist heute niedrig \u2014 versuche in kurzen 25-Minuten-Fokusbl\u00f6cken (Pomodoro-Technik) mit 5-Minuten-Pausen zu arbeiten.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Du bist an Tag {cycleDay} von {totalDays} deines Zyklus, aktuell in der {phaseName}-Phase. ",
+    cycleMenstrual: "Die Menstruationsphase (typischerweise Tage 1-5) ist, wenn die Geb\u00e4rmutterschleimhaut abgesto\u00dfen wird. Die Hormonspiegel (\u00d6strogen und Progesteron) sind am niedrigsten. Dein K\u00f6rper konzentriert sich auf Erneuerung. Betrachte dies als deinen inneren Winter \u2014 eine Zeit f\u00fcr Ruhe, Reflexion und sanfte Selbstf\u00fcrsorge.",
+    cycleFollicular: "Die Follikelphase (typischerweise Tage 6-13) ist, wenn dein K\u00f6rper eine neue Eizelle vorbereitet. \u00d6strogen steigt stetig und f\u00f6rdert Energie, Stimmung und Kreativit\u00e4t. Betrachte dies als deinen inneren Fr\u00fchling \u2014 eine Zeit des Wachstums und der Neuanf\u00e4nge.",
+    cycleOvulation: "Die Ovulationsphase (typischerweise Tage 14-16) ist, wenn eine reife Eizelle freigesetzt wird. \u00d6strogen erreicht seinen H\u00f6hepunkt und das luteinisierende Hormon steigt stark an. Du f\u00fchlst dich vielleicht am geselligsten, selbstbewusstesten und energischsten. Betrachte dies als deinen inneren Sommer \u2014 dein Leistungsh\u00f6hepunkt-Fenster.",
+    cycleLuteal: "Die Lutealphase (typischerweise Tage 17-28) ist, wenn Progesteron steigt, um sich auf eine m\u00f6gliche Einnistung vorzubereiten. Wenn keine Schwangerschaft eintritt, sinken die Hormone und der Zyklus beginnt von vorne. Betrachte dies als deinen inneren Herbst \u2014 eine Zeit zum Runterfahren und Einnisten.",
+
+    // Quick reply additions
+    quickCramps: "Hilfe bei Kr\u00e4mpfen",
+    quickFocus: "Fokus-Tipps",
+
+    // New keyword arrays
+    "kw.hydration": "fl\u00fcssigkeit|wasser|durstig|dehydriert|trinken|hydration",
+    "kw.cramps": "kr\u00e4mpfe|schmerzen|bl\u00e4hungen|pms|beschwerden|regelschmerzen",
+    "kw.libido": "libido|sex|intimit\u00e4t|verlangen|erregung|lust",
+    "kw.supplements": "nahrungserg\u00e4nzung|vitamin|mineral|magnesium|eisen|zink|erg\u00e4nzungsmittel",
+    "kw.focus": "fokus|konzentration|produktivit\u00e4t|gehirnnebel|mental|kognitiv",
+    "kw.cycle": "zyklus|periode|phase|eisprung|menstruation|luteal|follikul\u00e4r",
   },
 
   fr: {
@@ -325,6 +523,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Je peux vous aider avec des questions sur votre \u00e9nergie, nutrition, stress, sommeil, humeur, exercice et soins de la peau \u2014 le tout personnalis\u00e9 pour votre phase {phaseName} (jour {cycleDay} sur {totalDays}).",
     fallbackScan: "\n\nVotre dernier scan montre : \u00e9nergie {energy}/10, stress {stress}/10, r\u00e9cup\u00e9ration {recovery}/10.",
     fallbackSuggestions: "\n\nEssayez de me poser des questions comme :\n- Pourquoi suis-je fatigu\u00e9e ?\n- Que devrais-je manger ?\n- Comment va mon stress ?\n- Donne-moi des conseils sommeil\n- Quel entra\u00eenement faire ?\n- Comment va ma peau cette semaine ?",
+
+    "kw.energy": "fatigu\u00e9e|fatigue|\u00e9nergie|\u00e9puis\u00e9e|lasse|crev\u00e9e",
+    "kw.food": "manger|nourriture|nutrition|alimentation|r\u00e9gime",
+    "kw.stress": "stress|anxi\u00e9t\u00e9|anxieuse|d\u00e9bord\u00e9e|submerg\u00e9e",
+    "kw.sleep": "sommeil|insomnie|dormir|repos",
+    "kw.mood": "humeur|triste|heureuse|\u00e9motionnelle|d\u00e9prim\u00e9e",
+    "kw.exercise": "exercice|entra\u00eenement|sport|mouvement|salle",
+    "kw.skin": "peau|acn\u00e9|\u00e9clat|boutons|imperfections",
+
+    // Hydration responses
+    hydrationIntro: "Rester bien hydrat\u00e9e est important pendant la phase {phaseName}. ",
+    hydrationVeryLow: "Votre niveau d\u2019hydratation est \u00e0 {hydration}/10 \u2014 c\u2019est assez bas. Essayez de boire un verre d\u2019eau maintenant et programmez des rappels tout au long de la journ\u00e9e. ",
+    hydrationLow: "Votre niveau d\u2019hydratation est \u00e0 {hydration}/10 \u2014 un peu en dessous de l\u2019optimal. Visez au moins 8 verres aujourd\u2019hui. ",
+    hydrationGood: "Votre niveau d\u2019hydratation est \u00e0 {hydration}/10 \u2014 c\u2019est bien ! Continuez comme \u00e7a. ",
+    hydrationMenstrual: "Pendant les r\u00e8gles, vous perdez des fluides suppl\u00e9mentaires. Les tisanes chaudes (gingembre, camomille) comptent dans l\u2019hydratation et peuvent aussi soulager les crampes.",
+    hydrationOvulation: "Autour de l\u2019ovulation, la temp\u00e9rature corporelle augmente l\u00e9g\u00e8rement. Augmentez l\u2019apport en eau et ajoutez des \u00e9lectrolytes si vous \u00eates active.",
+    hydrationLuteal: "En phase lut\u00e9ale, la progest\u00e9rone peut provoquer une r\u00e9tention d\u2019eau. Paradoxalement, boire PLUS d\u2019eau aide \u00e0 r\u00e9duire les ballonnements.",
+    hydrationFollicular: "La phase folliculaire est un bon moment pour cr\u00e9er des habitudes d\u2019hydratation. Essayez d\u2019infuser l\u2019eau avec du citron, du concombre ou des baies pour varier.",
+
+    // Cramps/pain responses
+    crampsIntro: "Parlons de la gestion de l\u2019inconfort pendant la phase {phaseName} (jour {cycleDay}). ",
+    crampsMenstrual: "Les crampes menstruelles sont caus\u00e9es par les prostaglandines. Ce qui peut aider : une bouillotte sur le bas-ventre, une marche douce, des aliments riches en magn\u00e9sium (chocolat noir, bananes) et des tisanes anti-inflammatoires comme le gingembre ou la camomille. Des postures de yoga douces comme la posture de l\u2019enfant et chat-vache peuvent aussi soulager les tensions.",
+    crampsLuteal: "L\u2019inconfort pr\u00e9menstruel est courant en phase lut\u00e9ale. Les compl\u00e9ments de magn\u00e9sium (200-400mg), les aliments riches en calcium, l\u2019exercice doux r\u00e9gulier et la r\u00e9duction de la caf\u00e9ine et du sel peuvent aider \u00e0 g\u00e9rer les sympt\u00f4mes du SPM.",
+    crampsOvulation: "Certaines personnes ressentent le mittelschmerz \u2014 une douleur br\u00e8ve et aig\u00fce pendant l\u2019ovulation. C\u2019est normal. Une compresse chaude et un mouvement l\u00e9ger aident g\u00e9n\u00e9ralement. Si la douleur est forte ou persistante, consultez votre m\u00e9decin.",
+    crampsFollicular: "La phase folliculaire est g\u00e9n\u00e9ralement la plus confortable. Si vous ressentez un inconfort inhabituel, pensez \u00e0 le noter \u2014 les tendances peuvent vous aider, vous et votre m\u00e9decin, \u00e0 identifier d\u2019\u00e9ventuels probl\u00e8mes.",
+
+    // Libido/intimacy responses
+    libidoIntro: "La libido fluctue naturellement avec votre cycle. Pendant la phase {phaseName} : ",
+    libidoOvulation: "la libido a tendance \u00e0 atteindre son pic autour de l\u2019ovulation en raison de niveaux \u00e9lev\u00e9s d\u2019\u0153strog\u00e8ne et de testost\u00e9rone. C\u2019est la fen\u00eatre de fertilit\u00e9 naturelle de votre corps. Profitez de ce d\u00e9sir et de cette confiance accrus.",
+    libidoFollicular: "l\u2019\u0153strog\u00e8ne montant en phase folliculaire augmente progressivement le d\u00e9sir et l\u2019excitation. Vous pouvez vous sentir plus socialement \u00e9nergis\u00e9e et attir\u00e9e par les autres.",
+    libidoLuteal: "la progest\u00e9rone augmente et peut r\u00e9duire la libido chez beaucoup de personnes. C\u2019est normal. Concentrez-vous sur l\u2019intimit\u00e9 \u00e9motionnelle et ne vous mettez pas la pression. Les c\u00e2lins et la connexion sont tout aussi importants.",
+    libidoMenstrual: "la libido varie pendant les r\u00e8gles \u2014 certaines ressentent un d\u00e9sir accru tandis que d\u2019autres non. Les deux sont tout \u00e0 fait normaux. \u00c9coutez votre corps et faites ce qui vous semble juste.",
+
+    // Supplements responses
+    supplementsIntro: "Voici des recommandations de compl\u00e9ments pour la phase {phaseName} (consultez toujours votre m\u00e9decin d\u2019abord) : ",
+    supplementsMenstrual: "Fer (surtout en cas de r\u00e8gles abondantes), magn\u00e9sium (200-400mg pour les crampes et l\u2019humeur), vitamine C (pour am\u00e9liorer l\u2019absorption du fer) et acides gras om\u00e9ga-3 (anti-inflammatoire). Les vitamines du complexe B peuvent aussi soutenir l\u2019\u00e9nergie.",
+    supplementsFollicular: "Probiotiques pour soutenir la sant\u00e9 intestinale et le m\u00e9tabolisme des \u0153strog\u00e8nes, vitamine D (surtout si vous avez peu de soleil), zinc pour le soutien immunitaire et vitamines B pour l\u2019\u00e9nergie. C\u2019est un bon moment pour constituer vos r\u00e9serves nutritives.",
+    supplementsOvulation: "Antioxydants comme les vitamines E et C, acides gras om\u00e9ga-3 et zinc. La NAC (N-ac\u00e9tylcyst\u00e9ine) peut soutenir une ovulation saine. Restez bien hydrat\u00e9e et privil\u00e9giez les aliments complets aux compl\u00e9ments quand c\u2019est possible.",
+    supplementsLuteal: "Glycinate de magn\u00e9sium (pour le sommeil et l\u2019humeur), vitamine B6 (peut aider avec le SPM), calcium (1000mg a montr\u00e9 une r\u00e9duction des sympt\u00f4mes du SPM) et huile d\u2019onagre. Le gattilier (vitex) est aussi utilis\u00e9 par certaines pour le SPM, mais consultez votre m\u00e9decin d\u2019abord.",
+
+    // Focus/productivity responses
+    focusIntro: "Vos sch\u00e9mas cognitifs \u00e9voluent avec votre cycle. En phase {phaseName} (jour {cycleDay}) : ",
+    focusFollicular: "l\u2019\u0153strog\u00e8ne montant am\u00e9liore les comp\u00e9tences verbales, la cr\u00e9ativit\u00e9 et l\u2019apprentissage. C\u2019est votre meilleur moment pour le brainstorming, d\u00e9marrer de nouveaux projets, planifier et absorber de nouvelles informations. Planifiez maintenant vos r\u00e9unions importantes et le travail cr\u00e9atif.",
+    focusOvulation: "vos comp\u00e9tences en communication et votre intelligence sociale sont \u00e0 leur apog\u00e9e. Bon moment pour les pr\u00e9sentations, n\u00e9gociations, collaborations et le r\u00e9seautage. Vous trouverez peut-\u00eatre plus facile de faire plusieurs choses \u00e0 la fois et de r\u00e9fl\u00e9chir rapidement.",
+    focusLuteal: "la progest\u00e9rone oriente votre cerveau vers une pens\u00e9e d\u00e9taill\u00e9e et m\u00e9thodique. Utilisez cela pour la r\u00e9vision, la relecture, l\u2019organisation, la finalisation de projets et les t\u00e2ches administratives. \u00c9vitez de d\u00e9marrer des projets enti\u00e8rement nouveaux si possible.",
+    focusMenstrual: "votre cerveau est dans un \u00e9tat r\u00e9flexif et \u00e9valuatif. C\u2019est en fait id\u00e9al pour la pens\u00e9e strat\u00e9gique, la r\u00e9vision des objectifs, l\u2019\u00e9criture de journal et la prise de d\u00e9cisions bas\u00e9es sur l\u2019intuition. Ne forcez pas un travail cr\u00e9atif intense \u2014 planifiez et r\u00e9fl\u00e9chissez plut\u00f4t.",
+    focusLowEnergy: " Votre \u00e9nergie est basse aujourd\u2019hui \u2014 essayez de travailler en blocs de concentration de 25 minutes (technique Pomodoro) avec des pauses de 5 minutes.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Vous \u00eates au jour {cycleDay} sur {totalDays} de votre cycle, actuellement en phase {phaseName}. ",
+    cycleMenstrual: "La phase menstruelle (g\u00e9n\u00e9ralement jours 1-5) est le moment o\u00f9 la muqueuse ut\u00e9rine est \u00e9limin\u00e9e. Les niveaux hormonaux (\u0153strog\u00e8ne et progest\u00e9rone) sont au plus bas. Votre corps se concentre sur le renouvellement. Consid\u00e9rez cela comme votre hiver int\u00e9rieur \u2014 un temps de repos, de r\u00e9flexion et de soins doux.",
+    cycleFollicular: "La phase folliculaire (g\u00e9n\u00e9ralement jours 6-13) est le moment o\u00f9 votre corps pr\u00e9pare un nouvel ovule. L\u2019\u0153strog\u00e8ne monte r\u00e9guli\u00e8rement, stimulant l\u2019\u00e9nergie, l\u2019humeur et la cr\u00e9ativit\u00e9. Consid\u00e9rez cela comme votre printemps int\u00e9rieur \u2014 un temps de croissance et de nouveaux d\u00e9buts.",
+    cycleOvulation: "La phase ovulatoire (g\u00e9n\u00e9ralement jours 14-16) est le moment o\u00f9 un ovule mature est lib\u00e9r\u00e9. L\u2019\u0153strog\u00e8ne atteint son pic et l\u2019hormone lut\u00e9inisante monte en fl\u00e8che. Vous vous sentez peut-\u00eatre au plus sociable, confiante et \u00e9nergique. Consid\u00e9rez cela comme votre \u00e9t\u00e9 int\u00e9rieur \u2014 votre fen\u00eatre de performance maximale.",
+    cycleLuteal: "La phase lut\u00e9ale (g\u00e9n\u00e9ralement jours 17-28) est le moment o\u00f9 la progest\u00e9rone augmente pour pr\u00e9parer une \u00e9ventuelle implantation. Si la grossesse n\u2019a pas lieu, les hormones chutent et le cycle recommence. Consid\u00e9rez cela comme votre automne int\u00e9rieur \u2014 un temps pour ralentir et se cocooner.",
+
+    // Quick reply additions
+    quickCramps: "Aide pour les crampes",
+    quickFocus: "Conseils de concentration",
+
+    // New keyword arrays
+    "kw.hydration": "hydratation|eau|soif|d\u00e9shydrat\u00e9e|boire|liquide",
+    "kw.cramps": "crampes|douleur|ballonnements|spm|inconfort|r\u00e8gles douloureuses",
+    "kw.libido": "libido|sexe|intimit\u00e9|d\u00e9sir|excitation",
+    "kw.supplements": "compl\u00e9ment|vitamine|min\u00e9ral|magn\u00e9sium|fer|zinc",
+    "kw.focus": "concentration|productivit\u00e9|brouillard mental|cognitif|focus",
+    "kw.cycle": "cycle|r\u00e8gles|phase|ovulation|menstruel|lut\u00e9al|folliculaire",
   },
 
   es: {
@@ -404,6 +668,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Puedo ayudarte con preguntas sobre tu energ\u00eda, nutrici\u00f3n, estr\u00e9s, sue\u00f1o, estado de \u00e1nimo, ejercicio y cuidado de la piel \u2014 todo personalizado para tu fase {phaseName} (d\u00eda {cycleDay} de {totalDays}).",
     fallbackScan: "\n\nTu \u00faltimo escaneo muestra: energ\u00eda {energy}/10, estr\u00e9s {stress}/10, recuperaci\u00f3n {recovery}/10.",
     fallbackSuggestions: "\n\nPrueba a preguntarme cosas como:\n- \u00bfPor qu\u00e9 estoy cansada?\n- \u00bfQu\u00e9 deber\u00eda comer?\n- \u00bfC\u00f3mo est\u00e1 mi estr\u00e9s?\n- Dame consejos de sue\u00f1o\n- \u00bfQu\u00e9 entrenamiento deber\u00eda hacer?\n- \u00bfC\u00f3mo est\u00e1 mi piel esta semana?",
+
+    "kw.energy": "cansada|energ\u00eda|fatiga|agotada|exhausta",
+    "kw.food": "comer|comida|nutrici\u00f3n|dieta|alimentaci\u00f3n",
+    "kw.stress": "estr\u00e9s|ansiosa|ansiedad|abrumada|agobiada",
+    "kw.sleep": "sue\u00f1o|insomnio|dormir|descanso|descansar",
+    "kw.mood": "humor|\u00e1nimo|triste|feliz|emocional|deprimida",
+    "kw.exercise": "ejercicio|entrenamiento|deporte|movimiento|gimnasio",
+    "kw.skin": "piel|acn\u00e9|brillo|granos|imperfecciones",
+
+    // Hydration responses
+    hydrationIntro: "Mantenerse bien hidratada es importante durante la fase {phaseName}. ",
+    hydrationVeryLow: "Tu nivel de hidrataci\u00f3n es {hydration}/10 \u2014 es bastante bajo. Intenta beber un vaso de agua ahora mismo y pon recordatorios durante el d\u00eda. ",
+    hydrationLow: "Tu nivel de hidrataci\u00f3n es {hydration}/10 \u2014 un poco por debajo de lo \u00f3ptimo. Intenta tomar al menos 8 vasos hoy. ",
+    hydrationGood: "Tu nivel de hidrataci\u00f3n es {hydration}/10 \u2014 \u00a1lo est\u00e1s haciendo bien! Sigue as\u00ed. ",
+    hydrationMenstrual: "Durante la menstruaci\u00f3n, pierdes l\u00edquidos adicionales. Las infusiones calientes (jengibre, manzanilla) cuentan como hidrataci\u00f3n y tambi\u00e9n pueden aliviar los calambres.",
+    hydrationOvulation: "Alrededor de la ovulaci\u00f3n, la temperatura corporal sube ligeramente. Aumenta la ingesta de agua y a\u00f1ade electrolitos si est\u00e1s activa.",
+    hydrationLuteal: "En la fase l\u00fatea, la progesterona puede causar retenci\u00f3n de l\u00edquidos. Parad\u00f3jicamente, beber M\u00c1S agua ayuda a reducir la hinchaz\u00f3n.",
+    hydrationFollicular: "La fase folicular es un buen momento para crear h\u00e1bitos de hidrataci\u00f3n. Prueba a infusionar el agua con lim\u00f3n, pepino o frutos rojos para variar.",
+
+    // Cramps/pain responses
+    crampsIntro: "Hablemos sobre c\u00f3mo manejar las molestias durante la fase {phaseName} (d\u00eda {cycleDay}). ",
+    crampsMenstrual: "Los calambres menstruales son causados por las prostaglandinas. Lo que puede ayudar: una bolsa de calor en el bajo vientre, caminatas suaves, alimentos ricos en magnesio (chocolate negro, pl\u00e1tanos) e infusiones antiinflamatorias como jengibre o manzanilla. Posturas suaves de yoga como la postura del ni\u00f1o y gato-vaca tambi\u00e9n pueden aliviar la tensi\u00f3n.",
+    crampsLuteal: "Las molestias premenstruales son comunes en la fase l\u00fatea. Suplementos de magnesio (200-400mg), alimentos ricos en calcio, ejercicio suave regular y reducir la cafe\u00edna y la sal pueden ayudar a controlar los s\u00edntomas del SPM.",
+    crampsOvulation: "Algunas personas experimentan mittelschmerz \u2014 un dolor breve y agudo durante la ovulaci\u00f3n. Es normal. Una compresa caliente y movimiento ligero suelen ayudar. Si el dolor es intenso o persistente, consulta a tu m\u00e9dico.",
+    crampsFollicular: "La fase folicular suele ser la m\u00e1s c\u00f3moda. Si experimentas molestias inusuales, considera registrarlas \u2014 los patrones pueden ayudarte a ti y a tu m\u00e9dico a identificar posibles problemas.",
+
+    // Libido/intimacy responses
+    libidoIntro: "La libido fluctu\u00faa naturalmente con tu ciclo. Durante la fase {phaseName}: ",
+    libidoOvulation: "la libido tiende a alcanzar su punto m\u00e1ximo alrededor de la ovulaci\u00f3n debido a los altos niveles de estr\u00f3geno y testosterona. Esta es la ventana de fertilidad natural de tu cuerpo. Disfruta de este mayor deseo y confianza.",
+    libidoFollicular: "el estr\u00f3geno en aumento en la fase folicular incrementa gradualmente el deseo y la excitaci\u00f3n. Puedes sentirte m\u00e1s energ\u00e9tica socialmente y atra\u00edda por los dem\u00e1s.",
+    libidoLuteal: "la progesterona sube y puede reducir la libido en muchas personas. Esto es normal. Conc\u00e9ntrate en la intimidad emocional y no te presiones. Los abrazos y la conexi\u00f3n son igual de v\u00e1lidos.",
+    libidoMenstrual: "la libido var\u00eda durante la menstruaci\u00f3n \u2014 algunas sienten mayor deseo mientras que otras no. Ambas opciones son completamente normales. Escucha a tu cuerpo y haz lo que te parezca correcto.",
+
+    // Supplements responses
+    supplementsIntro: "Aqu\u00ed tienes recomendaciones de suplementos para la fase {phaseName} (consulta siempre primero con tu m\u00e9dico): ",
+    supplementsMenstrual: "Hierro (especialmente si tienes reglas abundantes), magnesio (200-400mg para calambres y estado de \u00e1nimo), vitamina C (para mejorar la absorci\u00f3n de hierro) y \u00e1cidos grasos omega-3 (antiinflamatorio). Las vitaminas del complejo B tambi\u00e9n pueden apoyar la energ\u00eda.",
+    supplementsFollicular: "Probi\u00f3ticos para apoyar la salud intestinal y el metabolismo de estr\u00f3genos, vitamina D (especialmente si recibes poca luz solar), zinc para el apoyo inmunol\u00f3gico y vitaminas B para la energ\u00eda. Es un buen momento para enfocarte en construir reservas de nutrientes.",
+    supplementsOvulation: "Antioxidantes como vitaminas E y C, \u00e1cidos grasos omega-3 y zinc. La NAC (N-acetilciste\u00edna) puede apoyar una ovulaci\u00f3n saludable. Mant\u00e9nte bien hidratada y prioriza los alimentos integrales sobre los suplementos cuando sea posible.",
+    supplementsLuteal: "Glicinato de magnesio (para el sue\u00f1o y el estado de \u00e1nimo), vitamina B6 (puede ayudar con el SPM), calcio (1000mg ha demostrado reducir los s\u00edntomas del SPM) y aceite de onagra. El sauzgatillo (vitex) tambi\u00e9n es usado por algunas para el SPM, pero consulta primero con tu m\u00e9dico.",
+
+    // Focus/productivity responses
+    focusIntro: "Tus patrones cognitivos cambian con tu ciclo. En la fase {phaseName} (d\u00eda {cycleDay}): ",
+    focusFollicular: "el estr\u00f3geno en aumento mejora las habilidades verbales, la creatividad y el aprendizaje. Este es tu mejor momento para hacer lluvia de ideas, comenzar nuevos proyectos, planificar y absorber nueva informaci\u00f3n. Programa ahora reuniones importantes y trabajo creativo.",
+    focusOvulation: "tus habilidades de comunicaci\u00f3n e inteligencia social alcanzan su punto m\u00e1ximo. Buen momento para presentaciones, negociaciones, colaboraciones y networking. Puede que te resulte m\u00e1s f\u00e1cil hacer varias cosas a la vez y pensar r\u00e1pidamente.",
+    focusLuteal: "la progesterona orienta tu cerebro hacia un pensamiento detallista y met\u00f3dico. \u00dasalo para edici\u00f3n, revisi\u00f3n, organizaci\u00f3n, terminar proyectos y tareas administrativas. Evita comenzar proyectos completamente nuevos si es posible.",
+    focusMenstrual: "tu cerebro est\u00e1 en un estado reflexivo y evaluativo. Esto es en realidad ideal para el pensamiento estrat\u00e9gico, revisar objetivos, escribir un diario y tomar decisiones basadas en la intuici\u00f3n. No fuerces trabajo creativo de alta producci\u00f3n \u2014 en su lugar, planifica y reflexiona.",
+    focusLowEnergy: " Tu energ\u00eda est\u00e1 baja hoy \u2014 prueba a trabajar en bloques de concentraci\u00f3n de 25 minutos (t\u00e9cnica Pomodoro) con pausas de 5 minutos.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Est\u00e1s en el d\u00eda {cycleDay} de {totalDays} de tu ciclo, actualmente en la fase {phaseName}. ",
+    cycleMenstrual: "La fase menstrual (normalmente d\u00edas 1-5) es cuando se desprende el revestimiento uterino. Los niveles hormonales (estr\u00f3geno y progesterona) est\u00e1n en su punto m\u00e1s bajo. Tu cuerpo se enfoca en la renovaci\u00f3n. Pi\u00e9nsalo como tu invierno interior \u2014 un tiempo de descanso, reflexi\u00f3n y autocuidado suave.",
+    cycleFollicular: "La fase folicular (normalmente d\u00edas 6-13) es cuando tu cuerpo prepara un nuevo \u00f3vulo. El estr\u00f3geno sube constantemente, impulsando la energ\u00eda, el \u00e1nimo y la creatividad. Pi\u00e9nsalo como tu primavera interior \u2014 un tiempo de crecimiento y nuevos comienzos.",
+    cycleOvulation: "La fase ovulatoria (normalmente d\u00edas 14-16) es cuando se libera un \u00f3vulo maduro. El estr\u00f3geno alcanza su pico y la hormona luteinizante aumenta bruscamente. Puedes sentirte lo m\u00e1s sociable, segura y en\u00e9rgica. Pi\u00e9nsalo como tu verano interior \u2014 tu ventana de m\u00e1ximo rendimiento.",
+    cycleLuteal: "La fase l\u00fatea (normalmente d\u00edas 17-28) es cuando la progesterona sube para prepararse para una posible implantaci\u00f3n. Si no hay embarazo, las hormonas bajan y el ciclo comienza de nuevo. Pi\u00e9nsalo como tu oto\u00f1o interior \u2014 un tiempo para desacelerar y hacer nido.",
+
+    // Quick reply additions
+    quickCramps: "Ayuda con calambres",
+    quickFocus: "Consejos de concentraci\u00f3n",
+
+    // New keyword arrays
+    "kw.hydration": "hidrataci\u00f3n|agua|sed|deshidratada|beber|l\u00edquido",
+    "kw.cramps": "calambres|dolor|hinchaz\u00f3n|spm|molestias|dolor menstrual",
+    "kw.libido": "libido|sexo|intimidad|deseo|excitaci\u00f3n",
+    "kw.supplements": "suplemento|vitamina|mineral|magnesio|hierro|zinc",
+    "kw.focus": "concentraci\u00f3n|productividad|niebla mental|cognitivo|enfoque",
+    "kw.cycle": "ciclo|regla|fase|ovulaci\u00f3n|menstrual|l\u00fatea|folicular",
   },
 
   it: {
@@ -483,6 +813,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Posso aiutarti con domande sulla tua energia, nutrizione, stress, sonno, umore, esercizio e cura della pelle \u2014 tutto personalizzato per la tua fase {phaseName} (giorno {cycleDay} di {totalDays}).",
     fallbackScan: "\n\nLa tua ultima scansione mostra: energia {energy}/10, stress {stress}/10, recupero {recovery}/10.",
     fallbackSuggestions: "\n\nProva a chiedermi cose come:\n- Perch\u00e9 sono stanca?\n- Cosa dovrei mangiare?\n- Com'\u00e8 il mio stress?\n- Dammi consigli sul sonno\n- Quale allenamento dovrei fare?\n- Come sta la mia pelle questa settimana?",
+
+    "kw.energy": "stanca|energia|affaticata|esausta|spossata",
+    "kw.food": "mangiare|cibo|nutrizione|dieta|alimentazione",
+    "kw.stress": "stress|ansiosa|ansia|sopraffatta|travolta",
+    "kw.sleep": "sonno|insonnia|dormire|riposo|riposare",
+    "kw.mood": "umore|triste|felice|emotiva|depressa",
+    "kw.exercise": "esercizio|allenamento|sport|movimento|palestra",
+    "kw.skin": "pelle|acne|luminosit\u00e0|brufoli|imperfezioni",
+
+    // Hydration responses
+    hydrationIntro: "Mantenersi ben idratata \u00e8 importante durante la fase {phaseName}. ",
+    hydrationVeryLow: "Il tuo livello di idratazione \u00e8 {hydration}/10 \u2014 \u00e8 piuttosto basso. Prova a bere un bicchiere d\u2019acqua adesso e imposta dei promemoria durante la giornata. ",
+    hydrationLow: "Il tuo livello di idratazione \u00e8 {hydration}/10 \u2014 un po\u2019 sotto l\u2019ottimale. Punta ad almeno 8 bicchieri oggi. ",
+    hydrationGood: "Il tuo livello di idratazione \u00e8 {hydration}/10 \u2014 stai andando bene! Continua cos\u00ec. ",
+    hydrationMenstrual: "Durante le mestruazioni, perdi liquidi extra. Le tisane calde (zenzero, camomilla) contano nell\u2019idratazione e possono anche alleviare i crampi.",
+    hydrationOvulation: "Intorno all\u2019ovulazione, la temperatura corporea aumenta leggermente. Aumenta l\u2019assunzione di acqua e aggiungi elettroliti se sei attiva.",
+    hydrationLuteal: "Nella fase luteale, il progesterone pu\u00f2 causare ritenzione idrica. Paradossalmente, bere PI\u00d9 acqua aiuta a ridurre il gonfiore.",
+    hydrationFollicular: "La fase follicolare \u00e8 un buon momento per creare abitudini di idratazione. Prova ad aromatizzare l\u2019acqua con limone, cetriolo o frutti di bosco per variare.",
+
+    // Cramps/pain responses
+    crampsIntro: "Parliamo di come gestire il disagio durante la fase {phaseName} (giorno {cycleDay}). ",
+    crampsMenstrual: "I crampi mestruali sono causati dalle prostaglandine. Cose che possono aiutare: una borsa dell\u2019acqua calda sul basso ventre, passeggiate leggere, cibi ricchi di magnesio (cioccolato fondente, banane) e tisane antinfiammatorie come zenzero o camomilla. Posizioni yoga dolci come la posizione del bambino e gatto-mucca possono anche alleviare la tensione.",
+    crampsLuteal: "Il disagio premestruale \u00e8 comune nella fase luteale. Integratori di magnesio (200-400mg), cibi ricchi di calcio, esercizio dolce regolare e la riduzione di caffeina e sale possono aiutare a gestire i sintomi della SPM.",
+    crampsOvulation: "Alcune persone sperimentano il mittelschmerz \u2014 un dolore breve e acuto durante l\u2019ovulazione. \u00c8 normale. Un impacco caldo e un movimento leggero di solito aiutano. Se il dolore \u00e8 forte o persistente, consulta il tuo medico.",
+    crampsFollicular: "La fase follicolare \u00e8 generalmente la fase pi\u00f9 confortevole. Se stai sperimentando un disagio insolito, considera di annotarlo \u2014 i pattern possono aiutare te e il tuo medico a identificare eventuali problemi.",
+
+    // Libido/intimacy responses
+    libidoIntro: "La libido fluttua naturalmente con il ciclo. Durante la fase {phaseName}: ",
+    libidoOvulation: "la libido tende a raggiungere il picco intorno all\u2019ovulazione grazie ad alti livelli di estrogeni e testosterone. Questa \u00e8 la finestra di fertilit\u00e0 naturale del tuo corpo. Goditi questo aumento di desiderio e sicurezza.",
+    libidoFollicular: "gli estrogeni in aumento nella fase follicolare aumentano gradualmente il desiderio e l\u2019eccitazione. Potresti sentirti pi\u00f9 energica socialmente e attratta dagli altri.",
+    libidoLuteal: "il progesterone sale e pu\u00f2 ridurre la libido per molte persone. \u00c8 normale. Concentrati sull\u2019intimit\u00e0 emotiva e non metterti sotto pressione. Le coccole e la connessione sono altrettanto valide.",
+    libidoMenstrual: "la libido varia durante le mestruazioni \u2014 alcune sentono un desiderio maggiore mentre altre no. Entrambe le situazioni sono completamente normali. Ascolta il tuo corpo e fai ci\u00f2 che ti sembra giusto.",
+
+    // Supplements responses
+    supplementsIntro: "Ecco alcune considerazioni sugli integratori per la fase {phaseName} (consulta sempre prima il tuo medico): ",
+    supplementsMenstrual: "Ferro (soprattutto in caso di mestruazioni abbondanti), magnesio (200-400mg per crampi e umore), vitamina C (per migliorare l\u2019assorbimento del ferro) e acidi grassi omega-3 (antinfiammatorio). Le vitamine del complesso B possono anche supportare l\u2019energia.",
+    supplementsFollicular: "Probiotici per supportare la salute intestinale e il metabolismo degli estrogeni, vitamina D (soprattutto se prendi poco sole), zinco per il supporto immunitario e vitamine B per l\u2019energia. \u00c8 un buon momento per concentrarsi sulla costruzione delle riserve nutritive.",
+    supplementsOvulation: "Antiossidanti come vitamine E e C, acidi grassi omega-3 e zinco. La NAC (N-acetilcisteina) pu\u00f2 supportare un\u2019ovulazione sana. Mantieniti ben idratata e prediligi gli alimenti integrali rispetto agli integratori quando possibile.",
+    supplementsLuteal: "Glicinato di magnesio (per sonno e umore), vitamina B6 (pu\u00f2 aiutare con la SPM), calcio (1000mg ha dimostrato di ridurre i sintomi della SPM) e olio di enotera. L\u2019agnocasto (vitex) \u00e8 anche usato da alcune per la SPM, ma consulta prima il tuo medico.",
+
+    // Focus/productivity responses
+    focusIntro: "I tuoi schemi cognitivi cambiano con il ciclo. Nella fase {phaseName} (giorno {cycleDay}): ",
+    focusFollicular: "gli estrogeni in aumento migliorano le abilit\u00e0 verbali, la creativit\u00e0 e l\u2019apprendimento. Questo \u00e8 il momento migliore per brainstorming, avviare nuovi progetti, pianificare e assorbire nuove informazioni. Programma ora riunioni importanti e lavoro creativo.",
+    focusOvulation: "le tue capacit\u00e0 comunicative e l\u2019intelligenza sociale raggiungono il picco. Ottimo momento per presentazioni, negoziazioni, collaborazioni e networking. Potresti trovare pi\u00f9 facile fare pi\u00f9 cose contemporaneamente e pensare rapidamente.",
+    focusLuteal: "il progesterone orienta il cervello verso un pensiero dettagliato e metodico. Usalo per revisione, correzione bozze, organizzazione, completare progetti e attivit\u00e0 amministrative. Evita di iniziare progetti completamente nuovi se possibile.",
+    focusMenstrual: "il tuo cervello \u00e8 in uno stato riflessivo e valutativo. Questo \u00e8 in realt\u00e0 ideale per il pensiero strategico, la revisione degli obiettivi, la scrittura di un diario e le decisioni basate sull\u2019intuizione. Non forzare un lavoro creativo ad alta intensit\u00e0 \u2014 piuttosto, pianifica e rifletti.",
+    focusLowEnergy: " La tua energia \u00e8 bassa oggi \u2014 prova a lavorare in blocchi di concentrazione di 25 minuti (tecnica Pomodoro) con pause di 5 minuti.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Sei al giorno {cycleDay} di {totalDays} del tuo ciclo, attualmente nella fase {phaseName}. ",
+    cycleMenstrual: "La fase mestruale (tipicamente giorni 1-5) \u00e8 quando il rivestimento uterino viene espulso. I livelli ormonali (estrogeni e progesterone) sono al minimo. Il tuo corpo \u00e8 concentrato sul rinnovamento. Pensalo come il tuo inverno interiore \u2014 un tempo di riposo, riflessione e cura dolce di s\u00e9.",
+    cycleFollicular: "La fase follicolare (tipicamente giorni 6-13) \u00e8 quando il tuo corpo prepara un nuovo ovulo. Gli estrogeni salgono costantemente, stimolando energia, umore e creativit\u00e0. Pensalo come la tua primavera interiore \u2014 un tempo di crescita e nuovi inizi.",
+    cycleOvulation: "La fase ovulatoria (tipicamente giorni 14-16) \u00e8 quando un ovulo maturo viene rilasciato. Gli estrogeni raggiungono il picco e l\u2019ormone luteinizzante aumenta bruscamente. Potresti sentirti al massimo della socialit\u00e0, sicurezza ed energia. Pensalo come la tua estate interiore \u2014 la tua finestra di massime prestazioni.",
+    cycleLuteal: "La fase luteale (tipicamente giorni 17-28) \u00e8 quando il progesterone sale per preparare un eventuale impianto. Se la gravidanza non avviene, gli ormoni calano e il ciclo ricomincia. Pensalo come il tuo autunno interiore \u2014 un tempo per rallentare e fare il nido.",
+
+    // Quick reply additions
+    quickCramps: "Aiuto con i crampi",
+    quickFocus: "Consigli per la concentrazione",
+
+    // New keyword arrays
+    "kw.hydration": "idratazione|acqua|sete|disidratata|bere|liquido",
+    "kw.cramps": "crampi|dolore|gonfiore|spm|disagio|dolori mestruali",
+    "kw.libido": "libido|sesso|intimit\u00e0|desiderio|eccitazione",
+    "kw.supplements": "integratore|vitamina|minerale|magnesio|ferro|zinco",
+    "kw.focus": "concentrazione|produttivit\u00e0|nebbia mentale|cognitivo|focus",
+    "kw.cycle": "ciclo|mestruazioni|fase|ovulazione|mestruale|luteale|follicolare",
   },
 
   nl: {
@@ -562,6 +958,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Ik kan helpen met vragen over je energie, voeding, stress, slaap, stemming, beweging en huidverzorging \u2014 allemaal gepersonaliseerd voor je {phaseName}fase (dag {cycleDay} van {totalDays}).",
     fallbackScan: "\n\nJe laatste scan toont: energie {energy}/10, stress {stress}/10, herstel {recovery}/10.",
     fallbackSuggestions: "\n\nProbeer me dingen te vragen zoals:\n- Waarom ben ik moe?\n- Wat moet ik eten?\n- Hoe is mijn stress?\n- Geef me slaaptips\n- Welke training moet ik doen?\n- Hoe is mijn huid deze week?",
+
+    "kw.energy": "moe|energie|vermoeid|uitgeput|slap",
+    "kw.food": "eten|voeding|voedsel|dieet",
+    "kw.stress": "stress|angstig|angst|overweldigd|gespannen",
+    "kw.sleep": "slaap|slapeloosheid|slapen|rust|rusten",
+    "kw.mood": "humeur|stemming|verdrietig|blij|emotioneel|neerslachtig",
+    "kw.exercise": "oefening|training|sport|bewegen|sportschool",
+    "kw.skin": "huid|acne|gloed|puistjes|onzuiverheden",
+
+    // Hydration responses
+    hydrationIntro: "Goed gehydrateerd blijven is belangrijk tijdens de {phaseName}-fase. ",
+    hydrationVeryLow: "Je hydratieniveau is {hydration}/10 \u2014 dat is behoorlijk laag. Probeer nu meteen een glas water te drinken en stel herinneringen in voor de rest van de dag. ",
+    hydrationLow: "Je hydratieniveau is {hydration}/10 \u2014 iets onder optimaal. Streef vandaag naar minstens 8 glazen. ",
+    hydrationGood: "Je hydratieniveau is {hydration}/10 \u2014 je doet het goed! Ga zo door. ",
+    hydrationMenstrual: "Tijdens de menstruatie verlies je extra vocht. Warme kruidenthee\u00ebn (gember, kamille) tellen mee voor je vochtinname en kunnen ook krampen verlichten.",
+    hydrationOvulation: "Rond de ovulatie stijgt je lichaamstemperatuur licht. Verhoog je waterinname en voeg elektrolyten toe als je actief bent.",
+    hydrationLuteal: "In de luteale fase kan progesteron vochtvasthoudend werken. Paradoxaal genoeg helpt het om MEER water te drinken tegen een opgeblazen gevoel.",
+    hydrationFollicular: "De folliculaire fase is een goed moment om hydratiegewoontes op te bouwen. Probeer water te verrijken met citroen, komkommer of bessen voor afwisseling.",
+
+    // Cramps/pain responses
+    crampsIntro: "Laten we het hebben over het omgaan met ongemak tijdens de {phaseName}-fase (dag {cycleDay}). ",
+    crampsMenstrual: "Menstruatiekrampen worden veroorzaakt door prostaglandinen. Wat kan helpen: een warmtekruik op je onderbuik, rustig wandelen, magnesiumrijk voedsel (pure chocolade, bananen) en ontstekingsremmende thee\u00ebn zoals gember of kamille. Zachte yogahoudingen zoals de kindhouding en kat-koe kunnen ook spanning verlichten.",
+    crampsLuteal: "Premenstrueel ongemak is gebruikelijk in de luteale fase. Magnesiumsupplementen (200-400mg), calciumrijk voedsel, regelmatige lichte beweging en het verminderen van cafe\u00efne en zout kunnen allemaal helpen om PMS-symptomen te beheersen.",
+    crampsOvulation: "Sommige mensen ervaren mittelschmerz \u2014 een korte, scherpe pijn tijdens de ovulatie. Dit is normaal. Een warm kompres en lichte beweging helpen meestal. Als de pijn hevig of aanhoudend is, raadpleeg dan je arts.",
+    crampsFollicular: "De folliculaire fase is doorgaans de meest comfortabele fase. Als je ongewoon ongemak ervaart, overweeg het bij te houden \u2014 patronen kunnen jou en je arts helpen om eventuele zorgen te identificeren.",
+
+    // Libido/intimacy responses
+    libidoIntro: "Libido fluctueert van nature met je cyclus. Tijdens de {phaseName}-fase: ",
+    libidoOvulation: "de libido bereikt meestal een piek rond de ovulatie door hoge oestrogeen- en testosteronspiegels. Dit is het natuurlijke vruchtbaarheidsvenster van je lichaam. Geniet van dit verhoogde verlangen en zelfvertrouwen.",
+    libidoFollicular: "stijgend oestrogeen in de folliculaire fase verhoogt geleidelijk verlangen en opwinding. Je kunt je sociaal energieker en aangetrokken tot anderen voelen.",
+    libidoLuteal: "progesteron stijgt en kan de libido bij veel mensen verlagen. Dit is normaal. Richt je op emotionele intimiteit en leg jezelf geen druk op. Knuffelen en verbinding zijn net zo waardevol.",
+    libidoMenstrual: "de libido varieert tijdens de menstruatie \u2014 sommigen voelen meer verlangen, anderen niet. Beide zijn volkomen normaal. Luister naar je lichaam en doe wat goed voelt.",
+
+    // Supplements responses
+    supplementsIntro: "Hier zijn supplementoverwegingen voor de {phaseName}-fase (overleg altijd eerst met je arts): ",
+    supplementsMenstrual: "IJzer (vooral bij zware menstruatie), magnesium (200-400mg voor krampen en stemming), vitamine C (om de ijzeropname te verbeteren) en omega-3-vetzuren (ontstekingsremmend). B-complex vitamines kunnen ook de energie ondersteunen.",
+    supplementsFollicular: "Probiotica voor de ondersteuning van de darmgezondheid en het oestrogeenmetabolisme, vitamine D (vooral als je weinig zon krijgt), zink voor immuunondersteuning en B-vitamines voor energie. Dit is een goed moment om je te richten op het opbouwen van voedingsstofvoorraden.",
+    supplementsOvulation: "Antioxidanten zoals vitamine E en C, omega-3-vetzuren en zink. NAC (N-acetylcyste\u00efne) kan een gezonde ovulatie ondersteunen. Blijf goed gehydrateerd en geef de voorkeur aan volwaardige voeding boven supplementen wanneer mogelijk.",
+    supplementsLuteal: "Magnesiumglycinaat (voor slaap en stemming), vitamine B6 (kan helpen bij PMS), calcium (1000mg is aangetoond PMS-symptomen te verminderen) en teunisbloemolie. Monnikspeper (vitex) wordt door sommigen ook gebruikt bij PMS, maar overleg eerst met je arts.",
+
+    // Focus/productivity responses
+    focusIntro: "Je cognitieve patronen verschuiven met je cyclus. In de {phaseName}-fase (dag {cycleDay}): ",
+    focusFollicular: "stijgend oestrogeen verbetert verbale vaardigheden, creativiteit en leren. Dit is je beste moment voor brainstormen, nieuwe projecten starten, plannen en nieuwe informatie opnemen. Plan nu belangrijke vergaderingen en creatief werk.",
+    focusOvulation: "je communicatievaardigheden en sociale intelligentie bereiken hun piek. Goed moment voor presentaties, onderhandelingen, samenwerkingen en netwerken. Je vindt het misschien makkelijker om te multitasken en snel te denken.",
+    focusLuteal: "progesteron stuurt je brein richting gedetailleerd, methodisch denken. Gebruik dit voor redigeren, proeflezen, organiseren, projecten afronden en administratieve taken. Vermijd het starten van geheel nieuwe projecten als dat mogelijk is.",
+    focusMenstrual: "je brein is in een reflectieve, evaluerende staat. Dit is eigenlijk ideaal voor strategisch denken, doelen herzien, journaling en beslissingen nemen op basis van intu\u00eftie. Dwing geen creatief werk op hoog niveau af \u2014 plan en reflecteer in plaats daarvan.",
+    focusLowEnergy: " Je energie is vandaag laag \u2014 probeer te werken in korte focusblokken van 25 minuten (Pomodoro-techniek) met pauzes van 5 minuten.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Je bent op dag {cycleDay} van {totalDays} in je cyclus, momenteel in de {phaseName}-fase. ",
+    cycleMenstrual: "De menstruatiefase (doorgaans dagen 1-5) is wanneer het baarmoederslijmvlies wordt afgestoten. Hormoonspiegels (oestrogeen en progesteron) zijn op hun laagst. Je lichaam richt zich op vernieuwing. Zie dit als je innerlijke winter \u2014 een tijd voor rust, reflectie en zachte zelfzorg.",
+    cycleFollicular: "De folliculaire fase (doorgaans dagen 6-13) is wanneer je lichaam een nieuw eitje voorbereidt. Oestrogeen stijgt gestaag en stimuleert energie, stemming en creativiteit. Zie dit als je innerlijke lente \u2014 een tijd van groei en nieuwe beginnen.",
+    cycleOvulation: "De ovulatiefase (doorgaans dagen 14-16) is wanneer een rijp eitje wordt vrijgelaten. Oestrogeen bereikt zijn piek en het lute\u00efniserend hormoon stijgt sterk. Je voelt je misschien het meest sociaal, zelfverzekerd en energiek. Zie dit als je innerlijke zomer \u2014 je piekprestatie-venster.",
+    cycleLuteal: "De luteale fase (doorgaans dagen 17-28) is wanneer progesteron stijgt ter voorbereiding op een mogelijke innesteling. Als er geen zwangerschap optreedt, dalen de hormonen en begint de cyclus opnieuw. Zie dit als je innerlijke herfst \u2014 een tijd om af te winden en te nestelen.",
+
+    // Quick reply additions
+    quickCramps: "Hulp bij krampen",
+    quickFocus: "Focustips",
+
+    // New keyword arrays
+    "kw.hydration": "hydratatie|water|dorst|uitgedroogd|drinken|vocht",
+    "kw.cramps": "krampen|pijn|opgeblazen|pms|ongemak|menstruatiepijn",
+    "kw.libido": "libido|seks|intimiteit|verlangen|opwinding",
+    "kw.supplements": "supplement|vitamine|mineraal|magnesium|ijzer|zink",
+    "kw.focus": "focus|concentratie|productiviteit|hersenmist|mentaal|cognitief",
+    "kw.cycle": "cyclus|menstruatie|fase|ovulatie|menstrueel|luteaal|folliculair",
   },
 
   pl: {
@@ -641,6 +1103,72 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Mog\u0119 pom\u00f3c z pytaniami o Twoj\u0105 energi\u0119, od\u017cywianie, stres, sen, nastr\u00f3j, \u0107wiczenia i piel\u0119gnacj\u0119 sk\u00f3ry \u2014 wszystko spersonalizowane dla Twojej fazy {phaseName} (dzie\u0144 {cycleDay} z {totalDays}).",
     fallbackScan: "\n\nTw\u00f3j ostatni skan pokazuje: energia {energy}/10, stres {stress}/10, regeneracja {recovery}/10.",
     fallbackSuggestions: "\n\nSpr\u00f3buj zapyta\u0107 mnie o:\n- Dlaczego jestem zm\u0119czona?\n- Co powinnam je\u015b\u0107?\n- Jak wygl\u0105da m\u00f3j stres?\n- Daj mi porady dotycz\u0105ce snu\n- Jaki trening powinnam zrobi\u0107?\n- Jak wygl\u0105da moja sk\u00f3ra w tym tygodniu?",
+
+    "kw.energy": "zm\u0119czona|energia|zm\u0119czenie|wyczerpana|os\u0142abiona",
+    "kw.food": "je\u015b\u0107|jedzenie|od\u017cywianie|dieta|posi\u0142ek",
+    "kw.stress": "stres|nerwowa|l\u0119k|przyt\u0142oczona|zestresowana",
+    "kw.sleep": "sen|bezsenno\u015b\u0107|spa\u0107|odpoczynek|odpocz\u0105\u0107",
+    "kw.mood": "nastr\u00f3j|humor|smutna|szcz\u0119\u015bliwa|emocjonalna|przygnebiona",
+    "kw.exercise": "\u0107wiczenia|trening|sport|ruch|si\u0142ownia",
+    "kw.skin": "sk\u00f3ra|tradzik|blask|pryszcze|niedoskona\u0142o\u015bci",
+
+    // Hydration responses
+    hydrationIntro: "Utrzymanie dobrego nawodnienia jest wa\u017cne podczas fazy {phaseName}. ",
+    hydrationVeryLow: "Tw\u00f3j poziom nawodnienia to {hydration}/10 \u2014 to do\u015b\u0107 nisko. Spr\u00f3buj teraz wypi\u0107 szklank\u0119 wody i ustaw przypomnienia na ca\u0142y dzie\u0144. ",
+    hydrationLow: "Tw\u00f3j poziom nawodnienia to {hydration}/10 \u2014 nieco poni\u017cej optymalnego. Staraj si\u0119 wypi\u0107 co najmniej 8 szklanek dzisiaj. ",
+    hydrationGood: "Tw\u00f3j poziom nawodnienia to {hydration}/10 \u2014 \u015bwietnie Ci idzie! Tak trzymaj. ",
+    hydrationMenstrual: "Podczas miesi\u0105czki tracisz dodatkowe p\u0142yny. Ciep\u0142e herbaty zio\u0142owe (imbir, rumianek) licz\u0105 si\u0119 do nawodnienia i mog\u0105 te\u017c \u0142agodzi\u0107 skurcze.",
+    hydrationOvulation: "W okolicach owulacji temperatura cia\u0142a nieznacznie wzrasta. Zwi\u0119ksz spo\u017cycie wody i dodaj elektrolity, je\u015bli jeste\u015b aktywna.",
+    hydrationLuteal: "W fazie lutealnej progesteron mo\u017ce powodowa\u0107 zatrzymywanie wody. Paradoksalnie, picie WI\u0118CEJ wody pomaga zmniejszy\u0107 wzd\u0119cia.",
+    hydrationFollicular: "Faza folikularna to dobry czas na budowanie nawyk\u00f3w nawadniania. Spr\u00f3buj aromatyzowa\u0107 wod\u0119 cytryq, og\u00f3rkiem lub owocami le\u015bnymi dla urozmaicenia.",
+
+    // Cramps/pain responses
+    crampsIntro: "Porozmawiajmy o radzeniu sobie z dyskomfortem podczas fazy {phaseName} (dzie\u0144 {cycleDay}). ",
+    crampsMenstrual: "Skurcze menstruacyjne s\u0105 powodowane przez prostaglandyny. Co mo\u017ce pom\u00f3c: poduszka grzewcza na podbrzusze, spokojne spacery, \u017cywno\u015b\u0107 bogata w magnez (gorzka czekolada, banany) i herbaty przeciwzapalne jak imbir lub rumianek. \u0141agodne pozycje jogi jak pozycja dziecka i kot-krowa mog\u0105 r\u00f3wnie\u017c zniwe\u0142owa\u0107 napi\u0119cie.",
+    crampsLuteal: "Dyskomfort przedmiesi\u0105czkowy jest cz\u0119sty w fazie lutealnej. Suplementy magnezu (200-400mg), \u017cywno\u015b\u0107 bogata w wap\u0144, regularne \u0142agodne \u0107wiczenia i ograniczenie kofeiny oraz soli mog\u0105 pom\u00f3c w radzeniu sobie z objawami PMS.",
+    crampsOvulation: "Niekt\u00f3re osoby do\u015bwiadczaj\u0105 mittelschmerzu \u2014 kr\u00f3tkiego, ostrego b\u00f3lu podczas owulacji. To normalne. Ciep\u0142y ok\u0142ad i lekki ruch zazwyczaj pomagaj\u0105. Je\u015bli b\u00f3l jest silny lub utrzymuje si\u0119, skonsultuj si\u0119 z lekarzem.",
+    crampsFollicular: "Faza folikularna jest zazwyczaj najbardziej komfortow\u0105 faz\u0105. Je\u015bli odczuwasz nietypowy dyskomfort, rozwa\u017c jego \u015bledzenie \u2014 wzorce mog\u0105 pom\u00f3c Tobie i Twojemu lekarzowi zidentyfikowa\u0107 ewentualne problemy.",
+
+    // Libido/intimacy responses
+    libidoIntro: "Libido naturalnie zmienia si\u0119 z cyklem. Podczas fazy {phaseName}: ",
+    libidoOvulation: "libido ma tendencj\u0119 do osi\u0105gania szczytu w okolicach owulacji z powodu wysokiego poziomu estrogenu i testosteronu. To naturalne okno p\u0142odno\u015bci Twojego cia\u0142a. Ciesz si\u0119 tym zwi\u0119kszonym pragnieniem i pewno\u015bci\u0105 siebie.",
+    libidoFollicular: "rosn\u0105cy estrogen w fazie folikularnej stopniowo zwi\u0119ksza pragnienie i podniecenie. Mo\u017cesz czu\u0107 si\u0119 bardziej energiczna spo\u0142ecznie i przyci\u0105gana do innych.",
+    libidoLuteal: "progesteron ro\u015bnie i mo\u017ce obni\u017cy\u0107 libido u wielu os\u00f3b. To normalne. Skup si\u0119 na intymno\u015bci emocjonalnej i nie wywieraj na siebie presji. Przytulanie i blisko\u015b\u0107 s\u0105 r\u00f3wnie wa\u017cne.",
+    libidoMenstrual: "libido r\u00f3\u017cni si\u0119 podczas miesi\u0105czki \u2014 niekt\u00f3re odczuwaj\u0105 wi\u0119ksze pragnienie, a inne nie. Oba warianty s\u0105 ca\u0142kowicie normalne. S\u0142uchaj swojego cia\u0142a i r\u00f3b to, co wydaje Ci si\u0119 w\u0142a\u015bciwe.",
+
+    // Supplements responses
+    supplementsIntro: "Oto zalecenia dotycz\u0105ce suplement\u00f3w na faz\u0119 {phaseName} (zawsze najpierw skonsultuj si\u0119 z lekarzem): ",
+    supplementsMenstrual: "\u017belazo (szczeg\u00f3lnie przy obfitych miesi\u0105czkach), magnez (200-400mg na skurcze i nastr\u00f3j), witamina C (aby poprawi\u0107 wch\u0142anianie \u017celaza) i kwasy t\u0142uszczowe omega-3 (przeciwzapalne). Witaminy z kompleksu B mog\u0105 r\u00f3wnie\u017c wspiera\u0107 energi\u0119.",
+    supplementsFollicular: "Probiotyki wspieraj\u0105ce zdrowie jelit i metabolizm estrogenu, witamina D (szczeg\u00f3lnie przy ma\u0142ej ilo\u015bci s\u0142o\u0144ca), cynk dla wsparcia odporno\u015bci i witaminy B dla energii. To dobry czas, aby skupi\u0107 si\u0119 na budowaniu zapas\u00f3w sk\u0142adnik\u00f3w od\u017cywczych.",
+    supplementsOvulation: "Przeciwutleniacze takie jak witaminy E i C, kwasy t\u0142uszczowe omega-3 i cynk. NAC (N-acetylocysteina) mo\u017ce wspiera\u0107 zdrow\u0105 owulacj\u0119. Utrzymuj dobre nawodnienie i stawiaj na pe\u0142nowarto\u015bciow\u0105 \u017cywno\u015b\u0107 zamiast suplement\u00f3w, gdy to mo\u017cliwe.",
+    supplementsLuteal: "Glicynian magnezu (na sen i nastr\u00f3j), witamina B6 (mo\u017ce pom\u00f3c przy PMS), wap\u0144 (1000mg wykazano zmniejszenie objaw\u00f3w PMS) i olej z wiesio\u0142ka. Niepokalanek (vitex) jest r\u00f3wnie\u017c stosowany przez niekt\u00f3re przy PMS, ale skonsultuj si\u0119 najpierw z lekarzem.",
+
+    // Focus/productivity responses
+    focusIntro: "Twoje wzorce poznawcze zmieniaj\u0105 si\u0119 z cyklem. W fazie {phaseName} (dzie\u0144 {cycleDay}): ",
+    focusFollicular: "rosn\u0105cy estrogen poprawia umiej\u0119tno\u015bci werbalne, kreatywno\u015b\u0107 i zdolno\u015b\u0107 uczenia si\u0119. To najlepszy czas na burz\u0119 m\u00f3zg\u00f3w, rozpoczynanie nowych projekt\u00f3w, planowanie i przyswajanie nowych informacji. Zaplanuj teraz wa\u017cne spotkania i prac\u0119 kreatywn\u0105.",
+    focusOvulation: "Twoje umiej\u0119tno\u015bci komunikacyjne i inteligencja spo\u0142eczna osi\u0105gaj\u0105 szczyt. Dobry czas na prezentacje, negocjacje, wsp\u00f3\u0142prac\u0119 i networking. Mo\u017ce by\u0107 Ci \u0142atwiej wykonywa\u0107 wiele zada\u0144 jednocze\u015bnie i szybko my\u015ble\u0107.",
+    focusLuteal: "progesteron kieruje Tw\u00f3j m\u00f3zg ku szczeg\u00f3\u0142owemu, metodycznemu my\u015bleniu. Wykorzystaj to do edycji, korekty, organizacji, ko\u0144czenia projekt\u00f3w i zada\u0144 administracyjnych. Unikaj rozpoczynania ca\u0142kowicie nowych projekt\u00f3w, je\u015bli to mo\u017cliwe.",
+    focusMenstrual: "Tw\u00f3j m\u00f3zg jest w stanie refleksyjnym i oceniaj\u0105cym. To w\u0142a\u015bciwie idealny czas na my\u015blenie strategiczne, przegl\u0105danie cel\u00f3w, prowadzenie dziennika i podejmowanie decyzji opartych na intuicji. Nie wymuszaj intensywnej pracy tw\u00f3rczej \u2014 zamiast tego planuj i reflektuj.",
+    focusLowEnergy: " Twoja energia jest dzi\u015b niska \u2014 spr\u00f3buj pracowa\u0107 w kr\u00f3tkich 25-minutowych blokach skupienia (technika Pomodoro) z 5-minutowymi przerwami.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Jeste\u015b na dniu {cycleDay} z {totalDays} swojego cyklu, obecnie w fazie {phaseName}. ",
+    cycleMenstrual: "Faza menstruacyjna (zazwyczaj dni 1-5) to czas, gdy b\u0142ona \u015bluzowa macicy jest z\u0142uszczana. Poziomy hormon\u00f3w (estrogen i progesteron) s\u0105 najni\u017csze. Twoje cia\u0142o skupia si\u0119 na odnowie. Pomy\u015bl o tym jako o swojej wewn\u0119trznej zimie \u2014 czasie odpoczynku, refleksji i delikatnej troski o siebie.",
+    cycleFollicular: "Faza folikularna (zazwyczaj dni 6-13) to czas, gdy Twoje cia\u0142o przygotowuje nowe jajeczko. Estrogen stale ro\u015bnie, zwi\u0119kszaj\u0105c energi\u0119, nastr\u00f3j i kreatywno\u015b\u0107. Pomy\u015bl o tym jako o swojej wewn\u0119trznej wio\u015bnie \u2014 czasie wzrostu i nowych pocz\u0105tk\u00f3w.",
+    cycleOvulation: "Faza owulacyjna (zazwyczaj dni 14-16) to czas, gdy dojrza\u0142e jajeczko jest uwalniane. Estrogen osi\u0105ga szczyt, a hormon luteinizuj\u0105cy gwa\u0142townie wzrasta. Mo\u017cesz czu\u0107 si\u0119 najbardziej towarzyska, pewna siebie i energiczna. Pomy\u015bl o tym jako o swoim wewn\u0119trznym lecie \u2014 oknie szczytowej wydajno\u015bci.",
+    cycleLuteal: "Faza lutealna (zazwyczaj dni 17-28) to czas, gdy progesteron ro\u015bnie, przygotowuj\u0105c si\u0119 na ewentualne zag\u0144ie\u017cd\u017cenie. Je\u015bli ci\u0105\u017ca nie wyst\u0105pi, hormony spadaj\u0105 i cykl zaczyna si\u0119 od nowa. Pomy\u015bl o tym jako o swojej wewn\u0119trznej jesieni \u2014 czasie na zwolnienie tempa i zbudowanie przytulnego gniazda.",
+
+    // Quick reply additions
+    quickCramps: "Pomoc przy skurczach",
+    quickFocus: "Wskaz\u00f3wki dot. skupienia",
+
+    // New keyword arrays
+    "kw.hydration": "nawodnienie|woda|pragnienie|odwodnienie|pi\u0107",
+    "kw.cramps": "skurcze|b\u00f3l|wzd\u0119cia|pms|dyskomfort|b\u00f3l miesi\u0105czkowy",
+    "kw.libido": "libido|seks|intymno\u015b\u0107|pragnienie|podniecenie",
+    "kw.supplements": "suplement|witamina|minera\u0142|magnez|\u017celazo|cynk",
+    "kw.focus": "skupienie|koncentracja|produktywno\u015b\u0107|mg\u0142a m\u00f3zgowa|mentalny|kognitywny",
+    "kw.cycle": "cykl|miesi\u0105czka|faza|owulacja|menstruacyjny|lutealny|folikularny",
   },
 
   pt: {
@@ -720,5 +1248,71 @@ export const chatTranslations: Record<Language, Record<string, string>> = {
     fallbackIntro: "Posso ajudar com perguntas sobre a sua energia, nutri\u00e7\u00e3o, stress, sono, humor, exerc\u00edcio e cuidados com a pele \u2014 tudo personalizado para a sua fase {phaseName} (dia {cycleDay} de {totalDays}).",
     fallbackScan: "\n\nO seu \u00faltimo scan mostra: energia {energy}/10, stress {stress}/10, recupera\u00e7\u00e3o {recovery}/10.",
     fallbackSuggestions: "\n\nTente perguntar-me coisas como:\n- Porque estou cansada?\n- O que devo comer?\n- Como est\u00e1 o meu stress?\n- D\u00ea-me dicas de sono\n- Que treino devo fazer?\n- Como est\u00e1 a minha pele esta semana?",
+
+    "kw.energy": "cansada|energia|fadiga|exausta|esgotada",
+    "kw.food": "comer|comida|nutri\u00e7\u00e3o|dieta|alimenta\u00e7\u00e3o",
+    "kw.stress": "stress|stresse|ansiosa|ansiedade|sobrecarregada",
+    "kw.sleep": "sono|ins\u00f3nia|dormir|descanso|descansar",
+    "kw.mood": "humor|disposi\u00e7\u00e3o|triste|feliz|emocional|deprimida",
+    "kw.exercise": "exerc\u00edcio|treino|desporto|movimento|gin\u00e1sio",
+    "kw.skin": "pele|acne|brilho|borbulhas|imperfeições",
+
+    // Hydration responses
+    hydrationIntro: "Manter-se bem hidratada \u00e9 importante durante a fase {phaseName}. ",
+    hydrationVeryLow: "O seu n\u00edvel de hidrata\u00e7\u00e3o \u00e9 {hydration}/10 \u2014 \u00e9 bastante baixo. Tente beber um copo de \u00e1gua agora e programe lembretes ao longo do dia. ",
+    hydrationLow: "O seu n\u00edvel de hidrata\u00e7\u00e3o \u00e9 {hydration}/10 \u2014 um pouco abaixo do ideal. Tente beber pelo menos 8 copos hoje. ",
+    hydrationGood: "O seu n\u00edvel de hidrata\u00e7\u00e3o \u00e9 {hydration}/10 \u2014 est\u00e1 a ir bem! Continue assim. ",
+    hydrationMenstrual: "Durante a menstrua\u00e7\u00e3o, perde l\u00edquidos extra. Ch\u00e1s quentes de ervas (gengibre, camomila) contam para a hidrata\u00e7\u00e3o e tamb\u00e9m podem aliviar c\u00f3licas.",
+    hydrationOvulation: "Por volta da ovula\u00e7\u00e3o, a temperatura corporal sobe ligeiramente. Aumente a ingest\u00e3o de \u00e1gua e adicione eletr\u00f3litos se estiver ativa.",
+    hydrationLuteal: "Na fase l\u00fatea, a progesterona pode causar reten\u00e7\u00e3o de l\u00edquidos. Paradoxalmente, beber MAIS \u00e1gua ajuda a reduzir o incha\u00e7o.",
+    hydrationFollicular: "A fase folicular \u00e9 um bom momento para criar h\u00e1bitos de hidrata\u00e7\u00e3o. Experimente aromatizar a \u00e1gua com lim\u00e3o, pepino ou frutos vermelhos para variar.",
+
+    // Cramps/pain responses
+    crampsIntro: "Vamos falar sobre como lidar com o desconforto durante a fase {phaseName} (dia {cycleDay}). ",
+    crampsMenstrual: "As c\u00f3licas menstruais s\u00e3o causadas pelas prostaglandinas. O que pode ajudar: uma bolsa de \u00e1gua quente no baixo ventre, caminhadas leves, alimentos ricos em magn\u00e9sio (chocolate negro, bananas) e ch\u00e1s anti-inflamat\u00f3rios como gengibre ou camomila. Posturas suaves de yoga como a posi\u00e7\u00e3o da crian\u00e7a e gato-vaca tamb\u00e9m podem aliviar a tens\u00e3o.",
+    crampsLuteal: "O desconforto pr\u00e9-menstrual \u00e9 comum na fase l\u00fatea. Suplementos de magn\u00e9sio (200-400mg), alimentos ricos em c\u00e1lcio, exerc\u00edcio suave regular e a redu\u00e7\u00e3o de cafe\u00edna e sal podem ajudar a gerir os sintomas de SPM.",
+    crampsOvulation: "Algumas pessoas sentem mittelschmerz \u2014 uma dor breve e aguda durante a ovula\u00e7\u00e3o. \u00c9 normal. Uma compressa quente e movimento leve geralmente ajudam. Se a dor for intensa ou persistente, consulte o seu m\u00e9dico.",
+    crampsFollicular: "A fase folicular \u00e9 geralmente a mais confort\u00e1vel. Se estiver a sentir desconforto incomum, considere registar \u2014 os padr\u00f5es podem ajud\u00e1-la e ao seu m\u00e9dico a identificar poss\u00edveis preocupa\u00e7\u00f5es.",
+
+    // Libido/intimacy responses
+    libidoIntro: "A libido flutua naturalmente com o seu ciclo. Durante a fase {phaseName}: ",
+    libidoOvulation: "a libido tende a atingir o pico por volta da ovula\u00e7\u00e3o devido a n\u00edveis elevados de estrog\u00e9nio e testosterona. Esta \u00e9 a janela de fertilidade natural do seu corpo. Aproveite este aumento de desejo e confian\u00e7a.",
+    libidoFollicular: "o estrog\u00e9nio em ascens\u00e3o na fase folicular aumenta gradualmente o desejo e a excita\u00e7\u00e3o. Pode sentir-se mais energizada socialmente e atra\u00edda pelos outros.",
+    libidoLuteal: "a progesterona sobe e pode reduzir a libido em muitas pessoas. Isto \u00e9 normal. Concentre-se na intimidade emocional e n\u00e3o se pressione. Mimos e conex\u00e3o s\u00e3o igualmente v\u00e1lidos.",
+    libidoMenstrual: "a libido varia durante a menstrua\u00e7\u00e3o \u2014 algumas sentem mais desejo enquanto outras n\u00e3o. Ambas as situa\u00e7\u00f5es s\u00e3o completamente normais. Ou\u00e7a o seu corpo e fa\u00e7a o que lhe parece certo.",
+
+    // Supplements responses
+    supplementsIntro: "Aqui est\u00e3o recomenda\u00e7\u00f5es de suplementos para a fase {phaseName} (consulte sempre o seu m\u00e9dico primeiro): ",
+    supplementsMenstrual: "Ferro (especialmente em caso de menstrua\u00e7\u00f5es abundantes), magn\u00e9sio (200-400mg para c\u00f3licas e humor), vitamina C (para melhorar a absor\u00e7\u00e3o de ferro) e \u00e1cidos gordos \u00f3mega-3 (anti-inflamat\u00f3rio). As vitaminas do complexo B tamb\u00e9m podem apoiar a energia.",
+    supplementsFollicular: "Probi\u00f3ticos para apoiar a sa\u00fade intestinal e o metabolismo do estrog\u00e9nio, vitamina D (especialmente se apanha pouco sol), zinco para apoio imunit\u00e1rio e vitaminas B para energia. \u00c9 um bom momento para se focar na constru\u00e7\u00e3o de reservas nutritivas.",
+    supplementsOvulation: "Antioxidantes como vitaminas E e C, \u00e1cidos gordos \u00f3mega-3 e zinco. NAC (N-acetilciste\u00edna) pode apoiar uma ovula\u00e7\u00e3o saud\u00e1vel. Mantenha-se bem hidratada e prefira alimentos integrais em vez de suplementos quando poss\u00edvel.",
+    supplementsLuteal: "Glicinato de magn\u00e9sio (para sono e humor), vitamina B6 (pode ajudar com SPM), c\u00e1lcio (1000mg demonstrou reduzir sintomas de SPM) e \u00f3leo de pr\u00edmula. O agno-casto (vitex) tamb\u00e9m \u00e9 usado por algumas para SPM, mas consulte o seu m\u00e9dico primeiro.",
+
+    // Focus/productivity responses
+    focusIntro: "Os seus padr\u00f5es cognitivos mudam com o ciclo. Na fase {phaseName} (dia {cycleDay}): ",
+    focusFollicular: "o estrog\u00e9nio em ascens\u00e3o melhora as compet\u00eancias verbais, a criatividade e a aprendizagem. Este \u00e9 o seu melhor momento para brainstorming, iniciar novos projetos, planear e absorver novas informa\u00e7\u00f5es. Agende agora reuni\u00f5es importantes e trabalho criativo.",
+    focusOvulation: "as suas compet\u00eancias de comunica\u00e7\u00e3o e intelig\u00eancia social atingem o pico. Bom momento para apresenta\u00e7\u00f5es, negocia\u00e7\u00f5es, colabora\u00e7\u00f5es e networking. Pode achar mais f\u00e1cil fazer v\u00e1rias coisas ao mesmo tempo e pensar rapidamente.",
+    focusLuteal: "a progesterona orienta o seu c\u00e9rebro para um pensamento detalhado e met\u00f3dico. Use isto para edi\u00e7\u00e3o, revis\u00e3o, organiza\u00e7\u00e3o, finalizar projetos e tarefas administrativas. Evite iniciar projetos completamente novos se poss\u00edvel.",
+    focusMenstrual: "o seu c\u00e9rebro est\u00e1 num estado reflexivo e avaliativo. Isto \u00e9 na verdade ideal para pensamento estrat\u00e9gico, rever objetivos, escrever um di\u00e1rio e tomar decis\u00f5es baseadas na intui\u00e7\u00e3o. N\u00e3o force trabalho criativo intenso \u2014 em vez disso, planeie e reflita.",
+    focusLowEnergy: " A sua energia est\u00e1 baixa hoje \u2014 tente trabalhar em blocos de concentra\u00e7\u00e3o de 25 minutos (t\u00e9cnica Pomodoro) com pausas de 5 minutos.",
+
+    // Cycle knowledge responses
+    cycleIntro: "Est\u00e1 no dia {cycleDay} de {totalDays} do seu ciclo, atualmente na fase {phaseName}. ",
+    cycleMenstrual: "A fase menstrual (tipicamente dias 1-5) \u00e9 quando o revestimento uterino \u00e9 eliminado. Os n\u00edveis hormonais (estrog\u00e9nio e progesterona) est\u00e3o no m\u00ednimo. O seu corpo est\u00e1 focado na renova\u00e7\u00e3o. Pense nisto como o seu inverno interior \u2014 um tempo de descanso, reflex\u00e3o e autocuidado suave.",
+    cycleFollicular: "A fase folicular (tipicamente dias 6-13) \u00e9 quando o seu corpo prepara um novo \u00f3vulo. O estrog\u00e9nio sobe constantemente, impulsionando a energia, o humor e a criatividade. Pense nisto como a sua primavera interior \u2014 um tempo de crescimento e novos come\u00e7os.",
+    cycleOvulation: "A fase ovulat\u00f3ria (tipicamente dias 14-16) \u00e9 quando um \u00f3vulo maduro \u00e9 libertado. O estrog\u00e9nio atinge o pico e a hormona luteinizante aumenta drasticamente. Pode sentir-se mais social, confiante e en\u00e9rgica. Pense nisto como o seu ver\u00e3o interior \u2014 a sua janela de desempenho m\u00e1ximo.",
+    cycleLuteal: "A fase l\u00fatea (tipicamente dias 17-28) \u00e9 quando a progesterona sobe para preparar uma poss\u00edvel implanta\u00e7\u00e3o. Se n\u00e3o houver gravidez, as hormonas descem e o ciclo rece\u00e7a. Pense nisto como o seu outono interior \u2014 um tempo para abrandar e aninhar-se.",
+
+    // Quick reply additions
+    quickCramps: "Ajuda com c\u00f3licas",
+    quickFocus: "Dicas de concentra\u00e7\u00e3o",
+
+    // New keyword arrays
+    "kw.hydration": "hidrata\u00e7\u00e3o|\u00e1gua|sede|desidratada|beber|l\u00edquido",
+    "kw.cramps": "c\u00f3licas|dor|incha\u00e7o|spm|desconforto|dor menstrual",
+    "kw.libido": "libido|sexo|intimidade|desejo|excita\u00e7\u00e3o",
+    "kw.supplements": "suplemento|vitamina|mineral|magn\u00e9sio|ferro|zinco",
+    "kw.focus": "concentra\u00e7\u00e3o|produtividade|nevoeiro mental|cognitivo|foco",
+    "kw.cycle": "ciclo|per\u00edodo|fase|ovula\u00e7\u00e3o|menstrual|l\u00fatea|folicular",
   },
 };

@@ -75,10 +75,12 @@ interface QuickReply {
 
 function getQuickReplies(ct: (key: string) => string): QuickReply[] {
   return [
-    { label: ct('quickTired'), icon: Zap, query: 'Why am I tired?' },
-    { label: ct('quickEat'), icon: Coffee, query: 'What should I eat?' },
-    { label: ct('quickStress'), icon: Heart, query: "How's my stress?" },
-    { label: ct('quickSleep'), icon: Moon, query: 'Sleep tips' },
+    { label: ct('quickTired'), icon: Zap, query: ct('quickTired') },
+    { label: ct('quickEat'), icon: Coffee, query: ct('quickEat') },
+    { label: ct('quickStress'), icon: Heart, query: ct('quickStress') },
+    { label: ct('quickSleep'), icon: Moon, query: ct('quickSleep') },
+    { label: ct('quickCramps'), icon: Heart, query: ct('quickCramps') },
+    { label: ct('quickFocus'), icon: Sparkles, query: ct('quickFocus') },
   ];
 }
 
@@ -102,6 +104,12 @@ function generateResponse(
   const phaseKey = `phase${phase.charAt(0).toUpperCase() + phase.slice(1)}`;
   const phaseName = ct(phaseKey);
 
+  // Multilingual keyword matching — checks both English fallback and current language keywords
+  const matchesTopic = (topic: string): boolean => {
+    const keywords = ct(`kw.${topic}`).split('|');
+    return keywords.some((kw) => lowerQuery.includes(kw.toLowerCase()));
+  };
+
   // Helper: compute rolling average for a scan field
   const scanAvg = (field: string, fallback: number = 5): number => {
     if (scans.length === 0) return fallback;
@@ -120,7 +128,7 @@ function generateResponse(
   const mood = todayCheckIn?.mood ?? null;
 
   // --- TIRED / ENERGY ---
-  if (lowerQuery.includes('tired') || lowerQuery.includes('energy') || lowerQuery.includes('fatigue') || lowerQuery.includes('exhausted')) {
+  if (matchesTopic('energy')) {
     const avgEnergy = scanAvg('energyScore', 5);
     let response = ct('energyIntro', { cycleDay, phaseName });
 
@@ -157,7 +165,7 @@ function generateResponse(
   }
 
   // --- FOOD / NUTRITION ---
-  if (lowerQuery.includes('eat') || lowerQuery.includes('food') || lowerQuery.includes('nutrition') || lowerQuery.includes('diet')) {
+  if (matchesTopic('food')) {
     let response = ct('foodIntro', { phaseName });
 
     if (phase === 'luteal') {
@@ -181,7 +189,7 @@ function generateResponse(
   }
 
   // --- STRESS ---
-  if (lowerQuery.includes('stress') || lowerQuery.includes('anxious') || lowerQuery.includes('anxiety') || lowerQuery.includes('overwhelm')) {
+  if (matchesTopic('stress')) {
     const avgStress = scanAvg('stressScore', 5);
     let response = ct('stressIntro', { phaseName, cycleDay });
 
@@ -212,7 +220,7 @@ function generateResponse(
   }
 
   // --- SLEEP ---
-  if (lowerQuery.includes('sleep') || lowerQuery.includes('insomnia') || lowerQuery.includes('rest')) {
+  if (matchesTopic('sleep')) {
     let response = '';
 
     if (sleepHours !== null) {
@@ -244,7 +252,7 @@ function generateResponse(
   }
 
   // --- MOOD ---
-  if (lowerQuery.includes('mood') || lowerQuery.includes('sad') || lowerQuery.includes('happy') || lowerQuery.includes('emotional')) {
+  if (matchesTopic('mood')) {
     let response = ct('moodIntro', { phaseName });
 
     if (mood !== null) {
@@ -268,7 +276,7 @@ function generateResponse(
   }
 
   // --- EXERCISE / WORKOUT ---
-  if (lowerQuery.includes('exercise') || lowerQuery.includes('workout') || lowerQuery.includes('movement') || lowerQuery.includes('gym')) {
+  if (matchesTopic('exercise')) {
     let response = ct('exerciseIntro', { phaseName, cycleDay });
 
     if (phase === 'menstrual') {
@@ -289,7 +297,7 @@ function generateResponse(
   }
 
   // --- SKIN ---
-  if (lowerQuery.includes('skin') || lowerQuery.includes('acne') || lowerQuery.includes('glow') || lowerQuery.includes('breakout')) {
+  if (matchesTopic('skin')) {
     let response = ct('skinIntro', { phaseName });
 
     if (phase === 'luteal') {
@@ -300,6 +308,122 @@ function generateResponse(
       response += ct('skinFollicular');
     } else {
       response += ct('skinOvulation');
+    }
+
+    return response;
+  }
+
+  // --- HYDRATION ---
+  if (matchesTopic('hydration')) {
+    let response = ct('hydrationIntro', { phaseName });
+
+    if (hydration !== null) {
+      if (hydration < 4) {
+        response += ct('hydrationVeryLow', { hydration });
+      } else if (hydration < 6) {
+        response += ct('hydrationLow', { hydration });
+      } else {
+        response += ct('hydrationGood', { hydration });
+      }
+    }
+
+    if (phase === 'menstrual') {
+      response += ct('hydrationMenstrual');
+    } else if (phase === 'ovulation') {
+      response += ct('hydrationOvulation');
+    } else if (phase === 'luteal') {
+      response += ct('hydrationLuteal');
+    } else {
+      response += ct('hydrationFollicular');
+    }
+
+    return response;
+  }
+
+  // --- CRAMPS / PAIN ---
+  if (matchesTopic('cramps')) {
+    let response = ct('crampsIntro', { phaseName, cycleDay });
+
+    if (phase === 'menstrual') {
+      response += ct('crampsMenstrual');
+    } else if (phase === 'luteal') {
+      response += ct('crampsLuteal');
+    } else if (phase === 'ovulation') {
+      response += ct('crampsOvulation');
+    } else {
+      response += ct('crampsFollicular');
+    }
+
+    return response;
+  }
+
+  // --- LIBIDO / INTIMACY ---
+  if (matchesTopic('libido')) {
+    let response = ct('libidoIntro', { phaseName });
+
+    if (phase === 'ovulation') {
+      response += ct('libidoOvulation');
+    } else if (phase === 'follicular') {
+      response += ct('libidoFollicular');
+    } else if (phase === 'luteal') {
+      response += ct('libidoLuteal');
+    } else {
+      response += ct('libidoMenstrual');
+    }
+
+    return response;
+  }
+
+  // --- SUPPLEMENTS / VITAMINS ---
+  if (matchesTopic('supplements')) {
+    let response = ct('supplementsIntro', { phaseName });
+
+    if (phase === 'menstrual') {
+      response += ct('supplementsMenstrual');
+    } else if (phase === 'follicular') {
+      response += ct('supplementsFollicular');
+    } else if (phase === 'ovulation') {
+      response += ct('supplementsOvulation');
+    } else {
+      response += ct('supplementsLuteal');
+    }
+
+    return response;
+  }
+
+  // --- FOCUS / PRODUCTIVITY ---
+  if (matchesTopic('focus')) {
+    let response = ct('focusIntro', { phaseName, cycleDay });
+
+    if (phase === 'follicular') {
+      response += ct('focusFollicular');
+    } else if (phase === 'ovulation') {
+      response += ct('focusOvulation');
+    } else if (phase === 'luteal') {
+      response += ct('focusLuteal');
+    } else {
+      response += ct('focusMenstrual');
+    }
+
+    if (energy !== null && energy < 4) {
+      response += ct('focusLowEnergy');
+    }
+
+    return response;
+  }
+
+  // --- CYCLE / PERIOD ---
+  if (matchesTopic('cycle')) {
+    let response = ct('cycleIntro', { phaseName, cycleDay, totalDays });
+
+    if (phase === 'menstrual') {
+      response += ct('cycleMenstrual');
+    } else if (phase === 'follicular') {
+      response += ct('cycleFollicular');
+    } else if (phase === 'ovulation') {
+      response += ct('cycleOvulation');
+    } else {
+      response += ct('cycleLuteal');
     }
 
     return response;
