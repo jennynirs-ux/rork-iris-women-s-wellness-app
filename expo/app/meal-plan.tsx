@@ -96,7 +96,7 @@ function getMealTranslation(key: string): string {
 export default function MealPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
 
   const [waterCount, setWaterCount] = useState(0);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
@@ -135,8 +135,8 @@ export default function MealPlanScreen() {
   const lifeStage = userProfile?.lifeStage ?? 'regular';
 
   const mealPlan: DailyMealPlan = useMemo(() => {
-    return generateDailyMealPlan(currentPhase, phaseDay, latestScan, todayCheckIn, lifeStage);
-  }, [currentPhase, phaseDay, latestScan, todayCheckIn, lifeStage]);
+    return generateDailyMealPlan(currentPhase, phaseDay, latestScan, todayCheckIn, lifeStage, healthData);
+  }, [currentPhase, phaseDay, latestScan, todayCheckIn, lifeStage, healthData]);
 
   const handleWaterIncrement = useCallback(() => {
     setWaterCount((prev) => Math.min(prev + 1, mealPlan.hydrationGoal + 4));

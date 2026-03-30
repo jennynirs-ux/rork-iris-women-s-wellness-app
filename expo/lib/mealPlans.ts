@@ -1,4 +1,4 @@
-import { CyclePhase, DailyCheckIn, ScanResult } from "@/types";
+import { CyclePhase, DailyCheckIn, ScanResult, HealthData } from "@/types";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -1100,6 +1100,7 @@ export function generateDailyMealPlan(
   latestScan: ScanResult | null,
   todayCheckIn: DailyCheckIn | null,
   lifeStage?: string,
+  healthData?: HealthData | null,
 ): DailyMealPlan {
   // ─── Life-stage override ──────────────────────────────────────────────
   if (lifeStage && lifeStage !== 'regular' && LIFESTAGE_MEALS[lifeStage]) {
@@ -1178,6 +1179,39 @@ export function generateDailyMealPlan(
     if (energy < 4) {
       if (!keyNutrients.includes("Iron")) keyNutrients.push("Iron");
       if (!keyNutrients.includes("Complex Carbs")) keyNutrients.push("Complex Carbs");
+    }
+  }
+
+  // ── Health data adjustments ─────────────────────────────────────────────
+
+  if (healthData) {
+    // High active energy burn → add extra Complex Carbs + Protein
+    const activeEnergy = healthData.activeEnergy;
+    if (activeEnergy !== undefined && activeEnergy > 500) {
+      if (!keyNutrients.includes("Complex Carbs")) keyNutrients.push("Complex Carbs");
+      if (!keyNutrients.includes("Protein")) keyNutrients.push("Protein");
+    }
+
+    // Low HRV → anti-inflammatory support
+    const hrv = healthData.hrv;
+    if (hrv !== undefined && hrv < 30) {
+      if (!keyNutrients.includes("Omega-3")) keyNutrients.push("Omega-3");
+      if (!keyNutrients.includes("Magnesium")) keyNutrients.push("Magnesium");
+    }
+
+    // Short sleep via Health data → tryptophan + magnesium (sleep support)
+    const sleepHours = healthData.sleepHours;
+    if (sleepHours !== undefined && sleepHours < 6) {
+      if (!keyNutrients.includes("Magnesium")) keyNutrients.push("Magnesium");
+      if (!keyNutrients.includes("Tryptophan")) keyNutrients.push("Tryptophan");
+      if (!avoidList.includes("Caffeine after noon")) avoidList.push("Caffeine after noon");
+    }
+
+    // Elevated wrist temperature deviation → anti-inflammatory + hydration
+    const tempDev = healthData.wristTemperatureDeviation;
+    if (tempDev !== undefined && tempDev > 0.4) {
+      hydrationGoal = Math.max(hydrationGoal, 10);
+      if (!keyNutrients.includes("Antioxidants")) keyNutrients.push("Antioxidants");
     }
   }
 

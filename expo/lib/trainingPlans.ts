@@ -1,9 +1,15 @@
-import { CyclePhase, ScanResult, DailyCheckIn } from '@/types';
+import { CyclePhase, ScanResult, DailyCheckIn, HealthData } from '@/types';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type WorkoutIntensity = 'rest' | 'light' | 'moderate' | 'intense';
 export type WorkoutCategory = 'strength' | 'cardio' | 'yoga' | 'stretching' | 'hiit' | 'pilates' | 'walking' | 'rest' | 'swimming' | 'balance';
+export type ExerciseSketchType =
+  | 'squat' | 'lunge' | 'pushup' | 'plank' | 'deadlift' | 'hipThrust'
+  | 'jumpingJack' | 'burpee' | 'mountainClimber' | 'highKnees'
+  | 'childPose' | 'downwardDog' | 'warriorPose' | 'catCow' | 'hipCircle'
+  | 'legRaise' | 'crunches' | 'bridge' | 'sideLeg' | 'clamshell'
+  | 'walk' | 'stretch' | 'breathe' | 'rest';
 
 export interface Exercise {
   name: string;
@@ -12,6 +18,8 @@ export interface Exercise {
   restSeconds: number;
   description: string;   // brief form cue
   icon: string;          // lucide icon name
+  sketchType?: ExerciseSketchType;  // used to render a simple SVG sketch
+  muscleGroups?: string[];           // e.g. ['Glutes', 'Core']
 }
 
 export interface WorkoutSuggestion {
@@ -54,11 +62,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'menstrual',
     calorieEstimate: 80,
     exercises: [
-      { name: "Child's Pose", sets: 1, reps: '2 min', restSeconds: 0, description: 'Knees wide, arms extended, forehead on mat', icon: 'Heart' },
-      { name: 'Cat-Cow', sets: 1, reps: '1 min', restSeconds: 0, description: 'Alternate arching and rounding your spine', icon: 'Activity' },
-      { name: 'Seated Twist', sets: 1, reps: '1 min each side', restSeconds: 0, description: 'Sit tall, twist gently from your mid-back', icon: 'Activity' },
-      { name: 'Reclined Butterfly', sets: 1, reps: '2 min', restSeconds: 0, description: 'Soles together, knees open, relax fully', icon: 'Heart' },
-      { name: 'Savasana', sets: 1, reps: '3 min', restSeconds: 0, description: 'Lie flat, close your eyes, breathe naturally', icon: 'Moon' },
+      { name: "Child's Pose", sets: 1, reps: '2 min', restSeconds: 0, description: 'Knees wide, arms extended, forehead on mat', icon: 'Heart', sketchType: 'childPose', muscleGroups: ['Back', 'Hips'] },
+      { name: 'Cat-Cow', sets: 1, reps: '1 min', restSeconds: 0, description: 'Alternate arching and rounding your spine', icon: 'Activity', sketchType: 'catCow', muscleGroups: ['Spine', 'Core'] },
+      { name: 'Seated Twist', sets: 1, reps: '1 min each side', restSeconds: 0, description: 'Sit tall, twist gently from your mid-back', icon: 'Activity', sketchType: 'stretch', muscleGroups: ['Spine', 'Obliques'] },
+      { name: 'Reclined Butterfly', sets: 1, reps: '2 min', restSeconds: 0, description: 'Soles together, knees open, relax fully', icon: 'Heart', sketchType: 'rest', muscleGroups: ['Hips', 'Inner Thighs'] },
+      { name: 'Savasana', sets: 1, reps: '3 min', restSeconds: 0, description: 'Lie flat, close your eyes, breathe naturally', icon: 'Moon', sketchType: 'rest', muscleGroups: ['Full Body'] },
     ],
   },
   lightWalking: {
@@ -72,9 +80,9 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'menstrual',
     calorieEstimate: 60,
     exercises: [
-      { name: 'Easy Pace Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow, comfortable pace to warm up', icon: 'Footprints' },
-      { name: 'Moderate Pace Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Pick up the pace slightly, swing arms naturally', icon: 'Footprints' },
-      { name: 'Cool-Down Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow down gradually, breathe deeply', icon: 'Footprints' },
+      { name: 'Easy Pace Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow, comfortable pace to warm up', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Moderate Pace Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Pick up the pace slightly, swing arms naturally', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Cool-Down Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow down gradually, breathe deeply', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs'] },
     ],
   },
   restDay: {
@@ -88,9 +96,9 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 0,
     exercises: [
-      { name: 'Deep Breathing', sets: 1, reps: '5 min', restSeconds: 0, description: 'Inhale 4 counts, hold 4, exhale 6 counts', icon: 'Heart' },
-      { name: 'Gentle Neck Rolls', sets: 1, reps: '2 min', restSeconds: 0, description: 'Slow circles in each direction', icon: 'Activity' },
-      { name: 'Body Scan Meditation', sets: 1, reps: '5 min', restSeconds: 0, description: 'Lie down, relax each muscle group from toes to head', icon: 'Moon' },
+      { name: 'Deep Breathing', sets: 1, reps: '5 min', restSeconds: 0, description: 'Inhale 4 counts, hold 4, exhale 6 counts', icon: 'Heart', sketchType: 'breathe', muscleGroups: ['Diaphragm'] },
+      { name: 'Gentle Neck Rolls', sets: 1, reps: '2 min', restSeconds: 0, description: 'Slow circles in each direction', icon: 'Activity', sketchType: 'stretch', muscleGroups: ['Neck'] },
+      { name: 'Body Scan Meditation', sets: 1, reps: '5 min', restSeconds: 0, description: 'Lie down, relax each muscle group from toes to head', icon: 'Moon', sketchType: 'rest', muscleGroups: ['Full Body'] },
     ],
   },
   bodyweightStrength: {
@@ -104,11 +112,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'follicular',
     calorieEstimate: 200,
     exercises: [
-      { name: 'Squats', sets: 3, reps: '15', restSeconds: 30, description: 'Feet shoulder-width, push hips back', icon: 'Flame' },
-      { name: 'Push-Ups', sets: 3, reps: '10', restSeconds: 30, description: 'Modify on knees if needed', icon: 'Flame' },
-      { name: 'Lunges', sets: 3, reps: '12 each leg', restSeconds: 30, description: 'Step forward, knee over ankle', icon: 'Flame' },
-      { name: 'Plank', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Keep hips level, engage core', icon: 'Activity' },
-      { name: 'Glute Bridges', sets: 3, reps: '15', restSeconds: 30, description: 'Squeeze at the top', icon: 'Flame' },
+      { name: 'Squats', sets: 3, reps: '15', restSeconds: 30, description: 'Feet shoulder-width, push hips back', icon: 'Flame', sketchType: 'squat', muscleGroups: ['Quads', 'Glutes', 'Core'] },
+      { name: 'Push-Ups', sets: 3, reps: '10', restSeconds: 30, description: 'Modify on knees if needed', icon: 'Flame', sketchType: 'pushup', muscleGroups: ['Chest', 'Shoulders', 'Triceps'] },
+      { name: 'Lunges', sets: 3, reps: '12 each leg', restSeconds: 30, description: 'Step forward, knee over ankle', icon: 'Flame', sketchType: 'lunge', muscleGroups: ['Quads', 'Glutes', 'Hamstrings'] },
+      { name: 'Plank', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Keep hips level, engage core', icon: 'Activity', sketchType: 'plank', muscleGroups: ['Core', 'Shoulders'] },
+      { name: 'Glute Bridges', sets: 3, reps: '15', restSeconds: 30, description: 'Squeeze at the top', icon: 'Flame', sketchType: 'bridge', muscleGroups: ['Glutes', 'Hamstrings'] },
     ],
   },
   danceCardio: {
@@ -139,11 +147,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'ovulation',
     calorieEstimate: 280,
     exercises: [
-      { name: 'Burpees', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drop, push-up, jump up explosively', icon: 'Zap' },
-      { name: 'Mountain Climbers', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drive knees to chest rapidly in plank', icon: 'Zap' },
-      { name: 'Jump Squats', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Squat deep, explode upward', icon: 'Zap' },
-      { name: 'High Knees', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drive knees high, pump arms fast', icon: 'Zap' },
-      { name: 'Plank Jacks', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Jump feet wide and back together in plank', icon: 'Zap' },
+      { name: 'Burpees', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drop, push-up, jump up explosively', icon: 'Zap', sketchType: 'burpee', muscleGroups: ['Full Body'] },
+      { name: 'Mountain Climbers', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drive knees to chest rapidly in plank', icon: 'Zap', sketchType: 'mountainClimber', muscleGroups: ['Core', 'Shoulders', 'Legs'] },
+      { name: 'Jump Squats', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Squat deep, explode upward', icon: 'Zap', sketchType: 'squat', muscleGroups: ['Quads', 'Glutes', 'Cardiovascular'] },
+      { name: 'High Knees', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Drive knees high, pump arms fast', icon: 'Zap', sketchType: 'highKnees', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Plank Jacks', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Jump feet wide and back together in plank', icon: 'Zap', sketchType: 'plank', muscleGroups: ['Core', 'Legs'] },
     ],
   },
   powerFlow: {
@@ -192,11 +200,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'luteal',
     calorieEstimate: 150,
     exercises: [
-      { name: 'The Hundred', sets: 1, reps: '1 min', restSeconds: 20, description: 'Pump arms while holding legs at 45 degrees', icon: 'Sparkles' },
-      { name: 'Roll-Up', sets: 2, reps: '8', restSeconds: 20, description: 'Slowly peel spine off the mat one vertebra at a time', icon: 'Sparkles' },
-      { name: 'Single Leg Circles', sets: 2, reps: '10 each leg', restSeconds: 15, description: 'Circle leg smoothly, keep hips stable', icon: 'Sparkles' },
-      { name: 'Spine Stretch Forward', sets: 2, reps: '8', restSeconds: 15, description: 'Reach forward rounding over, stack back up', icon: 'Sparkles' },
-      { name: 'Side-Lying Leg Lifts', sets: 2, reps: '12 each side', restSeconds: 20, description: 'Lift top leg controlled, keep hips stacked', icon: 'Sparkles' },
+      { name: 'The Hundred', sets: 1, reps: '1 min', restSeconds: 20, description: 'Pump arms while holding legs at 45 degrees', icon: 'Sparkles', sketchType: 'legRaise', muscleGroups: ['Core', 'Hip Flexors'] },
+      { name: 'Roll-Up', sets: 2, reps: '8', restSeconds: 20, description: 'Slowly peel spine off the mat one vertebra at a time', icon: 'Sparkles', sketchType: 'crunches', muscleGroups: ['Core', 'Spine'] },
+      { name: 'Single Leg Circles', sets: 2, reps: '10 each leg', restSeconds: 15, description: 'Circle leg smoothly, keep hips stable', icon: 'Sparkles', sketchType: 'legRaise', muscleGroups: ['Core', 'Hips'] },
+      { name: 'Spine Stretch Forward', sets: 2, reps: '8', restSeconds: 15, description: 'Reach forward rounding over, stack back up', icon: 'Sparkles', sketchType: 'stretch', muscleGroups: ['Spine', 'Hamstrings'] },
+      { name: 'Side-Lying Leg Lifts', sets: 2, reps: '12 each side', restSeconds: 20, description: 'Lift top leg controlled, keep hips stacked', icon: 'Sparkles', sketchType: 'sideLeg', muscleGroups: ['Glutes', 'Hip Abductors'] },
     ],
   },
   gentleStretching: {
@@ -228,11 +236,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'luteal',
     calorieEstimate: 140,
     exercises: [
-      { name: 'Glute Bridges', sets: 3, reps: '15', restSeconds: 30, description: 'Press through heels, squeeze glutes at top', icon: 'Flame' },
-      { name: 'Leg Raises', sets: 3, reps: '12', restSeconds: 30, description: 'Keep lower back pressed into mat', icon: 'Activity' },
-      { name: 'Clamshells', sets: 3, reps: '15 each side', restSeconds: 20, description: 'Feet together, open top knee like a book', icon: 'Activity' },
-      { name: 'Bird-Dogs', sets: 3, reps: '10 each side', restSeconds: 20, description: 'Extend opposite arm and leg, keep hips level', icon: 'Activity' },
-      { name: 'Dead Bug', sets: 3, reps: '10 each side', restSeconds: 20, description: 'Lower opposite arm and leg, keep core braced', icon: 'Activity' },
+      { name: 'Glute Bridges', sets: 3, reps: '15', restSeconds: 30, description: 'Press through heels, squeeze glutes at top', icon: 'Flame', sketchType: 'bridge', muscleGroups: ['Glutes', 'Hamstrings'] },
+      { name: 'Leg Raises', sets: 3, reps: '12', restSeconds: 30, description: 'Keep lower back pressed into mat', icon: 'Activity', sketchType: 'legRaise', muscleGroups: ['Core', 'Hip Flexors'] },
+      { name: 'Clamshells', sets: 3, reps: '15 each side', restSeconds: 20, description: 'Feet together, open top knee like a book', icon: 'Activity', sketchType: 'clamshell', muscleGroups: ['Glutes', 'Hip Abductors'] },
+      { name: 'Bird-Dogs', sets: 3, reps: '10 each side', restSeconds: 20, description: 'Extend opposite arm and leg, keep hips level', icon: 'Activity', sketchType: 'plank', muscleGroups: ['Core', 'Back'] },
+      { name: 'Dead Bug', sets: 3, reps: '10 each side', restSeconds: 20, description: 'Lower opposite arm and leg, keep core braced', icon: 'Activity', sketchType: 'legRaise', muscleGroups: ['Core'] },
     ],
   },
 
@@ -460,10 +468,17 @@ export function generateDailyTrainingPlan(
   todayCheckIn: DailyCheckIn | null,
   lifeStage?: string,
   weeksPregnant?: number,
+  healthData?: HealthData | null,
 ): DailyTrainingPlan {
   const energy = latestScan?.energyScore ?? todayCheckIn?.energy ?? 5;
   const stress = latestScan?.stressScore ?? todayCheckIn?.stressLevel ?? 5;
   const fatigue = latestScan?.fatigueLevel ?? 5;
+
+  // Health data modifiers: low HRV forces rest; high HRV + good sleep unlocks intensity
+  const hrv = healthData?.hrv;
+  const sleepHours = healthData?.sleepHours;
+  const healthForcesRest = (hrv !== undefined && hrv < 20) || (sleepHours !== undefined && sleepHours < 5);
+  const healthUnlocksIntensity = (hrv !== undefined && hrv > 55) && (sleepHours === undefined || sleepHours >= 7);
 
   let primaryWorkout: WorkoutSuggestion;
   let alternativeWorkout: WorkoutSuggestion;
@@ -631,6 +646,20 @@ export function generateDailyTrainingPlan(
       alternativeWorkout = WORKOUTS.lightWalking;
       intensity = 'light';
     }
+  }
+
+  // Health data overrides (applied after cycle-phase logic)
+  if (healthForcesRest && intensity !== 'rest') {
+    primaryWorkout = WORKOUTS.gentleYoga;
+    alternativeWorkout = WORKOUTS.lightWalking;
+    intensity = 'light';
+    scanAdjustment = 'scanAdjustRestDay';
+  } else if (healthUnlocksIntensity && intensity === 'light' && phase !== 'menstrual') {
+    // Good HRV + good sleep → allow stepping up one intensity level
+    primaryWorkout = WORKOUTS.moderateBodyweight;
+    alternativeWorkout = WORKOUTS.danceCardio;
+    intensity = 'moderate';
+    scanAdjustment = 'scanAdjustHighEnergy';
   }
 
   return {

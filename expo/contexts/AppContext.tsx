@@ -3,6 +3,7 @@ import createContextHook from "@nkzw/create-context-hook";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { AppState, Platform } from "react-native";
 import { predictPhase, updatePersonalBaseline, updatePhaseBaselines, shouldAskAdaptiveQuestion, findEffectiveCycleStart, computeEnrichedPhaseInfo, getPhaseForCycleDay } from "@/lib/phasePredictor";
 import { scheduleMenstrualPhaseNotification } from "@/lib/notifications";
 import { Language, getTranslation } from "@/constants/translations";
@@ -1195,6 +1196,26 @@ export const [AppContext, useApp] = createContextHook(() => {
       });
     }
   }, [currentPhase, enrichedPhaseInfo, todaySummary.recommendedFocus, userProfile.hasCompletedOnboarding]);
+
+  // Auto-sync Apple Health whenever the app comes back to the foreground
+  // Throttle: only sync if last sync was > 30 minutes ago
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    if (!healthConnection.isConnected || healthConnection.enabledDataTypes.length === 0) return;
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        const lastSync = healthConnection.lastSyncDate ? new Date(healthConnection.lastSyncDate).getTime() : 0;
+        const thirtyMinutesMs = 30 * 60 * 1000;
+        if (Date.now() - lastSync > thirtyMinutesMs) {
+          logger.log('[AppContext] App foregrounded — auto-syncing Apple Health');
+          syncHealthDataMutation.mutate();
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, [healthConnection.isConnected, healthConnection.enabledDataTypes, healthConnection.lastSyncDate]);
 
   const isLoading = userQuery.isLoading || checkInsQuery.isLoading || scansQuery.isLoading || baselineQuery.isLoading || phaseBaselinesQuery.isLoading || cycleHistoryQuery.isLoading || previousPhaseQuery.isLoading || languageQuery.isLoading || unitsQuery.isLoading || phaseOverridesQuery.isLoading;
   const isHealthSyncing = syncHealthDataMutation.isPending;

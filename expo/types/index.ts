@@ -202,6 +202,16 @@ export interface HealthData {
   activeEnergy?: number;
   hrv?: number;
   wristTemperature?: number;
+  /** Apple Watch Series 8+ temperature deviation from personal baseline (°C) */
+  wristTemperatureDeviation?: number;
+  /** SpO2 percentage from Apple Watch */
+  spo2?: number;
+  /** Breaths per minute from Apple Watch */
+  respiratoryRate?: number;
+  /** Mindfulness minutes from Apple Health */
+  mindfulnessMinutes?: number;
+  /** Stand hours from Apple Watch */
+  standHours?: number;
   lastSyncDate?: string;
 }
 
@@ -212,7 +222,132 @@ export interface HealthConnectionState {
   lastSyncDate?: string;
 }
 
-export type HealthDataType = 'sleep' | 'menstrualCycle' | 'heartRate' | 'steps' | 'activeEnergy' | 'hrv' | 'temperature';
+export type HealthDataType = 'sleep' | 'menstrualCycle' | 'heartRate' | 'steps' | 'activeEnergy' | 'hrv' | 'temperature' | 'spo2' | 'respiratoryRate' | 'mindfulness';
+
+// ── Oura Ring Types ───────────────────────────────────────────────────────────
+
+export interface OuraReadinessContributors {
+  hrvBalance: number;
+  bodyTemperature: number;
+  previousDayActivity: number | null;
+  sleepBalance: number;
+  restingHeartRate: number;
+  recoveryIndex: number;
+  activityBalance?: number;
+  sleepRegularity?: number;
+}
+
+export interface OuraData {
+  // Readiness
+  readinessScore: number;                    // 0–100
+  readinessContributors: OuraReadinessContributors;
+  /** °C deviation from personal baseline — key cycle-tracking signal */
+  temperatureDeviation: number;
+  /** Trend component of temperature deviation */
+  temperatureTrendDeviation: number;
+  // Sleep
+  sleepScore: number;                        // 0–100
+  totalSleepDuration: number;                // seconds
+  remSleepDuration: number;                  // seconds
+  deepSleepDuration: number;                 // seconds
+  lightSleepDuration: number;                // seconds
+  sleepEfficiency: number;                   // 0–100
+  sleepLatency: number;                      // seconds
+  // Activity
+  activityScore: number;                     // 0–100
+  activeCalories: number;
+  totalCalories: number;
+  steps: number;
+  sedentaryTime: number;                     // seconds
+  highActivityTime: number;                  // seconds
+  // Biometrics
+  restingHeartRate: number;                  // bpm
+  /** Average nightly HRV (rMSSD in ms) */
+  hrv: number;
+  lowestHeartRate: number;
+  averageBreathRate: number;
+  // SpO2
+  spo2Average: number;                       // %
+  breathingDisturbanceIndex: number;
+  // Stress
+  stressHighMinutes: number;
+  recoveryHighMinutes: number;
+  daySummary: 'restored' | 'normal' | 'stressful' | null;
+  // Meta
+  date: string;
+  lastSyncDate: string;
+}
+
+export interface OuraConnectionState {
+  isConnected: boolean;
+  accessToken: string | null;
+  refreshToken: string | null;
+  /** Unix timestamp (ms) when access token expires */
+  tokenExpiresAt: number | null;
+  lastSyncDate: string | null;
+  /** Oura membership required for data access */
+  hasMembership: boolean;
+}
+
+// ── ARKit Ambient Reading Types ───────────────────────────────────────────────
+
+/** A single 30-second ambient reading computed from ARKit blend shapes */
+export interface AmbientReading {
+  /** % of frames (0–1) where eye openness < 0.2 — fatigue depth */
+  perclos: number;
+  /** Blinks per minute in this window */
+  blinkRate: number;
+  /** Composite (0–1): squint intensity + reduced openness, higher = more strain */
+  eyeStrain: number;
+  /** Gaze direction consistency (0–1), higher = more focused */
+  focusScore: number;
+  /** Unix timestamp (ms) when computed */
+  timestamp: number;
+}
+
+/** Raw blend shape snapshot for a single ARKit frame */
+export interface BlendShapeFrame {
+  eyeBlinkLeft: number;
+  eyeBlinkRight: number;
+  eyeWideLeft: number;
+  eyeWideRight: number;
+  eyeSquintLeft: number;
+  eyeSquintRight: number;
+  /** [x, y, z] gaze direction vector */
+  lookAtPoint: [number, number, number];
+  /** CACurrentMediaTime() in seconds */
+  timestamp: number;
+}
+
+/** Accumulated ambient readings for the current app session (in-memory only) */
+export interface AmbientReadingSession {
+  readings: AmbientReading[];
+  sessionStartedAt: number;
+  isActive: boolean;
+}
+
+/** Personal blink baseline derived from last 7 active scans */
+export interface AmbientReadingBaseline {
+  /** Average blinks per minute */
+  blinkRateBpm: number;
+  samplesCount: number;
+  lastUpdated: string;
+}
+
+// ── Unified Signal Architecture ───────────────────────────────────────────────
+
+export type SignalSource = 'iris_scan' | 'ambient_arkit' | 'apple_health' | 'oura_ring' | 'check_in';
+
+/** All wellness signals merged from every source — fed into coaching engine */
+export interface WellnessSignals {
+  scan: ScanResult | null;
+  ambient: AmbientReading | null;
+  health: HealthData | null;
+  oura: OuraData | null;
+  checkIn: DailyCheckIn | null;
+  signalSources: SignalSource[];
+  lastUpdated: string;
+}
 
 export interface Referral {
   id: string;

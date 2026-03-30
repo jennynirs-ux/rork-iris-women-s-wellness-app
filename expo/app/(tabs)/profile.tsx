@@ -57,6 +57,7 @@ import { formatWeight, formatHeight, weightInputValue, heightInputValue, parseWe
 import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { generateDoctorReport } from "@/lib/doctorReport";
+import * as Clipboard from 'expo-clipboard';
 import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
 import { connectOura, disconnectOura, isOuraConnected, getOuraLastSync } from "@/lib/ouraIntegration";
 import { CONDITION_PROFILES, ConditionProfile } from "@/lib/conditionProfiles";
@@ -403,8 +404,23 @@ export default function ProfileScreen() {
 
   // Partner mode states
   const [showPartnerModal, setShowPartnerModal] = useState(false);
-  const [partnerCode] = useState(userProfile.partnerCode || '');
   const [partnerInputCode, setPartnerInputCode] = useState('');
+
+  // Generate a stable partner code: persist it on the profile the first time
+  const partnerCode = useMemo(() => {
+    if (userProfile.partnerCode) return userProfile.partnerCode;
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'IRIS-';
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }, [userProfile.partnerCode]);
+
+  // Persist generated code if it wasn't stored yet
+  useEffect(() => {
+    if (!userProfile.partnerCode && partnerCode) {
+      updateUserProfile({ ...userProfile, partnerCode });
+    }
+  }, [partnerCode]);
 
   // Oura Ring states
   const [ouraConnected, setOuraConnected] = useState(false);
@@ -1309,7 +1325,7 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.settingsGroup}>
-                <Text style={styles.settingsGroupTitle}>Appearance</Text>
+                <Text style={styles.settingsGroupTitle}>{t.settings.appearance}</Text>
                 {(['system', 'light', 'dark'] as ThemeMode[]).map((mode) => (
                   <TouchableOpacity
                     key={mode}
@@ -1317,14 +1333,14 @@ export default function ProfileScreen() {
                     onPress={() => setTheme(mode)}
                   >
                     <Text style={[styles.settingsOptionText, themeMode === mode && styles.settingsOptionTextSelected]}>
-                      {mode === 'system' ? 'System Default' : mode === 'light' ? 'Light Mode' : 'Dark Mode'}
+                      {mode === 'system' ? t.settings.systemDefault : mode === 'light' ? t.settings.lightMode : t.settings.darkMode}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               <View style={styles.settingsGroup}>
-                <Text style={styles.settingsGroupTitle}>Cloud Sync</Text>
+                <Text style={styles.settingsGroupTitle}>{t.settings.cloudSync}</Text>
                 <TouchableOpacity
                   style={styles.settingsItem}
                   onPress={() => {
@@ -1332,10 +1348,10 @@ export default function ProfileScreen() {
                     setTimeout(() => setShowSyncModal(true), 350);
                   }}
                 >
-                  <Text style={styles.settingsItemText}>Backup & Restore</Text>
+                  <Text style={styles.settingsItemText}>{t.settings.backupRestore}</Text>
                   <View style={styles.settingsItemRight}>
                     <Text style={styles.settingsItemValue}>
-                      {lastSyncedAt ? 'Synced' : 'Not synced'}
+                      {lastSyncedAt ? t.settings.synced : t.settings.notSynced}
                     </Text>
                     <ChevronRight size={20} color={colors.textTertiary} />
                   </View>
@@ -1347,9 +1363,9 @@ export default function ProfileScreen() {
 
                 <View style={styles.dataConsentItem}>
                   <View style={styles.dataConsentContent}>
-                    <Text style={styles.dataConsentItemText}>Share Anonymous Data</Text>
+                    <Text style={styles.dataConsentItemText}>{t.settings.shareAnonymousData}</Text>
                     <Text style={styles.dataConsentItemDescription}>
-                      Help improve Iris by sharing anonymous health insights with our research team
+                      {t.settings.shareAnonymousDataDesc}
                     </Text>
                   </View>
                   <Switch
@@ -1446,7 +1462,7 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.downloadDataSection}>
-                  <Text style={styles.downloadDataDesc}>Share a professional wellness report with your healthcare provider</Text>
+                  <Text style={styles.downloadDataDesc}>{t.settings.shareWithDoctorDesc}</Text>
                 </View>
                 <TouchableOpacity
                   style={[styles.settingsItem, isGeneratingReport && { opacity: 0.5 }]}
@@ -1475,7 +1491,7 @@ export default function ProfileScreen() {
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     <FileText size={20} color={colors.primary} />
-                    <Text style={styles.settingsItemText}>Share with Doctor</Text>
+                    <Text style={styles.settingsItemText}>{t.settings.shareWithDoctor}</Text>
                   </View>
                   <ChevronRight size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
@@ -1526,38 +1542,41 @@ export default function ProfileScreen() {
               </View>
 
               <View style={styles.settingsGroup}>
-                <Text style={styles.settingsGroupTitle}>Partner Sharing</Text>
+                <Text style={styles.settingsGroupTitle}>{t.settings.partnerSharing}</Text>
                 {userProfile.linkedPartnerId ? (
                   <>
-                    <Text style={styles.settingsItemText}>Partner Connected</Text>
+                    <Text style={styles.settingsItemText}>{t.settings.partnerConnected}</Text>
                     <TouchableOpacity
                       style={styles.settingsItem}
                       onPress={() => {
                         Alert.alert(
-                          'Unlink Partner',
-                          'Are you sure you want to unlink your partner?',
+                          t.settings.unlinkPartner,
+                          t.settings.unlinkPartnerConfirm,
                           [
-                            { text: 'Cancel', style: 'cancel' },
+                            { text: t.settings.cancel, style: 'cancel' },
                             {
-                              text: 'Unlink',
+                              text: t.settings.unlink,
                               style: 'destructive',
                               onPress: () => {
-                                // TODO: Call unlink mutation
+                                updateUserProfile({ ...userProfile, linkedPartnerId: undefined });
                               }
                             }
                           ]
                         );
                       }}
                     >
-                      <Text style={[styles.settingsItemText, { color: colors.primary }]}>Unlink Partner</Text>
+                      <Text style={[styles.settingsItemText, { color: colors.statusAttention }]}>{t.settings.unlinkPartner}</Text>
                     </TouchableOpacity>
                   </>
                 ) : (
                   <TouchableOpacity
                     style={styles.settingsItem}
-                    onPress={() => setShowPartnerModal(true)}
+                    onPress={() => {
+                      setShowSettingsModal(false);
+                      setTimeout(() => setShowPartnerModal(true), 350);
+                    }}
                   >
-                    <Text style={styles.settingsItemText}>Share with Partner</Text>
+                    <Text style={styles.settingsItemText}>{t.settings.shareWithPartner ?? 'Share with Partner'}</Text>
                     <ChevronRight size={20} color={colors.textTertiary} />
                   </TouchableOpacity>
                 )}
@@ -2325,24 +2344,24 @@ export default function ProfileScreen() {
           <View style={styles.modalOverlay}>
             <View style={[styles.cycleModalContent, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalHeaderTitle}>Share with Partner</Text>
+                <Text style={styles.modalHeaderTitle}>{t.settings.shareWithPartner}</Text>
                 <TouchableOpacity onPress={() => setShowPartnerModal(false)}>
-                  <Text style={styles.modalCloseText}>Close</Text>
+                  <Text style={styles.modalCloseText}>{t.settings.close}</Text>
                 </TouchableOpacity>
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} bounces={false} keyboardShouldPersistTaps="handled">
                 <View style={{ padding: 16 }}>
-                  <Text style={styles.modalSubtitle}>Your Partner Code</Text>
+                  <Text style={styles.modalSubtitle}>{t.settings.yourPartnerCode}</Text>
                   <View style={[styles.partnerCodeContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Text style={[styles.partnerCodeText, { color: colors.text }]}>
-                      {partnerCode || 'Loading...'}
+                      {partnerCode}
                     </Text>
                     <TouchableOpacity
-                      onPress={() => {
+                      onPress={async () => {
                         if (partnerCode) {
-                          // Copy to clipboard
-                          Alert.alert('Copied', 'Partner code copied to clipboard');
+                          await Clipboard.setStringAsync(partnerCode);
+                          Alert.alert(t.settings.codeCopied, t.settings.codeCopiedMessage);
                         }
                       }}
                       style={styles.copyButton}
@@ -2351,27 +2370,30 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>Enter Partner&apos;s Code</Text>
+                  <Text style={[styles.modalSubtitle, { marginTop: 24 }]}>{t.settings.enterPartnersCode}</Text>
                   <TextInput
                     style={[styles.partnerInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
                     placeholder="IRIS-XXXXXX"
                     placeholderTextColor={colors.textTertiary}
                     value={partnerInputCode}
-                    onChangeText={setPartnerInputCode}
+                    onChangeText={(v) => setPartnerInputCode(v.toUpperCase())}
                     maxLength={11}
+                    autoCapitalize="characters"
                   />
 
                   <TouchableOpacity
-                    style={[styles.linkButton, { backgroundColor: colors.primary }]}
+                    style={[styles.linkButton, { backgroundColor: partnerInputCode.length >= 8 ? colors.primary : colors.border }]}
+                    disabled={partnerInputCode.length < 8}
                     onPress={() => {
-                      if (partnerInputCode) {
-                        // TODO: Call link mutation
-                        Alert.alert('Partner Linked!', 'You are now sharing data with your partner');
+                      if (partnerInputCode.length >= 8) {
+                        updateUserProfile({ ...userProfile, linkedPartnerId: partnerInputCode });
+                        Alert.alert(t.settings.partnerLinked, t.settings.partnerLinkedMessage);
+                        setPartnerInputCode('');
                         setShowPartnerModal(false);
                       }
                     }}
                   >
-                    <Text style={styles.linkButtonText}>Link Partner</Text>
+                    <Text style={styles.linkButtonText}>{t.settings.linkPartner}</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -2389,16 +2411,16 @@ export default function ProfileScreen() {
           <View style={styles.modalOverlay}>
             <View style={[styles.cycleModalContent, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalHeaderTitle}>Health Conditions</Text>
+                <Text style={styles.modalHeaderTitle}>{t.settings.healthConditions}</Text>
                 <TouchableOpacity onPress={() => setShowConditionsModal(false)}>
-                  <Text style={styles.modalCloseText}>Close</Text>
+                  <Text style={styles.modalCloseText}>{t.settings.close}</Text>
                 </TouchableOpacity>
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-                <View style={{ padding: 16 }}>
-                  <Text style={[styles.menuSubtext, { marginBottom: 16 }]}>
-                    Select any conditions you manage. This helps personalize your check-ins and wellness insights.
+                <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24 }}>
+                  <Text style={[styles.menuSubtext, { marginBottom: 20, lineHeight: 20 }]}>
+                    {t.settings.healthConditionsDesc}
                   </Text>
 
                   {(['pcos', 'endometriosis', 'pmdd', 'fibroids'] as ConditionProfile[]).map((condId) => {
@@ -2410,13 +2432,17 @@ export default function ProfileScreen() {
                         key={condId}
                         style={[
                           styles.conditionCard,
-                          isSelected && { borderColor: colors.primary, backgroundColor: colors.primaryLight },
+                          isSelected
+                            ? { borderColor: colors.primary, backgroundColor: colors.primaryLight }
+                            : { borderColor: colors.border, backgroundColor: colors.card },
                         ]}
                         onPress={() => handleToggleCondition(condId)}
-                        activeOpacity={0.7}
+                        activeOpacity={0.75}
                       >
                         <View style={styles.conditionHeader}>
-                          <Text style={styles.conditionIcon}>{profile.icon}</Text>
+                          <View style={[styles.conditionIconContainer, isSelected && { backgroundColor: colors.primary + '20' }]}>
+                            <Text style={styles.conditionIcon}>{profile.icon}</Text>
+                          </View>
                           <View style={{ flex: 1 }}>
                             <Text style={[styles.conditionName, isSelected && { color: colors.primary }]}>
                               {translation?.name || condId}
@@ -2425,15 +2451,22 @@ export default function ProfileScreen() {
                               {translation?.description || ''}
                             </Text>
                           </View>
-                          {isSelected && <Check size={20} color={colors.primary} />}
+                          <View style={[
+                            styles.conditionCheckCircle,
+                            isSelected
+                              ? { backgroundColor: colors.primary, borderColor: colors.primary }
+                              : { backgroundColor: 'transparent', borderColor: colors.border }
+                          ]}>
+                            {isSelected && <Check size={14} color="#fff" />}
+                          </View>
                         </View>
                         {isSelected && profile.additionalSymptoms.length > 0 && (
                           <View style={styles.conditionSymptoms}>
                             {profile.additionalSymptoms.map((symptom, idx) => {
                               const symptomName = ct.symptoms[symptom] || symptom;
                               return (
-                                <View key={idx} style={styles.conditionSymptomChip}>
-                                  <Text style={styles.conditionSymptomText}>{symptomName}</Text>
+                                <View key={idx} style={[styles.conditionSymptomChip, { backgroundColor: colors.primary + '15' }]}>
+                                  <Text style={[styles.conditionSymptomText, { color: colors.primary }]}>{symptomName}</Text>
                                 </View>
                               );
                             })}
@@ -2442,6 +2475,13 @@ export default function ProfileScreen() {
                       </TouchableOpacity>
                     );
                   })}
+
+                  <TouchableOpacity
+                    style={[styles.saveButton, { marginTop: 8 }]}
+                    onPress={() => setShowConditionsModal(false)}
+                  >
+                    <Text style={styles.saveButtonText}>{t.settings.done}</Text>
+                  </TouchableOpacity>
                 </View>
               </ScrollView>
             </View>
@@ -3514,20 +3554,34 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     color: '#FFFFFF',
   },
   conditionCard: {
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: colors.border,
+    marginBottom: 10,
+    borderWidth: 1.5,
   },
   conditionHeader: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
     gap: 12,
   },
+  conditionIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  },
   conditionIcon: {
-    fontSize: 28,
+    fontSize: 22,
+  },
+  conditionCheckCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   },
   conditionName: {
     fontSize: 16,

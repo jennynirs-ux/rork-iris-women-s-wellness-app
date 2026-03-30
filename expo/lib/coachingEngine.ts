@@ -1,4 +1,4 @@
-import { ScanResult, DailyCheckIn, CyclePhase, UserProfile, CycleHistory } from "@/types";
+import { ScanResult, DailyCheckIn, CyclePhase, UserProfile, CycleHistory, HealthData } from "@/types";
 
 export interface CoachingTip {
   id: string;
@@ -17,7 +17,8 @@ export function generateCoachingTips(
   scans: ScanResult[],
   checkIns: DailyCheckIn[],
   phase: CyclePhase,
-  userProfile: UserProfile
+  userProfile: UserProfile,
+  healthData?: HealthData | null
 ): CoachingTip[] {
   const tips: CoachingTip[] = [];
 
@@ -65,6 +66,12 @@ export function generateCoachingTips(
   // Apply trend rules
   const trendTips = checkTrendRules(recentScans);
   tips.push(...trendTips);
+
+  // Apply health data rules (H1–H6)
+  if (healthData) {
+    const healthTips = checkHealthDataRules(healthData, latestScan, phase);
+    tips.push(...healthTips);
+  }
 
   // Remove duplicates (by id), sort by priority, and return max 4 tips
   const uniqueTips = Array.from(new Map(tips.map((t) => [t.id, t])).values());
@@ -437,6 +444,103 @@ function checkTrendRules(recentScans: ScanResult[]): CoachingTip[] {
       message: "Great news — your stress levels are coming down.",
       category: "trend",
       priority: 5,
+    });
+  }
+
+  return tips;
+}
+
+// ============================================================================
+// HEALTH DATA RULES (H1–H6) — Apple Health / Oura integration
+// ============================================================================
+
+function checkHealthDataRules(
+  health: HealthData,
+  latestScan: ScanResult,
+  phase: CyclePhase,
+): CoachingTip[] {
+  const tips: CoachingTip[] = [];
+
+  // H1: Low HRV — nervous system under strain
+  if (health.hrv !== undefined && health.hrv < 25) {
+    tips.push({
+      id: "health-hrv-low",
+      icon: "Heart",
+      title: "Low HRV Detected",
+      message: "Your heart rate variability is low — a sign your nervous system needs rest. Consider skipping intense workouts today.",
+      category: "recovery",
+      priority: 1,
+    });
+  }
+
+  // H2: HRV good + energy high → suggest capitalizing on readiness
+  if (health.hrv !== undefined && health.hrv > 60 && latestScan.energyScore > 6) {
+    tips.push({
+      id: "health-hrv-high-energy",
+      icon: "Zap",
+      title: "Great Recovery Readiness",
+      message: "Your HRV is strong and energy is high — ideal conditions for a challenging workout or creative work.",
+      category: "energy",
+      priority: 3,
+    });
+  }
+
+  // H3: Short sleep from Health data
+  if (health.sleepHours !== undefined && health.sleepHours < 6) {
+    tips.push({
+      id: "health-sleep-short",
+      icon: "Moon",
+      title: "Sleep Debt Building",
+      message: `Apple Health recorded ${health.sleepHours.toFixed(1)}h of sleep. Aim for 7–9h — try an earlier bedtime tonight.`,
+      category: "sleep",
+      priority: 1,
+    });
+  }
+
+  // H4: Low step count → gentle movement nudge
+  if (health.steps !== undefined && health.steps < 3000 && new Date().getHours() > 14) {
+    tips.push({
+      id: "health-steps-low",
+      icon: "Activity",
+      title: "Move a Little More",
+      message: `Only ${health.steps.toLocaleString()} steps so far today. A 10-minute walk can boost energy and mood.`,
+      category: "energy",
+      priority: 4,
+    });
+  }
+
+  // H5: Wrist temperature deviation → possible ovulation or illness signal
+  if (health.wristTemperatureDeviation !== undefined) {
+    if (health.wristTemperatureDeviation > 0.3 && phase === 'follicular') {
+      tips.push({
+        id: "health-temp-rise-follicular",
+        icon: "Thermometer",
+        title: "Temperature Rise",
+        message: "Your wrist temperature is rising — this may signal ovulation is approaching. Update your period log if needed.",
+        category: "phase",
+        priority: 2,
+      });
+    } else if (health.wristTemperatureDeviation > 0.5) {
+      tips.push({
+        id: "health-temp-elevated",
+        icon: "Thermometer",
+        title: "Elevated Temperature",
+        message: "Your wrist temperature is above your personal baseline. Prioritize rest and hydration today.",
+        category: "recovery",
+        priority: 2,
+      });
+    }
+  }
+
+  // H6: Low SpO2 → hydration and breathing reminder
+  if (health.spo2 !== undefined && health.spo2 < 95) {
+    tips.push({
+      id: "health-spo2-low",
+      icon: "AlertCircle",
+      title: "Oxygen Saturation Low",
+      message: "Your SpO2 reading is below 95%. Try slow deep breathing exercises and ensure you're well-hydrated.",
+      category: "recovery",
+      priority: 1,
     });
   }
 

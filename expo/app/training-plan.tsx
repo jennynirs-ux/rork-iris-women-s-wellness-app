@@ -38,6 +38,7 @@ import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
 import { generateDailyTrainingPlan, WorkoutSuggestion, WorkoutIntensity, Exercise } from "@/lib/trainingPlans";
 import { trainingTranslations as tt } from "@/constants/trainingTranslations";
+import ExerciseSketch from "@/components/ExerciseSketch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 
@@ -105,12 +106,11 @@ function formatTime(totalSeconds: number): string {
 export default function TrainingPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
 
-  const [expandedWarmup, setExpandedWarmup] = useState(false);
-  const [expandedCooldown, setExpandedCooldown] = useState(false);
+  const [expandedWarmup, setExpandedWarmup] = useState(true);
+  const [expandedCooldown, setExpandedCooldown] = useState(true);
   const [workoutCompleted, setWorkoutCompleted] = useState(false);
-  const [expandedExercises, setExpandedExercises] = useState<string | null>(null);
 
   // ─── Timer state ──────────────────────────────────────────────────────────
   const [timerActive, setTimerActive] = useState(false);
@@ -144,8 +144,8 @@ export default function TrainingPlanScreen() {
   const weeksPregnant = userProfile?.weeksPregnant;
 
   const plan = useMemo(
-    () => generateDailyTrainingPlan(phase, phaseDay, latestScan ?? null, todayCheckIn ?? null, lifeStage, weeksPregnant),
-    [phase, phaseDay, latestScan, todayCheckIn, lifeStage, weeksPregnant],
+    () => generateDailyTrainingPlan(phase, phaseDay, latestScan ?? null, todayCheckIn ?? null, lifeStage, weeksPregnant, healthData),
+    [phase, phaseDay, latestScan, todayCheckIn, lifeStage, weeksPregnant, healthData],
   );
 
   // Check if workout was already completed today
@@ -353,46 +353,38 @@ export default function TrainingPlanScreen() {
           </View>
         </View>
 
-        {/* Exercise List (expandable) */}
+        {/* Exercise List (always expanded) */}
         {workout.exercises && workout.exercises.length > 0 && (
           <>
-            <TouchableOpacity
-              style={styles.exerciseToggle}
-              onPress={() => setExpandedExercises(expandedExercises === workout.id ? null : workout.id)}
-              activeOpacity={0.7}
-              accessibilityLabel="Toggle exercise list"
-              accessibilityRole="button"
-            >
+            <View style={styles.exerciseToggle}>
               <Text style={styles.exerciseToggleText}>{t("exercises")} ({workout.exercises.length})</Text>
-              {expandedExercises === workout.id ? (
-                <ChevronUp size={18} color={colors.textSecondary} />
-              ) : (
-                <ChevronDown size={18} color={colors.textSecondary} />
-              )}
-            </TouchableOpacity>
-
-            {expandedExercises === workout.id && (
-              <View style={styles.exerciseList}>
-                {workout.exercises.map((ex, i) => {
-                  const ExIcon = WORKOUT_ICON_MAP[ex.icon] || Activity;
-                  return (
-                    <View key={i} style={styles.exerciseRow}>
-                      <View style={[styles.exerciseIconCircle, { backgroundColor: workoutColor + "15" }]}>
-                        <ExIcon size={16} color={workoutColor} />
-                      </View>
-                      <View style={styles.exerciseInfo}>
-                        <Text style={styles.exerciseName}>{ex.name}</Text>
-                        <Text style={styles.exerciseMeta}>
-                          {t("sets", { n: ex.sets })} x {ex.reps}
-                          {ex.restSeconds > 0 ? ` | ${t("restTime", { n: ex.restSeconds })}` : ''}
-                        </Text>
-                        <Text style={styles.exerciseDesc}>{ex.description}</Text>
-                      </View>
+            </View>
+            <View style={styles.exerciseList}>
+              {workout.exercises.map((ex, i) => (
+                <View key={i} style={[styles.exerciseRow, i < workout.exercises!.length - 1 && styles.exerciseRowBorder]}>
+                  {ex.sketchType ? (
+                    <View style={[styles.exerciseSketchBox, { backgroundColor: workoutColor + "12" }]}>
+                      <ExerciseSketch type={ex.sketchType} color={workoutColor} size={52} />
                     </View>
-                  );
-                })}
-              </View>
-            )}
+                  ) : (
+                    <View style={[styles.exerciseIconCircle, { backgroundColor: workoutColor + "15" }]}>
+                      {(() => { const ExIcon = WORKOUT_ICON_MAP[ex.icon] || Activity; return <ExIcon size={16} color={workoutColor} />; })()}
+                    </View>
+                  )}
+                  <View style={styles.exerciseInfo}>
+                    <Text style={styles.exerciseName}>{ex.name}</Text>
+                    <Text style={styles.exerciseMeta}>
+                      {t("sets", { n: ex.sets })} × {ex.reps}
+                      {ex.restSeconds > 0 ? ` · ${t("restTime", { n: ex.restSeconds })}` : ''}
+                    </Text>
+                    {ex.muscleGroups && ex.muscleGroups.length > 0 && (
+                      <Text style={styles.exerciseMuscles}>{ex.muscleGroups.join(' · ')}</Text>
+                    )}
+                    <Text style={styles.exerciseDesc}>{ex.description}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
           </>
         )}
 
@@ -477,13 +469,7 @@ export default function TrainingPlanScreen() {
           </View>
         )}
 
-        {/* Primary Workout */}
-        {renderWorkoutCard(plan.primaryWorkout, true)}
-
-        {/* Alternative Workout */}
-        {renderWorkoutCard(plan.alternativeWorkout, false)}
-
-        {/* Warm-up (collapsible) */}
+        {/* ─── Warm-up (before primary workout) ─── */}
         <TouchableOpacity
           style={styles.collapsibleHeader}
           onPress={() => setExpandedWarmup(!expandedWarmup)}
@@ -504,7 +490,10 @@ export default function TrainingPlanScreen() {
           </View>
         )}
 
-        {/* Cool-down (collapsible) */}
+        {/* ─── Primary Workout ─── */}
+        {renderWorkoutCard(plan.primaryWorkout, true)}
+
+        {/* ─── Cool-down (after primary workout) ─── */}
         <TouchableOpacity
           style={styles.collapsibleHeader}
           onPress={() => setExpandedCooldown(!expandedCooldown)}
@@ -524,6 +513,9 @@ export default function TrainingPlanScreen() {
             <Text style={styles.collapsibleText}>{t(plan.cooldown)}</Text>
           </View>
         )}
+
+        {/* ─── Alternative Workout ─── */}
+        {renderWorkoutCard(plan.alternativeWorkout, false)}
 
         {/* Tips */}
         <View style={styles.section}>
@@ -1051,6 +1043,27 @@ function createStyles(colors: typeof Colors.light, phaseColor: string) {
       fontSize: 12,
       color: colors.textTertiary,
       fontStyle: "italic",
+    },
+    exerciseRowBorder: {
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    exerciseSketchBox: {
+      width: 64,
+      height: 64,
+      borderRadius: 14,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 2,
+    },
+    exerciseMuscles: {
+      fontSize: 11,
+      color: colors.textTertiary,
+      marginBottom: 2,
+      fontWeight: "500",
+      textTransform: "uppercase",
+      letterSpacing: 0.3,
     },
     buttonRow: {
       flexDirection: "row",

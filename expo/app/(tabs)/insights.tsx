@@ -464,7 +464,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
 };
 
 export default function InsightsScreen() {
-  const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language, isLoading } = useApp();
+  const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language, isLoading, healthData, healthConnection } = useApp();
   const lifeStageOverride = phaseEstimate.lifeStageOverride;
   const isNonCycleLifeStage = !!lifeStageOverride;
   const { colors } = useTheme();
@@ -1683,24 +1683,6 @@ export default function InsightsScreen() {
             </View>
           )}
 
-          {/* Meal Plan Card */}
-          <TouchableOpacity
-            style={styles.cognitiveNavCard}
-            onPress={() => router.push('/meal-plan' as any)}
-            activeOpacity={0.7}
-            accessibilityLabel="View today's meal plan"
-            accessibilityRole="button"
-          >
-            <View style={[styles.cognitiveNavIcon, { backgroundColor: '#8BC9A320' }]}>
-              <Apple size={22} color="#8BC9A3" />
-            </View>
-            <View style={styles.cognitiveNavContent}>
-              <Text style={styles.cognitiveNavTitle}>Today's Meals</Text>
-              <Text style={styles.cognitiveNavSubtitle}>Cycle-synced nutrition for your phase</Text>
-            </View>
-            <ArrowRight size={18} color={colors.textTertiary} />
-          </TouchableOpacity>
-
           {/* Cognitive Wellness Card — shown for peri/menopause or age > 40 */}
           {(userProfile.lifeStage === 'perimenopause' || userProfile.lifeStage === 'menopause' || (() => {
             if (!userProfile.birthday) return false;
@@ -1743,6 +1725,65 @@ export default function InsightsScreen() {
               </Text>
             )}
           </View>
+
+          {/* ── Apple Health Signals ──────────────────────────────────── */}
+          {healthConnection?.isConnected && healthData && (
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <Apple size={18} color={colors.primary} />
+                <Text style={styles.sectionTitle}>{t.integrations?.appleHealth ?? 'Apple Health'}</Text>
+              </View>
+              <View style={styles.healthGrid}>
+                {healthData.hrv !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Heart size={20} color={healthData.hrv < 25 ? colors.statusAttention : colors.statusGood} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{Math.round(healthData.hrv)}</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>HRV (ms)</Text>
+                  </View>
+                )}
+                {healthData.sleepHours !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Moon size={20} color={healthData.sleepHours < 6 ? colors.statusAttention : colors.statusGood} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.sleepHours.toFixed(1)}h</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Sleep</Text>
+                  </View>
+                )}
+                {healthData.steps !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Zap size={20} color={healthData.steps < 3000 ? colors.statusAttention : colors.statusGood} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.steps.toLocaleString()}</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Steps</Text>
+                  </View>
+                )}
+                {healthData.heartRate !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Heart size={20} color={colors.primary} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{Math.round(healthData.heartRate)}</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Heart Rate</Text>
+                  </View>
+                )}
+                {healthData.wristTemperatureDeviation !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Thermometer size={20} color={healthData.wristTemperatureDeviation > 0.3 ? colors.statusAttention : colors.statusGood} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.wristTemperatureDeviation > 0 ? '+' : ''}{healthData.wristTemperatureDeviation.toFixed(2)}°</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Temp Δ</Text>
+                  </View>
+                )}
+                {healthData.spo2 !== undefined && (
+                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                    <Shield size={20} color={healthData.spo2 < 95 ? colors.statusAttention : colors.statusGood} />
+                    <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.spo2.toFixed(1)}%</Text>
+                    <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>SpO₂</Text>
+                  </View>
+                )}
+              </View>
+              {healthData.lastSyncDate && (
+                <Text style={[styles.healthSyncLabel, { color: colors.textTertiary }]}>
+                  {t.integrations?.lastSync ?? 'Last sync'}: {new Date(healthData.lastSyncDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              )}
+            </View>
+          )}
         </ScrollView>
 
         <Modal
@@ -3172,5 +3213,43 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
+  },
+  sectionContainer: {
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    marginBottom: 12,
+  },
+  healthGrid: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 10,
+  },
+  healthTile: {
+    width: '30%' as const,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center' as const,
+    gap: 4,
+    minWidth: 90,
+    flexGrow: 1,
+  },
+  healthTileValue: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+  },
+  healthTileLabel: {
+    fontSize: 11,
+    textAlign: 'center' as const,
+  },
+  healthSyncLabel: {
+    fontSize: 11,
+    marginTop: 8,
+    textAlign: 'right' as const,
   },
 }); }

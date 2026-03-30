@@ -57,6 +57,11 @@ export async function requestHealthKitPermissions(): Promise<boolean> {
         AppleHealthKit.Constants?.Permissions?.ActiveEnergyBurned,
         AppleHealthKit.Constants?.Permissions?.HeartRateVariability,
         AppleHealthKit.Constants?.Permissions?.BodyTemperature,
+        AppleHealthKit.Constants?.Permissions?.OxygenSaturation,
+        AppleHealthKit.Constants?.Permissions?.RespiratoryRate,
+        AppleHealthKit.Constants?.Permissions?.AppleSleepingWristTemperature,
+        AppleHealthKit.Constants?.Permissions?.MindfulSession,
+        AppleHealthKit.Constants?.Permissions?.AppleStandTime,
       ].filter(Boolean),
     },
   };
@@ -321,6 +326,207 @@ export async function fetchTemperatureData(): Promise<{ wristTemperature?: numbe
   });
 }
 
+export async function fetchActiveEnergyData(): Promise<{ activeEnergy?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getActiveEnergyBurned?.(
+        {
+          startDate: startOfDay.toISOString(),
+          endDate: now.toISOString(),
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            resolve({});
+            return;
+          }
+          const total = Math.round(results.reduce((sum: number, r: any) => sum + (r.value || 0), 0));
+          logger.log('[HealthKit] Active energy:', total);
+          resolve({ activeEnergy: total });
+        }
+      );
+    } catch {
+      resolve({});
+    }
+  });
+}
+
+export async function fetchSpO2Data(): Promise<{ spo2?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const oneDayAgo = new Date(now);
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getOxygenSaturationSamples?.(
+        {
+          startDate: oneDayAgo.toISOString(),
+          endDate: now.toISOString(),
+          ascending: false,
+          limit: 1,
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            logger.log('[HealthKit] No SpO2 data:', err);
+            resolve({});
+            return;
+          }
+          // Apple Health returns SpO2 as 0–1 fraction; multiply by 100 for %
+          const raw = results[0]?.value;
+          const pct = raw !== undefined ? (raw > 1 ? raw : Math.round(raw * 1000) / 10) : undefined;
+          logger.log('[HealthKit] SpO2:', pct);
+          resolve({ spo2: pct });
+        }
+      );
+    } catch {
+      logger.log('[HealthKit] SpO2 fetch error');
+      resolve({});
+    }
+  });
+}
+
+export async function fetchRespiratoryRateData(): Promise<{ respiratoryRate?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const twoDaysAgo = new Date(now);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getRespiratoryRateSamples?.(
+        {
+          startDate: twoDaysAgo.toISOString(),
+          endDate: now.toISOString(),
+          ascending: false,
+          limit: 1,
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            logger.log('[HealthKit] No respiratory rate data:', err);
+            resolve({});
+            return;
+          }
+          const rate = results[0]?.value;
+          logger.log('[HealthKit] Respiratory rate:', rate);
+          resolve({ respiratoryRate: rate ? Math.round(rate * 10) / 10 : undefined });
+        }
+      );
+    } catch {
+      logger.log('[HealthKit] Respiratory rate fetch error');
+      resolve({});
+    }
+  });
+}
+
+export async function fetchWristTemperatureDeviationData(): Promise<{ wristTemperatureDeviation?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  return new Promise((resolve) => {
+    try {
+      // Apple Watch Series 8+ exposes wrist temperature as a nightly deviation from personal baseline
+      AppleHealthKit.getAppleSleepingWristTemperature?.(
+        {
+          startDate: sevenDaysAgo.toISOString(),
+          endDate: now.toISOString(),
+          ascending: false,
+          limit: 1,
+        },
+        (err: any, results: any[]) => {
+          if (err || !results || results.length === 0) {
+            logger.log('[HealthKit] No wrist temperature deviation data:', err);
+            resolve({});
+            return;
+          }
+          // Stored as degrees Celsius deviation from personal baseline
+          const deviation = results[0]?.value;
+          logger.log('[HealthKit] Wrist temperature deviation:', deviation);
+          resolve({ wristTemperatureDeviation: deviation !== undefined ? Math.round(deviation * 100) / 100 : undefined });
+        }
+      );
+    } catch {
+      logger.log('[HealthKit] Wrist temperature deviation fetch error');
+      resolve({});
+    }
+  });
+}
+
+export async function fetchMindfulnessData(): Promise<{ mindfulnessMinutes?: number; standHours?: number }> {
+  if (!isHealthKitAvailable || !AppleHealthKit) {
+    return {};
+  }
+
+  const now = new Date();
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const result: { mindfulnessMinutes?: number; standHours?: number } = {};
+
+  await new Promise<void>((resolve) => {
+    try {
+      AppleHealthKit.getMindfulSession?.(
+        {
+          startDate: startOfDay.toISOString(),
+          endDate: now.toISOString(),
+        },
+        (err: any, results: any[]) => {
+          if (!err && results && results.length > 0) {
+            const totalMs = results.reduce((sum: number, r: any) => {
+              return sum + (new Date(r.endDate).getTime() - new Date(r.startDate).getTime());
+            }, 0);
+            result.mindfulnessMinutes = Math.round(totalMs / 60000);
+            logger.log('[HealthKit] Mindfulness minutes:', result.mindfulnessMinutes);
+          }
+          resolve();
+        }
+      );
+    } catch {
+      resolve();
+    }
+  });
+
+  await new Promise<void>((resolve) => {
+    try {
+      AppleHealthKit.getAppleStandTime?.(
+        {
+          startDate: startOfDay.toISOString(),
+          endDate: now.toISOString(),
+        },
+        (err: any, results: any) => {
+          if (!err && results?.value !== undefined) {
+            result.standHours = Math.round(results.value);
+            logger.log('[HealthKit] Stand hours:', result.standHours);
+          }
+          resolve();
+        }
+      );
+    } catch {
+      resolve();
+    }
+  });
+
+  return result;
+}
+
 export async function fetchStepsData(): Promise<{ steps?: number }> {
   if (!isHealthKitAvailable || !AppleHealthKit) {
     return {};
@@ -401,6 +607,43 @@ export async function fetchAllHealthData(enabledTypes: HealthDataType[]): Promis
     promises.push(
       fetchTemperatureData().then((tempData) => {
         Object.assign(data, tempData);
+      })
+    );
+    promises.push(
+      fetchWristTemperatureDeviationData().then((devData) => {
+        Object.assign(data, devData);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('spo2')) {
+    promises.push(
+      fetchSpO2Data().then((spo2Data) => {
+        Object.assign(data, spo2Data);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('respiratoryRate')) {
+    promises.push(
+      fetchRespiratoryRateData().then((rrData) => {
+        Object.assign(data, rrData);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('mindfulness')) {
+    promises.push(
+      fetchMindfulnessData().then((mindData) => {
+        Object.assign(data, mindData);
+      })
+    );
+  }
+
+  if (enabledTypes.includes('activeEnergy')) {
+    promises.push(
+      fetchActiveEnergyData().then((aeData) => {
+        Object.assign(data, aeData);
       })
     );
   }

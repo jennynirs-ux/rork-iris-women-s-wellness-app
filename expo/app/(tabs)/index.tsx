@@ -58,6 +58,7 @@ import {
 const COACHING_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   AlertCircle, Moon, Zap, Battery, Droplets, Flame, Leaf, Star,
   TrendingUp, CheckCircle, Brain, Camera, Heart, Sprout, Coffee, BedDouble,
+  Activity, Thermometer,
 };
 import * as Haptics from "expo-haptics";
 import CircularProgress from "@/components/CircularProgress";
@@ -73,6 +74,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
+import QuickScanModal from "@/components/QuickScanModal";
 
 const PHASE_INFO = {
   menstrual: { color: "#E89BA4", icon: Moon },
@@ -474,13 +476,14 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t, healthData } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
   const [dismissedCoachingTips, setDismissedCoachingTips] = useState<Set<string>>(new Set());
   const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [showQuickScan, setShowQuickScan] = useState(false);
   const [communityTipText, setCommunityTipText] = useState("");
   const [communityTipCategory, setCommunityTipCategory] = useState<"nutrition" | "exercise" | "selfcare" | "mindfulness" | "sleep">("mindfulness");
   const [communityCollapsed, setCommunityCollapsed] = useState(false);
@@ -560,7 +563,7 @@ export default function HomeScreen() {
   });
 
   const coachingTips = useMemo(() => {
-    const staticTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile);
+    const staticTips = generateCoachingTips(scans, checkIns, currentPhase, userProfile, healthData);
     const patternTips = generatePatternBasedTips(scans, checkIns, currentPhase, cycleHistory, t);
     const merged = [...staticTips, ...patternTips];
     const unique = Array.from(new Map(merged.map((tip) => [tip.id, tip])).values());
@@ -1082,7 +1085,7 @@ export default function HomeScreen() {
         >
           <Apple size={24} color={colors.phaseFollicular} />
           <Text style={[styles.quickAccessLabel, { color: colors.phaseFollicular }]}>
-            {t.home?.todaysMeals || "Today's Meals"}
+            {t.home?.meals || "Meals"}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -1093,6 +1096,16 @@ export default function HomeScreen() {
           <Dumbbell size={24} color={colors.phaseOvulation} />
           <Text style={[styles.quickAccessLabel, { color: colors.phaseOvulation }]}>
             {t.home?.training || 'Training'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickAccessButton, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}
+          onPress={() => setShowQuickScan(true)}
+          activeOpacity={0.7}
+        >
+          <Eye size={24} color={colors.primary} />
+          <Text style={[styles.quickAccessLabel, { color: colors.primary }]}>
+            {t.scan?.scanNow || 'Scan Now'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -1184,7 +1197,6 @@ export default function HomeScreen() {
             if (habit.id === '__scan__' || habit.id === '__checkin__') {
               const isSpecialScan = habit.id === '__scan__';
               const baseColor = isSpecialScan ? colors.phaseLuteal : colors.phaseOvulation;
-              const iconColor = habit.completed ? '#8BC9A3' : baseColor;
               return (
                 <TouchableOpacity
                   style={styles.habitCard}
@@ -1192,11 +1204,11 @@ export default function HomeScreen() {
                   accessibilityLabel={`${habit.title}, ${habit.completed ? 'completed' : 'not completed'}`}
                   accessibilityRole="button"
                 >
-                  <View style={[styles.habitIcon, { backgroundColor: (habit.completed ? '#8BC9A3' : baseColor) + '20' }]}>
+                  <View style={[styles.habitIcon, { backgroundColor: baseColor + '20' }]}>
                     {isSpecialScan ? (
-                      <Eye size={20} color={iconColor} />
+                      <Eye size={20} color={baseColor} />
                     ) : (
-                      <ClipboardCheck size={20} color={iconColor} />
+                      <ClipboardCheck size={20} color={baseColor} />
                     )}
                   </View>
                   <View style={styles.habitContent}>
@@ -1397,6 +1409,11 @@ export default function HomeScreen() {
           <MessageCircle size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
+
+      <QuickScanModal
+        visible={showQuickScan}
+        onClose={() => setShowQuickScan(false)}
+      />
     </SafeAreaView>
   );
 }
