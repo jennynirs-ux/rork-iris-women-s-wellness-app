@@ -37,7 +37,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
 import { generateDailyTrainingPlan, WorkoutSuggestion, WorkoutIntensity, Exercise } from "@/lib/trainingPlans";
-import { trainingTranslations as tt } from "@/constants/trainingTranslations";
+import { trainingTranslations } from "@/constants/trainingTranslations";
 import ExerciseSketch from "@/components/ExerciseSketch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
@@ -75,15 +75,7 @@ const INTENSITY_COLORS: Record<WorkoutIntensity, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function t(key: string, params?: Record<string, string | number>): string {
-  let value = tt[key] ?? key;
-  if (params) {
-    Object.entries(params).forEach(([k, v]) => {
-      value = value.replace(`{${k}}`, String(v));
-    });
-  }
-  return value;
-}
+// t() is created inside the component to be language-aware; see below.
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -106,7 +98,18 @@ function formatTime(totalSeconds: number): string {
 export default function TrainingPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
+
+  const tt = trainingTranslations[language] ?? trainingTranslations.en;
+  const t = useCallback((key: string, params?: Record<string, string | number>): string => {
+    let value = tt[key] ?? key;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        value = value.replace(`{${k}}`, String(v));
+      });
+    }
+    return value;
+  }, [tt]);
 
   const [expandedWarmup, setExpandedWarmup] = useState(true);
   const [expandedCooldown, setExpandedCooldown] = useState(true);

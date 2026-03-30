@@ -444,7 +444,7 @@ export default function OnboardingScreen() {
       <View style={styles.privacyNote}>
         <Shield size={14} color={colors.primary} />
         <Text style={styles.privacyNoteText}>
-          {(t as any).privacy?.allAnalysisOnDevice || 'Your privacy matters — all analysis happens on your device'}
+          {t.onboarding?.privacyMessage || 'Your privacy matters — all analysis happens on your device'}
         </Text>
       </View>
 

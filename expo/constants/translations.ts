@@ -83,6 +83,33 @@ type Translations = {
     scanTip2: string;
     scanTip3: string;
     startScanNow: string;
+    cycleDetailsTitle: string;
+    cycleDetailsSubtitle: string;
+    cycleRegularityLabel: string;
+    cycleRegular: string;
+    cycleIrregular: string;
+    cycleNotSure: string;
+    typicalLength: string;
+    days: string;
+    birthControlLabel: string;
+    bcNone: string;
+    bcPill: string;
+    bcIudHormonal: string;
+    bcIudCopper: string;
+    bcImplant: string;
+    bcRing: string;
+    bcPatch: string;
+    bcOther: string;
+    focusTitle: string;
+    focusSubtitle: string;
+    focusEnergy: string;
+    focusStress: string;
+    focusFitness: string;
+    focusHormonal: string;
+    focusSkin: string;
+    focusBody: string;
+    selected: string;
+    privacyMessage: string;
   };
   profile: {
     title: string;
@@ -172,6 +199,8 @@ type Translations = {
     thisMonth: string;
     lastMonth: string;
     dataConsentError: string;
+    brainWellness: string;
+    brainWellnessDescription: string;
   };
   settings: {
     title: string;
@@ -297,7 +326,17 @@ type Translations = {
     codeCopiedMessage: string;
     healthConditions: string;
     healthConditionsDesc: string;
+    noneSelected: string;
     done: string;
+    sharingNotAvailable: string;
+    generateReportError: string;
+    deleteDataError: string;
+    dataRestoredTitle: string;
+    dataRestoredMessage: string;
+    restoringData: string;
+    restoreData: string;
+    syncingData: string;
+    backUpNow: string;
   };
   health: {
     appleHealth: string;
@@ -398,6 +437,8 @@ type Translations = {
     scanCompleted: string;
     checkInCompleted: string;
     logHowYouFeel: string;
+    meals: string;
+    training: string;
   };
   scan: {
     loadingCamera: string;
@@ -1275,6 +1316,33 @@ const en: Translations = {
     scanTip2: 'Keep your face centered',
     scanTip3: 'Hold steady for analysis',
     startScanNow: 'Start Scan',
+    cycleDetailsTitle: 'Your Cycle',
+    cycleDetailsSubtitle: 'Help us personalize your experience',
+    cycleRegularityLabel: 'How regular is your cycle?',
+    cycleRegular: 'Regular',
+    cycleIrregular: 'Irregular',
+    cycleNotSure: 'Not sure',
+    typicalLength: 'Typical cycle length',
+    days: 'days',
+    birthControlLabel: 'Birth control',
+    bcNone: 'None',
+    bcPill: 'Pill',
+    bcIudHormonal: 'Hormonal IUD',
+    bcIudCopper: 'Copper IUD',
+    bcImplant: 'Implant',
+    bcRing: 'Ring',
+    bcPatch: 'Patch',
+    bcOther: 'Other',
+    focusTitle: 'Your Wellness Focus',
+    focusSubtitle: 'What matters most to you? Choose up to 3.',
+    focusEnergy: 'Energy & Vitality',
+    focusStress: 'Stress & Recovery',
+    focusFitness: 'Fitness & Strength',
+    focusHormonal: 'Cycle Awareness',
+    focusSkin: 'Skin & Self-Care',
+    focusBody: 'Body Awareness',
+    selected: 'selected',
+    privacyMessage: 'Your privacy matters — all analysis happens on your device',
   },
   profile: {
     title: 'Profile',
@@ -1364,6 +1432,8 @@ const en: Translations = {
     thisMonth: 'this month',
     lastMonth: 'last month',
     dataConsentError: 'Failed to update data consent preference. Please try again.',
+    brainWellness: 'Brain Wellness',
+    brainWellnessDescription: 'Cognitive health and brain exercises',
   },
   settings: {
     title: 'Settings',
@@ -1489,7 +1559,17 @@ const en: Translations = {
     codeCopiedMessage: 'Partner code copied to clipboard',
     healthConditions: 'Health Conditions',
     healthConditionsDesc: 'Select any conditions you manage. This helps personalize your check-ins and wellness insights.',
+    noneSelected: 'None selected',
     done: 'Done',
+    sharingNotAvailable: 'Sharing is not available on this device',
+    generateReportError: 'Failed to generate wellness report. Please try again.',
+    deleteDataError: 'Failed to delete data. Please try again.',
+    dataRestoredTitle: 'Restored',
+    dataRestoredMessage: 'Your data has been restored. Please restart the app to see changes.',
+    restoringData: 'Restoring...',
+    restoreData: 'Restore Data',
+    syncingData: 'Syncing...',
+    backUpNow: 'Back Up Now',
   },
   health: {
     appleHealth: 'Apple Health',
@@ -1620,6 +1700,8 @@ const en: Translations = {
     scanCompleted: 'Completed today',
     checkInCompleted: 'Completed today',
     logHowYouFeel: 'Log how you feel today',
+    meals: 'Meals',
+    training: 'Training',
   },
   scan: {
     loadingCamera: 'Loading camera...',
@@ -2467,6 +2549,33 @@ const sv: Translations = {
     scanTip2: 'Håll ditt ansikte centrerat',
     scanTip3: 'Håll stadigt för analys',
     startScanNow: 'Starta scanning',
+    cycleDetailsTitle: 'Din cykel',
+    cycleDetailsSubtitle: 'Hjälp oss anpassa din upplevelse',
+    cycleRegularityLabel: 'Hur regelbunden är din cykel?',
+    cycleRegular: 'Regelbunden',
+    cycleIrregular: 'Oregelbunden',
+    cycleNotSure: 'Vet inte',
+    typicalLength: 'Typisk cykellängd',
+    days: 'dagar',
+    birthControlLabel: 'Preventivmedel',
+    bcNone: 'Inget',
+    bcPill: 'P-piller',
+    bcIudHormonal: 'Hormonspiral',
+    bcIudCopper: 'Kopparspiral',
+    bcImplant: 'Implantat',
+    bcRing: 'Ring',
+    bcPatch: 'Plåster',
+    bcOther: 'Annat',
+    focusTitle: 'Ditt välmåendefokus',
+    focusSubtitle: 'Vad är viktigast för dig? Välj upp till 3.',
+    focusEnergy: 'Energi & Vitalitet',
+    focusStress: 'Stress & Återhämtning',
+    focusFitness: 'Kondition & Styrka',
+    focusHormonal: 'Cykelmedvetenhet',
+    focusSkin: 'Hud & Egenvård',
+    focusBody: 'Kroppsmedvetenhet',
+    selected: 'valda',
+    privacyMessage: 'Din integritet är viktig — all analys sker på din enhet',
   },
   profile: {
     title: 'Profil',
@@ -2556,6 +2665,8 @@ const sv: Translations = {
     thisMonth: 'denna månad',
     lastMonth: 'förra månaden',
     dataConsentError: 'Det gick inte att uppdatera inställningen för datamedgivande. Försök igen.',
+    brainWellness: 'Hjärnhälsa',
+    brainWellnessDescription: 'Kognitiv hälsa och hjärnövningar',
   },
   settings: {
     title: 'Inställningar',
@@ -2681,7 +2792,17 @@ const sv: Translations = {
     codeCopiedMessage: 'Partnerkoden kopierades till urklipp',
     healthConditions: 'Hälsotillstånd',
     healthConditionsDesc: 'Välj de tillstånd du hanterar. Det hjälper oss att personalisera dina incheckningar och hälsoinsikter.',
+    noneSelected: 'Inga valda',
     done: 'Klar',
+    sharingNotAvailable: 'Delning är inte tillgänglig på denna enhet',
+    generateReportError: 'Kunde inte generera hälsorapport. Försök igen.',
+    deleteDataError: 'Kunde inte radera data. Försök igen.',
+    dataRestoredTitle: 'Återställd',
+    dataRestoredMessage: 'Din data har återställts. Starta om appen för att se ändringarna.',
+    restoringData: 'Återställer...',
+    restoreData: 'Återställ data',
+    syncingData: 'Synkroniserar...',
+    backUpNow: 'Säkerhetskopiera nu',
   },
   health: {
     appleHealth: 'Apple Hälsa',
@@ -2812,6 +2933,8 @@ const sv: Translations = {
     scanCompleted: 'Klar idag',
     checkInCompleted: 'Klar idag',
     logHowYouFeel: 'Logga hur du mår idag',
+    meals: 'Måltider',
+    training: 'Träning',
   },
   scan: {
     loadingCamera: 'Laddar kamera...',
@@ -3647,6 +3770,33 @@ const de: Translations = {
     scanTip2: 'Halte dein Gesicht zentriert',
     scanTip3: 'Halte still für die Analyse',
     startScanNow: 'Scan starten',
+    cycleDetailsTitle: 'Dein Zyklus',
+    cycleDetailsSubtitle: 'Hilf uns, dein Erlebnis zu personalisieren',
+    cycleRegularityLabel: 'Wie regelmäßig ist dein Zyklus?',
+    cycleRegular: 'Regelmäßig',
+    cycleIrregular: 'Unregelmäßig',
+    cycleNotSure: 'Nicht sicher',
+    typicalLength: 'Typische Zykluslänge',
+    days: 'Tage',
+    birthControlLabel: 'Verhütung',
+    bcNone: 'Keine',
+    bcPill: 'Pille',
+    bcIudHormonal: 'Hormonspirale',
+    bcIudCopper: 'Kupferspirale',
+    bcImplant: 'Implantat',
+    bcRing: 'Ring',
+    bcPatch: 'Pflaster',
+    bcOther: 'Andere',
+    focusTitle: 'Dein Wellness-Fokus',
+    focusSubtitle: 'Was ist dir am wichtigsten? Wähle bis zu 3.',
+    focusEnergy: 'Energie & Vitalität',
+    focusStress: 'Stress & Erholung',
+    focusFitness: 'Fitness & Stärke',
+    focusHormonal: 'Zyklusbewusstsein',
+    focusSkin: 'Haut & Selbstpflege',
+    focusBody: 'Körperbewusstsein',
+    selected: 'ausgewählt',
+    privacyMessage: 'Deine Privatsphäre ist wichtig — alle Analysen finden auf deinem Gerät statt',
   },
   profile: {
     title: 'Profil',
@@ -3736,6 +3886,8 @@ const de: Translations = {
     thisMonth: 'diesen Monat',
     lastMonth: 'letzten Monat',
     dataConsentError: 'Die Einstellung für die Dateneinwilligung konnte nicht aktualisiert werden. Bitte versuche es erneut.',
+    brainWellness: 'Gehirngesundheit',
+    brainWellnessDescription: 'Kognitive Gesundheit und Gehirnübungen',
   },
   settings: {
     title: 'Einstellungen',
@@ -3861,7 +4013,17 @@ const de: Translations = {
     codeCopiedMessage: 'Partnercode in die Zwischenablage kopiert',
     healthConditions: 'Gesundheitszustände',
     healthConditionsDesc: 'Wähle alle Zustände aus, die du verwaltest. Das hilft uns, deine Check-ins und Wellness-Einblicke zu personalisieren.',
+    noneSelected: 'Keine ausgewählt',
     done: 'Fertig',
+    sharingNotAvailable: 'Teilen ist auf diesem Gerät nicht verfügbar',
+    generateReportError: 'Wellnessbericht konnte nicht erstellt werden. Bitte versuche es erneut.',
+    deleteDataError: 'Daten konnten nicht gelöscht werden. Bitte versuche es erneut.',
+    dataRestoredTitle: 'Wiederhergestellt',
+    dataRestoredMessage: 'Deine Daten wurden wiederhergestellt. Bitte starte die App neu, um die Änderungen zu sehen.',
+    restoringData: 'Wiederherstellen...',
+    restoreData: 'Daten wiederherstellen',
+    syncingData: 'Synchronisieren...',
+    backUpNow: 'Jetzt sichern',
   },
   health: {
     appleHealth: 'Apple Health',
@@ -3992,6 +4154,8 @@ const de: Translations = {
     scanCompleted: 'Heute erledigt',
     checkInCompleted: 'Heute erledigt',
     logHowYouFeel: 'Protokolliere wie du dich heute fühlst',
+    meals: 'Mahlzeiten',
+    training: 'Training',
   },
   scan: {
     loadingCamera: 'Kamera wird geladen...',
@@ -4827,6 +4991,33 @@ const fr: Translations = {
     scanTip2: 'Gardez votre visage centré',
     scanTip3: 'Restez immobile pour l\'analyse',
     startScanNow: 'Commencer le scan',
+    cycleDetailsTitle: 'Votre cycle',
+    cycleDetailsSubtitle: 'Aidez-nous à personnaliser votre expérience',
+    cycleRegularityLabel: 'Votre cycle est-il régulier ?',
+    cycleRegular: 'Régulier',
+    cycleIrregular: 'Irrégulier',
+    cycleNotSure: 'Pas sûre',
+    typicalLength: 'Durée typique du cycle',
+    days: 'jours',
+    birthControlLabel: 'Contraception',
+    bcNone: 'Aucune',
+    bcPill: 'Pilule',
+    bcIudHormonal: 'DIU hormonal',
+    bcIudCopper: 'DIU au cuivre',
+    bcImplant: 'Implant',
+    bcRing: 'Anneau',
+    bcPatch: 'Patch',
+    bcOther: 'Autre',
+    focusTitle: 'Votre objectif bien-être',
+    focusSubtitle: 'Qu\'est-ce qui compte le plus ? Choisissez jusqu\'à 3.',
+    focusEnergy: 'Énergie & Vitalité',
+    focusStress: 'Stress & Récupération',
+    focusFitness: 'Forme & Force',
+    focusHormonal: 'Conscience du cycle',
+    focusSkin: 'Peau & Soins personnels',
+    focusBody: 'Conscience corporelle',
+    selected: 'sélectionnés',
+    privacyMessage: 'Votre vie privée compte — toutes les analyses se font sur votre appareil',
   },
   profile: {
     title: 'Profil',
@@ -4916,6 +5107,8 @@ const fr: Translations = {
     thisMonth: 'ce mois-ci',
     lastMonth: 'le mois dernier',
     dataConsentError: 'Impossible de mettre à jour la préférence de consentement des données. Veuillez réessayer.',
+    brainWellness: 'Santé cérébrale',
+    brainWellnessDescription: 'Santé cognitive et exercices cérébraux',
   },
   settings: {
     title: 'Paramètres',
@@ -5041,7 +5234,17 @@ const fr: Translations = {
     codeCopiedMessage: 'Code partenaire copié dans le presse-papiers',
     healthConditions: 'Conditions de santé',
     healthConditionsDesc: 'Sélectionnez les conditions que vous gérez. Cela nous aide à personnaliser vos bilans et insights bien-être.',
+    noneSelected: 'Aucune sélection',
     done: 'Terminé',
+    sharingNotAvailable: 'Le partage n\'est pas disponible sur cet appareil',
+    generateReportError: 'Impossible de générer le rapport bien-être. Veuillez réessayer.',
+    deleteDataError: 'Impossible de supprimer les données. Veuillez réessayer.',
+    dataRestoredTitle: 'Restauré',
+    dataRestoredMessage: 'Vos données ont été restaurées. Veuillez redémarrer l\'application pour voir les modifications.',
+    restoringData: 'Restauration...',
+    restoreData: 'Restaurer les données',
+    syncingData: 'Synchronisation...',
+    backUpNow: 'Sauvegarder maintenant',
   },
   health: {
     appleHealth: 'Apple Santé',
@@ -5172,6 +5375,8 @@ const fr: Translations = {
     scanCompleted: 'Terminé aujourd\'hui',
     checkInCompleted: 'Terminé aujourd\'hui',
     logHowYouFeel: 'Notez comment vous vous sentez aujourd\'hui',
+    meals: 'Repas',
+    training: 'Entraînement',
   },
   scan: {
     loadingCamera: 'Chargement de la caméra...',
@@ -6007,6 +6212,33 @@ const es: Translations = {
     scanTip2: 'Mantén tu cara centrada',
     scanTip3: 'Mantente quieto para el análisis',
     startScanNow: 'Iniciar escaneo',
+    cycleDetailsTitle: 'Tu ciclo',
+    cycleDetailsSubtitle: 'Ayúdanos a personalizar tu experiencia',
+    cycleRegularityLabel: '¿Qué tan regular es tu ciclo?',
+    cycleRegular: 'Regular',
+    cycleIrregular: 'Irregular',
+    cycleNotSure: 'No estoy segura',
+    typicalLength: 'Duración típica del ciclo',
+    days: 'días',
+    birthControlLabel: 'Anticonceptivo',
+    bcNone: 'Ninguno',
+    bcPill: 'Píldora',
+    bcIudHormonal: 'DIU hormonal',
+    bcIudCopper: 'DIU de cobre',
+    bcImplant: 'Implante',
+    bcRing: 'Anillo',
+    bcPatch: 'Parche',
+    bcOther: 'Otro',
+    focusTitle: 'Tu enfoque de bienestar',
+    focusSubtitle: '¿Qué es lo más importante para ti? Elige hasta 3.',
+    focusEnergy: 'Energía y Vitalidad',
+    focusStress: 'Estrés y Recuperación',
+    focusFitness: 'Fitness y Fuerza',
+    focusHormonal: 'Conciencia del ciclo',
+    focusSkin: 'Piel y Autocuidado',
+    focusBody: 'Conciencia corporal',
+    selected: 'seleccionados',
+    privacyMessage: 'Tu privacidad importa — todo el análisis se realiza en tu dispositivo',
   },
   profile: {
     title: 'Perfil',
@@ -6096,6 +6328,8 @@ const es: Translations = {
     thisMonth: 'este mes',
     lastMonth: 'el mes pasado',
     dataConsentError: 'No se pudo actualizar la preferencia de consentimiento de datos. Inténtalo de nuevo.',
+    brainWellness: 'Bienestar cerebral',
+    brainWellnessDescription: 'Salud cognitiva y ejercicios cerebrales',
   },
   settings: {
     title: 'Configuración',
@@ -6221,7 +6455,17 @@ const es: Translations = {
     codeCopiedMessage: 'Código de pareja copiado al portapapeles',
     healthConditions: 'Condiciones de salud',
     healthConditionsDesc: 'Selecciona las condiciones que manejas. Esto nos ayuda a personalizar tus registros e insights de bienestar.',
+    noneSelected: 'Ninguno seleccionado',
     done: 'Listo',
+    sharingNotAvailable: 'Compartir no está disponible en este dispositivo',
+    generateReportError: 'No se pudo generar el informe de bienestar. Inténtalo de nuevo.',
+    deleteDataError: 'No se pudieron eliminar los datos. Inténtalo de nuevo.',
+    dataRestoredTitle: 'Restaurado',
+    dataRestoredMessage: 'Tus datos han sido restaurados. Reinicia la app para ver los cambios.',
+    restoringData: 'Restaurando...',
+    restoreData: 'Restaurar datos',
+    syncingData: 'Sincronizando...',
+    backUpNow: 'Respaldar ahora',
   },
   health: {
     appleHealth: 'Apple Salud',
@@ -6352,6 +6596,8 @@ const es: Translations = {
     scanCompleted: 'Completado hoy',
     checkInCompleted: 'Completado hoy',
     logHowYouFeel: 'Registra como te sientes hoy',
+    meals: 'Comidas',
+    training: 'Entrenamiento',
   },
   scan: {
     loadingCamera: 'Cargando cámara...',
@@ -7187,6 +7433,33 @@ const it: Translations = {
     scanTip2: 'Mantieni il volto centrato',
     scanTip3: 'Rimani fermo per l\'analisi',
     startScanNow: 'Avvia scansione',
+    cycleDetailsTitle: 'Il tuo ciclo',
+    cycleDetailsSubtitle: 'Aiutaci a personalizzare la tua esperienza',
+    cycleRegularityLabel: 'Quanto è regolare il tuo ciclo?',
+    cycleRegular: 'Regolare',
+    cycleIrregular: 'Irregolare',
+    cycleNotSure: 'Non sono sicura',
+    typicalLength: 'Durata tipica del ciclo',
+    days: 'giorni',
+    birthControlLabel: 'Contraccezione',
+    bcNone: 'Nessuno',
+    bcPill: 'Pillola',
+    bcIudHormonal: 'IUD ormonale',
+    bcIudCopper: 'IUD al rame',
+    bcImplant: 'Impianto',
+    bcRing: 'Anello',
+    bcPatch: 'Cerotto',
+    bcOther: 'Altro',
+    focusTitle: 'Il tuo obiettivo benessere',
+    focusSubtitle: 'Cosa conta di più per te? Scegli fino a 3.',
+    focusEnergy: 'Energia e Vitalità',
+    focusStress: 'Stress e Recupero',
+    focusFitness: 'Fitness e Forza',
+    focusHormonal: 'Consapevolezza del ciclo',
+    focusSkin: 'Pelle e Cura di sé',
+    focusBody: 'Consapevolezza corporea',
+    selected: 'selezionati',
+    privacyMessage: 'La tua privacy è importante — tutte le analisi avvengono sul tuo dispositivo',
   },
   profile: {
     title: 'Profilo',
@@ -7276,6 +7549,8 @@ const it: Translations = {
     thisMonth: 'questo mese',
     lastMonth: 'il mese scorso',
     dataConsentError: 'Impossibile aggiornare la preferenza sul consenso ai dati. Riprova.',
+    brainWellness: 'Benessere cerebrale',
+    brainWellnessDescription: 'Salute cognitiva ed esercizi cerebrali',
   },
   settings: {
     title: 'Impostazioni',
@@ -7401,7 +7676,17 @@ const it: Translations = {
     codeCopiedMessage: 'Codice partner copiato negli appunti',
     healthConditions: 'Condizioni di salute',
     healthConditionsDesc: 'Seleziona le condizioni che gestisci. Questo ci aiuta a personalizzare i tuoi check-in e le intuizioni di benessere.',
+    noneSelected: 'Nessuna selezione',
     done: 'Fatto',
+    sharingNotAvailable: 'La condivisione non è disponibile su questo dispositivo',
+    generateReportError: 'Impossibile generare il report di benessere. Riprova.',
+    deleteDataError: 'Impossibile eliminare i dati. Riprova.',
+    dataRestoredTitle: 'Ripristinato',
+    dataRestoredMessage: 'I tuoi dati sono stati ripristinati. Riavvia l\'app per vedere le modifiche.',
+    restoringData: 'Ripristino...',
+    restoreData: 'Ripristina dati',
+    syncingData: 'Sincronizzazione...',
+    backUpNow: 'Esegui backup ora',
   },
   health: {
     appleHealth: 'Apple Salute',
@@ -7532,6 +7817,8 @@ const it: Translations = {
     scanCompleted: 'Completato oggi',
     checkInCompleted: 'Completato oggi',
     logHowYouFeel: 'Registra come ti senti oggi',
+    meals: 'Pasti',
+    training: 'Allenamento',
   },
   scan: {
     loadingCamera: 'Caricamento fotocamera...',
@@ -8367,6 +8654,33 @@ const nl: Translations = {
     scanTip2: 'Houd je gezicht gecentreerd',
     scanTip3: 'Blijf stilzitten voor analyse',
     startScanNow: 'Scan starten',
+    cycleDetailsTitle: 'Je cyclus',
+    cycleDetailsSubtitle: 'Help ons je ervaring te personaliseren',
+    cycleRegularityLabel: 'Hoe regelmatig is je cyclus?',
+    cycleRegular: 'Regelmatig',
+    cycleIrregular: 'Onregelmatig',
+    cycleNotSure: 'Niet zeker',
+    typicalLength: 'Typische cycluslengte',
+    days: 'dagen',
+    birthControlLabel: 'Anticonceptie',
+    bcNone: 'Geen',
+    bcPill: 'Pil',
+    bcIudHormonal: 'Hormoonspiraal',
+    bcIudCopper: 'Koperspiraal',
+    bcImplant: 'Implantaat',
+    bcRing: 'Ring',
+    bcPatch: 'Pleister',
+    bcOther: 'Anders',
+    focusTitle: 'Je welzijnsfocus',
+    focusSubtitle: 'Wat is het belangrijkste voor jou? Kies er maximaal 3.',
+    focusEnergy: 'Energie & Vitaliteit',
+    focusStress: 'Stress & Herstel',
+    focusFitness: 'Fitness & Kracht',
+    focusHormonal: 'Cyclusbewustzijn',
+    focusSkin: 'Huid & Zelfzorg',
+    focusBody: 'Lichaamsbewustzijn',
+    selected: 'geselecteerd',
+    privacyMessage: 'Je privacy is belangrijk — alle analyses vinden plaats op je apparaat',
   },
   profile: {
     title: 'Profiel',
@@ -8456,6 +8770,8 @@ const nl: Translations = {
     thisMonth: 'deze maand',
     lastMonth: 'vorige maand',
     dataConsentError: 'Kan de voorkeur voor gegevenstoestemming niet bijwerken. Probeer het opnieuw.',
+    brainWellness: 'Hersengezonheid',
+    brainWellnessDescription: 'Cognitieve gezondheid en hersenoefeningen',
   },
   settings: {
     title: 'Instellingen',
@@ -8581,7 +8897,17 @@ const nl: Translations = {
     codeCopiedMessage: 'Partnercode gekopieerd naar klembord',
     healthConditions: 'Gezondheidsaandoeningen',
     healthConditionsDesc: 'Selecteer de aandoeningen die je beheert. Dit helpt ons je check-ins en welzijnsinzichten te personaliseren.',
+    noneSelected: 'Geen geselecteerd',
     done: 'Klaar',
+    sharingNotAvailable: 'Delen is niet beschikbaar op dit apparaat',
+    generateReportError: 'Kan het wellnessrapport niet genereren. Probeer het opnieuw.',
+    deleteDataError: 'Kan gegevens niet verwijderen. Probeer het opnieuw.',
+    dataRestoredTitle: 'Hersteld',
+    dataRestoredMessage: 'Je gegevens zijn hersteld. Start de app opnieuw om de wijzigingen te zien.',
+    restoringData: 'Herstellen...',
+    restoreData: 'Gegevens herstellen',
+    syncingData: 'Synchroniseren...',
+    backUpNow: 'Nu back-uppen',
   },
   health: {
     appleHealth: 'Apple Gezondheid',
@@ -8712,6 +9038,8 @@ const nl: Translations = {
     scanCompleted: 'Vandaag voltooid',
     checkInCompleted: 'Vandaag voltooid',
     logHowYouFeel: 'Noteer hoe je je vandaag voelt',
+    meals: 'Maaltijden',
+    training: 'Training',
   },
   scan: {
     loadingCamera: 'Camera laden...',
@@ -9547,6 +9875,33 @@ const pl: Translations = {
     scanTip2: 'Trzymaj twarz wysrodkowaną',
     scanTip3: 'Pozostań nieruchomy do analizy',
     startScanNow: 'Rozpocznij skanowanie',
+    cycleDetailsTitle: 'Twój cykl',
+    cycleDetailsSubtitle: 'Pomóż nam spersonalizować Twoje doświadczenie',
+    cycleRegularityLabel: 'Jak regularny jest Twój cykl?',
+    cycleRegular: 'Regularny',
+    cycleIrregular: 'Nieregularny',
+    cycleNotSure: 'Nie wiem',
+    typicalLength: 'Typowa długość cyklu',
+    days: 'dni',
+    birthControlLabel: 'Antykoncepcja',
+    bcNone: 'Brak',
+    bcPill: 'Tabletka',
+    bcIudHormonal: 'Wkładka hormonalna',
+    bcIudCopper: 'Wkładka miedziana',
+    bcImplant: 'Implant',
+    bcRing: 'Pierścień',
+    bcPatch: 'Plaster',
+    bcOther: 'Inne',
+    focusTitle: 'Twój cel wellness',
+    focusSubtitle: 'Co jest dla Ciebie najważniejsze? Wybierz do 3.',
+    focusEnergy: 'Energia i Witalność',
+    focusStress: 'Stres i Regeneracja',
+    focusFitness: 'Fitness i Siła',
+    focusHormonal: 'Świadomość cyklu',
+    focusSkin: 'Skóra i Pielęgnacja',
+    focusBody: 'Świadomość ciała',
+    selected: 'wybrano',
+    privacyMessage: 'Twoja prywatność jest ważna — cała analiza odbywa się na Twoim urządzeniu',
   },
   profile: {
     title: 'Profil',
@@ -9636,6 +9991,8 @@ const pl: Translations = {
     thisMonth: 'w tym miesiącu',
     lastMonth: 'w zeszłym miesiącu',
     dataConsentError: 'Nie udało się zaktualizować preferencji zgody na dane. Spróbuj ponownie.',
+    brainWellness: 'Zdrowie mózgu',
+    brainWellnessDescription: 'Zdrowie poznawcze i ćwiczenia mózgu',
   },
   settings: {
     title: 'Ustawienia',
@@ -9761,7 +10118,17 @@ const pl: Translations = {
     codeCopiedMessage: 'Kod partnera skopiowany do schowka',
     healthConditions: 'Schorzenia zdrowotne',
     healthConditionsDesc: 'Wybierz schorzenia, którymi zarządzasz. Pomaga nam to spersonalizować Twoje odprawy i spostrzeżenia wellness.',
+    noneSelected: 'Nie wybrano',
     done: 'Gotowe',
+    sharingNotAvailable: 'Udostępnianie nie jest dostępne na tym urządzeniu',
+    generateReportError: 'Nie udało się wygenerować raportu wellness. Spróbuj ponownie.',
+    deleteDataError: 'Nie udało się usunąć danych. Spróbuj ponownie.',
+    dataRestoredTitle: 'Przywrócono',
+    dataRestoredMessage: 'Twoje dane zostały przywrócone. Uruchom ponownie aplikację, aby zobaczyć zmiany.',
+    restoringData: 'Przywracanie...',
+    restoreData: 'Przywróć dane',
+    syncingData: 'Synchronizowanie...',
+    backUpNow: 'Utwórz kopię zapasową',
   },
   health: {
     appleHealth: 'Apple Zdrowie',
@@ -9892,6 +10259,8 @@ const pl: Translations = {
     scanCompleted: 'Ukończono dzisiaj',
     checkInCompleted: 'Ukończono dzisiaj',
     logHowYouFeel: 'Zapisz jak się dziś czujesz',
+    meals: 'Posiłki',
+    training: 'Trening',
   },
   scan: {
     loadingCamera: 'Ładowanie kamery...',
@@ -10727,6 +11096,33 @@ const pt: Translations = {
     scanTip2: 'Mantenha seu rosto centralizado',
     scanTip3: 'Fique imóvel para análise',
     startScanNow: 'Iniciar verificação',
+    cycleDetailsTitle: 'Seu ciclo',
+    cycleDetailsSubtitle: 'Ajude-nos a personalizar sua experiência',
+    cycleRegularityLabel: 'Quão regular é seu ciclo?',
+    cycleRegular: 'Regular',
+    cycleIrregular: 'Irregular',
+    cycleNotSure: 'Não tenho certeza',
+    typicalLength: 'Duração típica do ciclo',
+    days: 'dias',
+    birthControlLabel: 'Contraceptivo',
+    bcNone: 'Nenhum',
+    bcPill: 'Pílula',
+    bcIudHormonal: 'DIU hormonal',
+    bcIudCopper: 'DIU de cobre',
+    bcImplant: 'Implante',
+    bcRing: 'Anel',
+    bcPatch: 'Adesivo',
+    bcOther: 'Outro',
+    focusTitle: 'Seu foco de bem-estar',
+    focusSubtitle: 'O que mais importa para você? Escolha até 3.',
+    focusEnergy: 'Energia e Vitalidade',
+    focusStress: 'Estresse e Recuperação',
+    focusFitness: 'Fitness e Força',
+    focusHormonal: 'Consciência do ciclo',
+    focusSkin: 'Pele e Autocuidado',
+    focusBody: 'Consciência corporal',
+    selected: 'selecionados',
+    privacyMessage: 'Sua privacidade importa — toda análise acontece no seu dispositivo',
   },
   profile: {
     title: 'Perfil',
@@ -10816,6 +11212,8 @@ const pt: Translations = {
     thisMonth: 'este mês',
     lastMonth: 'mês passado',
     dataConsentError: 'Falha ao atualizar a preferência de consentimento de dados. Tente novamente.',
+    brainWellness: 'Saúde cerebral',
+    brainWellnessDescription: 'Saúde cognitiva e exercícios cerebrais',
   },
   settings: {
     title: 'Configurações',
@@ -10941,7 +11339,17 @@ const pt: Translations = {
     codeCopiedMessage: 'Código do parceiro copiado para a área de transferência',
     healthConditions: 'Condições de saúde',
     healthConditionsDesc: 'Selecione as condições que você gerencia. Isso nos ajuda a personalizar seus check-ins e insights de bem-estar.',
+    noneSelected: 'Nenhum selecionado',
     done: 'Concluído',
+    sharingNotAvailable: 'Compartilhamento não está disponível neste dispositivo',
+    generateReportError: 'Falha ao gerar o relatório de bem-estar. Tente novamente.',
+    deleteDataError: 'Falha ao excluir dados. Tente novamente.',
+    dataRestoredTitle: 'Restaurado',
+    dataRestoredMessage: 'Seus dados foram restaurados. Reinicie o app para ver as alterações.',
+    restoringData: 'Restaurando...',
+    restoreData: 'Restaurar dados',
+    syncingData: 'Sincronizando...',
+    backUpNow: 'Fazer backup agora',
   },
   health: {
     appleHealth: 'Apple Saúde',
@@ -11072,6 +11480,8 @@ const pt: Translations = {
     scanCompleted: 'Concluído hoje',
     checkInCompleted: 'Concluído hoje',
     logHowYouFeel: 'Registre como você está se sentindo hoje',
+    meals: 'Refeições',
+    training: 'Treino',
   },
   scan: {
     loadingCamera: 'Carregando câmera...',

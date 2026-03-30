@@ -701,8 +701,8 @@ export default function ProfileScreen() {
                     <Brain size={20} color="#9B85D6" />
                   </View>
                   <View style={styles.menuTextContainer}>
-                    <Text style={styles.menuText}>Brain Wellness</Text>
-                    <Text style={styles.menuSubtext}>Cognitive health and brain exercises</Text>
+                    <Text style={styles.menuText}>{t.profile.brainWellness}</Text>
+                    <Text style={styles.menuSubtext}>{t.profile.brainWellnessDescription}</Text>
                   </View>
                   <ChevronRight size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
@@ -846,7 +846,7 @@ export default function ProfileScreen() {
                   <Text style={styles.menuText}>Health Conditions</Text>
                   <Text style={styles.menuSubtext}>
                     {selectedConditions.length === 0
-                      ? 'None selected'
+                      ? t.settings.noneSelected
                       : selectedConditions.map((c) => ct.conditions[c]?.name || c).join(', ')}
                   </Text>
                 </View>
@@ -1414,11 +1414,11 @@ export default function ProfileScreen() {
                           UTI: 'com.adobe.pdf',
                         });
                       } else {
-                        Alert.alert('Error', 'Sharing is not available on this device');
+                        Alert.alert(t.settings.error, t.settings.sharingNotAvailable);
                       }
                     } catch (e) {
                       logger.error('[Profile] Doctor report generation error:', e);
-                      Alert.alert('Error', 'Failed to generate wellness report. Please try again.');
+                      Alert.alert(t.settings.error, t.settings.generateReportError);
                     } finally {
                       setIsGeneratingReport(false);
                     }
@@ -1537,7 +1537,7 @@ export default function ProfileScreen() {
                               router.replace('/onboarding');
                             } catch (e) {
                               logger.error('[Profile] Delete error:', e);
-                              Alert.alert(t.settings.error, 'Failed to delete data. Please try again.');
+                              Alert.alert(t.settings.error, t.settings.deleteDataError);
                             }
                           }
                         }
@@ -2230,7 +2230,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.8}
                 >
                   <Text style={{ fontSize: 16, fontWeight: '700' as const, color: '#FFFFFF' }}>
-                    {isSyncing ? 'Syncing...' : 'Back Up Now'}
+                    {isSyncing ? t.settings.syncingData : t.settings.backUpNow}
                   </Text>
                 </TouchableOpacity>
 
@@ -2254,14 +2254,14 @@ export default function ProfileScreen() {
                       if (success) {
                         setRestoreId('');
                         setShowSyncModal(false);
-                        Alert.alert('Restored', 'Your data has been restored. Please restart the app to see changes.');
+                        Alert.alert(t.settings.dataRestoredTitle, t.settings.dataRestoredMessage);
                       }
                     }}
                     disabled={isSyncing || !restoreId.trim()}
                     activeOpacity={0.8}
                   >
                     <Text style={{ fontSize: 15, fontWeight: '600' as const, color: colors.primary }}>
-                      {isSyncing ? 'Restoring...' : 'Restore Data'}
+                      {isSyncing ? t.settings.restoringData : t.settings.restoreData}
                     </Text>
                   </TouchableOpacity>
                 </View>

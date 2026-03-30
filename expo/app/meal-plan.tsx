@@ -34,7 +34,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
 import { CyclePhase } from "@/types";
 import { generateDailyMealPlan, DailyMealPlan, MealSuggestion } from "@/lib/mealPlans";
-import { mealTranslations as mt } from "@/constants/mealTranslations";
+import { mealTranslations } from "@/constants/mealTranslations";
 
 // ─── Icon Map ────────────────────────────────────────────────────────────────
 // Map meal icon strings to available lucide-react-native icons
@@ -55,12 +55,7 @@ const MEAL_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?:
   Beef: Zap,            // Beef mapped to Zap
 };
 
-const PHASE_INFO: Record<CyclePhase, { color: string; icon: React.ComponentType<{ size?: number; color?: string }>; label: string; description: string }> = {
-  menstrual: { color: "#E89BA4", icon: Moon, label: mt.phaseMenstrual, description: mt.phaseDescMenstrual },
-  follicular: { color: "#8BC9A3", icon: Sprout, label: mt.phaseFollicular, description: mt.phaseDescFollicular },
-  ovulation: { color: "#F4C896", icon: Sparkles, label: mt.phaseOvulation, description: mt.phaseDescOvulation },
-  luteal: { color: "#B8A4E8", icon: Flower2, label: mt.phaseLuteal, description: mt.phaseDescLuteal },
-};
+// PHASE_INFO moved inside component to be language-aware
 
 const MEAL_TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   breakfast: Coffee,
@@ -78,25 +73,36 @@ const MEAL_TYPE_COLORS: Record<string, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getMealTypeLabel(type: MealSuggestion["mealType"]): string {
-  switch (type) {
-    case "breakfast": return mt.breakfast;
-    case "lunch": return mt.lunch;
-    case "dinner": return mt.dinner;
-    case "snack": return mt.snack;
-  }
-}
-
-function getMealTranslation(key: string): string {
-  return (mt as Record<string, string>)[key] || key;
-}
+// getMealTypeLabel and getMealTranslation moved inside component to be language-aware
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MealPlanScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData } = useApp();
+  const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
+
+  const mt = mealTranslations[language] ?? mealTranslations.en;
+
+  const PHASE_INFO: Record<CyclePhase, { color: string; icon: React.ComponentType<{ size?: number; color?: string }>; label: string; description: string }> = useMemo(() => ({
+    menstrual: { color: "#E89BA4", icon: Moon, label: mt.phaseMenstrual, description: mt.phaseDescMenstrual },
+    follicular: { color: "#8BC9A3", icon: Sprout, label: mt.phaseFollicular, description: mt.phaseDescFollicular },
+    ovulation: { color: "#F4C896", icon: Sparkles, label: mt.phaseOvulation, description: mt.phaseDescOvulation },
+    luteal: { color: "#B8A4E8", icon: Flower2, label: mt.phaseLuteal, description: mt.phaseDescLuteal },
+  }), [mt]);
+
+  const getMealTypeLabel = useCallback((type: MealSuggestion["mealType"]): string => {
+    switch (type) {
+      case "breakfast": return mt.breakfast;
+      case "lunch": return mt.lunch;
+      case "dinner": return mt.dinner;
+      case "snack": return mt.snack;
+    }
+  }, [mt]);
+
+  const getMealTranslation = useCallback((key: string): string => {
+    return (mt as Record<string, string>)[key] || key;
+  }, [mt]);
 
   const [waterCount, setWaterCount] = useState(0);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
