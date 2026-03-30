@@ -130,10 +130,10 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'follicular',
     calorieEstimate: 180,
     exercises: [
-      { name: 'Warm-Up Groove', sets: 1, reps: '3 min', restSeconds: 0, description: 'Easy side steps and arm swings to the beat', icon: 'Music' },
-      { name: 'Freestyle Dance', sets: 3, reps: '4 min', restSeconds: 30, description: 'Move freely, keep your heart rate up', icon: 'Music' },
-      { name: 'Grapevine Steps', sets: 2, reps: '2 min', restSeconds: 20, description: 'Step side-behind-side, add arm movements', icon: 'Music' },
-      { name: 'Cool-Down Sway', sets: 1, reps: '3 min', restSeconds: 0, description: 'Slow side-to-side movement, deep breaths', icon: 'Music' },
+      { name: 'Warm-Up Groove', sets: 1, reps: '3 min', restSeconds: 0, description: 'Easy side steps and arm swings to the beat', icon: 'Music', sketchType: 'walk', muscleGroups: ['Full Body'] },
+      { name: 'Freestyle Dance', sets: 3, reps: '4 min', restSeconds: 30, description: 'Move freely, keep your heart rate up', icon: 'Music', sketchType: 'highKnees', muscleGroups: ['Cardiovascular', 'Full Body'] },
+      { name: 'Grapevine Steps', sets: 2, reps: '2 min', restSeconds: 20, description: 'Step side-behind-side, add arm movements', icon: 'Music', sketchType: 'walk', muscleGroups: ['Legs', 'Coordination'] },
+      { name: 'Cool-Down Sway', sets: 1, reps: '3 min', restSeconds: 0, description: 'Slow side-to-side movement, deep breaths', icon: 'Music', sketchType: 'stretch', muscleGroups: ['Full Body'] },
     ],
   },
   bodyweightHiit: {
@@ -165,11 +165,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'ovulation',
     calorieEstimate: 250,
     exercises: [
-      { name: 'Sun Salutation A', sets: 3, reps: '1 min', restSeconds: 15, description: 'Flow through the full sequence with breath', icon: 'Activity' },
-      { name: 'Warrior I to II Flow', sets: 2, reps: '1 min each side', restSeconds: 15, description: 'Transition smoothly between warriors', icon: 'Activity' },
-      { name: 'Chair Pose Hold', sets: 3, reps: '30 sec', restSeconds: 15, description: 'Sit deep, arms overhead, weight in heels', icon: 'Activity' },
-      { name: 'Crow Pose Attempts', sets: 3, reps: '20 sec', restSeconds: 20, description: 'Lean forward, knees on triceps, lift feet', icon: 'Activity' },
-      { name: 'Standing Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hinge at hips, let head hang heavy', icon: 'Heart' },
+      { name: 'Sun Salutation A', sets: 3, reps: '1 min', restSeconds: 15, description: 'Flow through the full sequence with breath', icon: 'Activity', sketchType: 'downwardDog', muscleGroups: ['Full Body', 'Flexibility'] },
+      { name: 'Warrior I to II Flow', sets: 2, reps: '1 min each side', restSeconds: 15, description: 'Transition smoothly between warriors', icon: 'Activity', sketchType: 'warriorPose', muscleGroups: ['Legs', 'Core', 'Balance'] },
+      { name: 'Chair Pose Hold', sets: 3, reps: '30 sec', restSeconds: 15, description: 'Sit deep, arms overhead, weight in heels', icon: 'Activity', sketchType: 'squat', muscleGroups: ['Quads', 'Glutes', 'Core'] },
+      { name: 'Crow Pose Attempts', sets: 3, reps: '20 sec', restSeconds: 20, description: 'Lean forward, knees on triceps, lift feet', icon: 'Activity', sketchType: 'plank', muscleGroups: ['Arms', 'Core', 'Balance'] },
+      { name: 'Standing Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hinge at hips, let head hang heavy', icon: 'Heart', sketchType: 'stretch', muscleGroups: ['Hamstrings', 'Spine'] },
     ],
   },
   moderateBodyweight: {
@@ -183,10 +183,10 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'ovulation',
     calorieEstimate: 180,
     exercises: [
-      { name: 'Squats', sets: 3, reps: '10', restSeconds: 30, description: 'Controlled tempo, full depth', icon: 'Flame' },
-      { name: 'Push-Ups', sets: 3, reps: '10', restSeconds: 30, description: 'Chest to floor, push up strong', icon: 'Flame' },
-      { name: 'Glute Bridges', sets: 3, reps: '10', restSeconds: 30, description: 'Pause at the top for 2 seconds', icon: 'Flame' },
-      { name: 'Plank', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Straight line from head to heels', icon: 'Activity' },
+      { name: 'Squats', sets: 3, reps: '10', restSeconds: 30, description: 'Controlled tempo, full depth', icon: 'Flame', sketchType: 'squat', muscleGroups: ['Quads', 'Glutes'] },
+      { name: 'Push-Ups', sets: 3, reps: '10', restSeconds: 30, description: 'Chest to floor, push up strong', icon: 'Flame', sketchType: 'pushup', muscleGroups: ['Chest', 'Shoulders', 'Triceps'] },
+      { name: 'Glute Bridges', sets: 3, reps: '10', restSeconds: 30, description: 'Pause at the top for 2 seconds', icon: 'Flame', sketchType: 'bridge', muscleGroups: ['Glutes', 'Hamstrings'] },
+      { name: 'Plank', sets: 3, reps: '30 sec', restSeconds: 30, description: 'Straight line from head to heels', icon: 'Activity', sketchType: 'plank', muscleGroups: ['Core', 'Shoulders'] },
     ],
   },
   pilates: {
@@ -218,11 +218,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'luteal',
     calorieEstimate: 60,
     exercises: [
-      { name: 'Neck Stretches', sets: 1, reps: '2 min', restSeconds: 0, description: 'Tilt ear to shoulder, hold each side 30 seconds', icon: 'Flower2' },
-      { name: 'Shoulder Opener', sets: 1, reps: '2 min', restSeconds: 0, description: 'Clasp hands behind back, open chest', icon: 'Flower2' },
-      { name: 'Seated Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Reach for toes, relax into the stretch', icon: 'Flower2' },
-      { name: 'Hip Flexor Stretch', sets: 1, reps: '2 min each side', restSeconds: 0, description: 'Low lunge position, sink hips forward', icon: 'Flower2' },
-      { name: 'Supine Twist', sets: 1, reps: '2 min each side', restSeconds: 0, description: 'Knees to one side, arms wide, look opposite', icon: 'Flower2' },
+      { name: 'Neck Stretches', sets: 1, reps: '2 min', restSeconds: 0, description: 'Tilt ear to shoulder, hold each side 30 seconds', icon: 'Flower2', sketchType: 'stretch', muscleGroups: ['Neck', 'Shoulders'] },
+      { name: 'Shoulder Opener', sets: 1, reps: '2 min', restSeconds: 0, description: 'Clasp hands behind back, open chest', icon: 'Flower2', sketchType: 'stretch', muscleGroups: ['Chest', 'Shoulders'] },
+      { name: 'Seated Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Reach for toes, relax into the stretch', icon: 'Flower2', sketchType: 'stretch', muscleGroups: ['Hamstrings', 'Spine'] },
+      { name: 'Hip Flexor Stretch', sets: 1, reps: '2 min each side', restSeconds: 0, description: 'Low lunge position, sink hips forward', icon: 'Flower2', sketchType: 'lunge', muscleGroups: ['Hip Flexors', 'Quads'] },
+      { name: 'Supine Twist', sets: 1, reps: '2 min each side', restSeconds: 0, description: 'Knees to one side, arms wide, look opposite', icon: 'Flower2', sketchType: 'stretch', muscleGroups: ['Spine', 'Glutes'] },
     ],
   },
   floorWork: {
@@ -257,10 +257,10 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 90,
     exercises: [
-      { name: 'Cat-Cow', sets: 1, reps: '2 min', restSeconds: 0, description: 'Gentle spinal waves on all fours', icon: 'Heart' },
-      { name: 'Modified Warrior II', sets: 1, reps: '1 min each side', restSeconds: 0, description: 'Wide stance, arms open, gentle hold', icon: 'Activity' },
-      { name: 'Pelvic Floor Breathing', sets: 1, reps: '3 min', restSeconds: 0, description: 'Inhale relax pelvic floor, exhale gently engage', icon: 'Heart' },
-      { name: 'Side-Lying Relaxation', sets: 1, reps: '3 min', restSeconds: 0, description: 'Left side, pillow between knees, breathe deeply', icon: 'Moon' },
+      { name: 'Cat-Cow', sets: 1, reps: '2 min', restSeconds: 0, description: 'Gentle spinal waves on all fours', icon: 'Heart', sketchType: 'catCow', muscleGroups: ['Spine', 'Core'] },
+      { name: 'Modified Warrior II', sets: 1, reps: '1 min each side', restSeconds: 0, description: 'Wide stance, arms open, gentle hold', icon: 'Activity', sketchType: 'warriorPose', muscleGroups: ['Legs', 'Hips'] },
+      { name: 'Pelvic Floor Breathing', sets: 1, reps: '3 min', restSeconds: 0, description: 'Inhale relax pelvic floor, exhale gently engage', icon: 'Heart', sketchType: 'breathe', muscleGroups: ['Pelvic Floor', 'Core'] },
+      { name: 'Side-Lying Relaxation', sets: 1, reps: '3 min', restSeconds: 0, description: 'Left side, pillow between knees, breathe deeply', icon: 'Moon', sketchType: 'rest', muscleGroups: ['Full Body'] },
     ],
   },
   prenatalWalk: {
@@ -274,9 +274,9 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 70,
     exercises: [
-      { name: 'Warm-Up Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Easy pace, focus on posture', icon: 'Footprints' },
-      { name: 'Comfortable Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Steady pace, stay on flat terrain', icon: 'Footprints' },
-      { name: 'Cool-Down Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow down, take deep breaths', icon: 'Footprints' },
+      { name: 'Warm-Up Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Easy pace, focus on posture', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Comfortable Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Steady pace, stay on flat terrain', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Cool-Down Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow down, take deep breaths', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs'] },
     ],
   },
   prenatalSwim: {
@@ -290,9 +290,9 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 100,
     exercises: [
-      { name: 'Pool Warm-Up', sets: 1, reps: '3 min', restSeconds: 0, description: 'Gentle walking in shallow water', icon: 'Activity' },
-      { name: 'Easy Laps', sets: 4, reps: '2 min', restSeconds: 30, description: 'Slow freestyle or backstroke, steady breathing', icon: 'Activity' },
-      { name: 'Water Walking', sets: 1, reps: '5 min', restSeconds: 0, description: 'Walk waist-deep, swing arms naturally', icon: 'Activity' },
+      { name: 'Pool Warm-Up', sets: 1, reps: '3 min', restSeconds: 0, description: 'Gentle walking in shallow water', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Full Body', 'Cardiovascular'] },
+      { name: 'Easy Laps', sets: 4, reps: '2 min', restSeconds: 30, description: 'Slow freestyle or backstroke, steady breathing', icon: 'Activity', sketchType: 'stretch', muscleGroups: ['Full Body', 'Cardiovascular'] },
+      { name: 'Water Walking', sets: 1, reps: '5 min', restSeconds: 0, description: 'Walk waist-deep, swing arms naturally', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
     ],
   },
   postpartumRecovery: {
@@ -306,10 +306,10 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 50,
     exercises: [
-      { name: 'Pelvic Floor Kegels', sets: 3, reps: '10', restSeconds: 20, description: 'Squeeze and lift, hold 5 seconds, release', icon: 'Heart' },
-      { name: 'Diaphragmatic Breathing', sets: 1, reps: '3 min', restSeconds: 0, description: 'Breathe into belly, slow exhale through mouth', icon: 'Heart' },
-      { name: 'Gentle Pelvic Tilts', sets: 2, reps: '10', restSeconds: 15, description: 'Lying on back, tilt pelvis to flatten low back', icon: 'Heart' },
-      { name: 'Heel Slides', sets: 2, reps: '10 each leg', restSeconds: 15, description: 'Slide heel along floor, keep core gently engaged', icon: 'Activity' },
+      { name: 'Pelvic Floor Kegels', sets: 3, reps: '10', restSeconds: 20, description: 'Squeeze and lift, hold 5 seconds, release', icon: 'Heart', sketchType: 'breathe', muscleGroups: ['Pelvic Floor', 'Core'] },
+      { name: 'Diaphragmatic Breathing', sets: 1, reps: '3 min', restSeconds: 0, description: 'Breathe into belly, slow exhale through mouth', icon: 'Heart', sketchType: 'breathe', muscleGroups: ['Diaphragm', 'Core'] },
+      { name: 'Gentle Pelvic Tilts', sets: 2, reps: '10', restSeconds: 15, description: 'Lying on back, tilt pelvis to flatten low back', icon: 'Heart', sketchType: 'bridge', muscleGroups: ['Core', 'Lower Back'] },
+      { name: 'Heel Slides', sets: 2, reps: '10 each leg', restSeconds: 15, description: 'Slide heel along floor, keep core gently engaged', icon: 'Activity', sketchType: 'legRaise', muscleGroups: ['Hip Flexors', 'Core'] },
     ],
   },
   postpartumGentle: {
@@ -323,10 +323,10 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 60,
     exercises: [
-      { name: 'Gentle Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Easy pace, stroller-friendly if needed', icon: 'Footprints' },
-      { name: 'Standing Calf Raises', sets: 2, reps: '10', restSeconds: 15, description: 'Rise onto toes, lower slowly', icon: 'Activity' },
-      { name: 'Shoulder Rolls', sets: 1, reps: '1 min', restSeconds: 0, description: 'Roll forward and backward to release tension', icon: 'Activity' },
-      { name: 'Cool-Down Stretch', sets: 1, reps: '3 min', restSeconds: 0, description: 'Gentle full-body stretches, breathe deeply', icon: 'Flower2' },
+      { name: 'Gentle Walk', sets: 1, reps: '10 min', restSeconds: 0, description: 'Easy pace, stroller-friendly if needed', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Standing Calf Raises', sets: 2, reps: '10', restSeconds: 15, description: 'Rise onto toes, lower slowly', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Calves', 'Ankles'] },
+      { name: 'Shoulder Rolls', sets: 1, reps: '1 min', restSeconds: 0, description: 'Roll forward and backward to release tension', icon: 'Activity', sketchType: 'stretch', muscleGroups: ['Shoulders', 'Neck'] },
+      { name: 'Cool-Down Stretch', sets: 1, reps: '3 min', restSeconds: 0, description: 'Gentle full-body stretches, breathe deeply', icon: 'Flower2', sketchType: 'stretch', muscleGroups: ['Full Body'] },
     ],
   },
   perimenopauseStrength: {
@@ -340,11 +340,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 180,
     exercises: [
-      { name: 'Squats', sets: 3, reps: '12', restSeconds: 30, description: 'Weight-bearing, full depth, stand tall', icon: 'Flame' },
-      { name: 'Wall Push-Ups', sets: 3, reps: '12', restSeconds: 30, description: 'Hands on wall, lean in and push back', icon: 'Flame' },
-      { name: 'Step-Ups', sets: 3, reps: '10 each leg', restSeconds: 30, description: 'Use a sturdy step or stair, drive through heel', icon: 'Flame' },
-      { name: 'Standing Rows (Band)', sets: 3, reps: '12', restSeconds: 30, description: 'Pull band to chest, squeeze shoulder blades', icon: 'Flame' },
-      { name: 'Heel Raises', sets: 3, reps: '15', restSeconds: 20, description: 'Rise onto toes slowly, lower with control', icon: 'Activity' },
+      { name: 'Squats', sets: 3, reps: '12', restSeconds: 30, description: 'Weight-bearing, full depth, stand tall', icon: 'Flame', sketchType: 'squat', muscleGroups: ['Quads', 'Glutes', 'Hamstrings'] },
+      { name: 'Wall Push-Ups', sets: 3, reps: '12', restSeconds: 30, description: 'Hands on wall, lean in and push back', icon: 'Flame', sketchType: 'pushup', muscleGroups: ['Chest', 'Shoulders', 'Triceps'] },
+      { name: 'Step-Ups', sets: 3, reps: '10 each leg', restSeconds: 30, description: 'Use a sturdy step or stair, drive through heel', icon: 'Flame', sketchType: 'lunge', muscleGroups: ['Quads', 'Glutes', 'Balance'] },
+      { name: 'Standing Rows (Band)', sets: 3, reps: '12', restSeconds: 30, description: 'Pull band to chest, squeeze shoulder blades', icon: 'Flame', sketchType: 'stretch', muscleGroups: ['Back', 'Biceps', 'Shoulders'] },
+      { name: 'Heel Raises', sets: 3, reps: '15', restSeconds: 20, description: 'Rise onto toes slowly, lower with control', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Calves', 'Ankles'] },
     ],
   },
   perimenopauseYoga: {
@@ -358,11 +358,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 80,
     exercises: [
-      { name: 'Seated Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hinge at hips, reach for toes, cooling pose', icon: 'Heart' },
-      { name: 'Legs Up the Wall', sets: 1, reps: '3 min', restSeconds: 0, description: 'Lie on back, legs resting up the wall', icon: 'Heart' },
-      { name: 'Supported Bridge', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hips on a pillow, gentle backbend', icon: 'Heart' },
-      { name: 'Cooling Breath', sets: 1, reps: '3 min', restSeconds: 0, description: 'Curl tongue, inhale through mouth, exhale through nose', icon: 'Heart' },
-      { name: 'Savasana', sets: 1, reps: '3 min', restSeconds: 0, description: 'Full relaxation, let go of tension', icon: 'Moon' },
+      { name: 'Seated Forward Fold', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hinge at hips, reach for toes, cooling pose', icon: 'Heart', sketchType: 'stretch', muscleGroups: ['Hamstrings', 'Spine'] },
+      { name: 'Legs Up the Wall', sets: 1, reps: '3 min', restSeconds: 0, description: 'Lie on back, legs resting up the wall', icon: 'Heart', sketchType: 'legRaise', muscleGroups: ['Hamstrings', 'Lower Back'] },
+      { name: 'Supported Bridge', sets: 1, reps: '2 min', restSeconds: 0, description: 'Hips on a pillow, gentle backbend', icon: 'Heart', sketchType: 'bridge', muscleGroups: ['Glutes', 'Spine', 'Hips'] },
+      { name: 'Cooling Breath', sets: 1, reps: '3 min', restSeconds: 0, description: 'Curl tongue, inhale through mouth, exhale through nose', icon: 'Heart', sketchType: 'breathe', muscleGroups: ['Diaphragm'] },
+      { name: 'Savasana', sets: 1, reps: '3 min', restSeconds: 0, description: 'Full relaxation, let go of tension', icon: 'Moon', sketchType: 'rest', muscleGroups: ['Full Body'] },
     ],
   },
   menopauseBalance: {
@@ -376,11 +376,11 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 70,
     exercises: [
-      { name: 'Single-Leg Stand', sets: 3, reps: '30 sec each leg', restSeconds: 15, description: 'Hold onto a chair if needed for support', icon: 'Activity' },
-      { name: 'Heel-to-Toe Walk', sets: 3, reps: '10 steps', restSeconds: 15, description: 'Place heel directly in front of toes each step', icon: 'Activity' },
-      { name: 'Tandem Stance', sets: 2, reps: '30 sec each foot', restSeconds: 10, description: 'One foot in front of the other, hold balance', icon: 'Activity' },
-      { name: 'Seated Marching', sets: 2, reps: '1 min', restSeconds: 15, description: 'Lift knees alternately while seated', icon: 'Activity' },
-      { name: 'Toe Raises', sets: 2, reps: '15', restSeconds: 15, description: 'Stand near wall, rise onto toes, hold 2 seconds', icon: 'Activity' },
+      { name: 'Single-Leg Stand', sets: 3, reps: '30 sec each leg', restSeconds: 15, description: 'Hold onto a chair if needed for support', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Ankles', 'Core', 'Balance'] },
+      { name: 'Heel-to-Toe Walk', sets: 3, reps: '10 steps', restSeconds: 15, description: 'Place heel directly in front of toes each step', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Balance', 'Legs', 'Coordination'] },
+      { name: 'Tandem Stance', sets: 2, reps: '30 sec each foot', restSeconds: 10, description: 'One foot in front of the other, hold balance', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Balance', 'Core', 'Ankles'] },
+      { name: 'Seated Marching', sets: 2, reps: '1 min', restSeconds: 15, description: 'Lift knees alternately while seated', icon: 'Activity', sketchType: 'highKnees', muscleGroups: ['Hip Flexors', 'Core'] },
+      { name: 'Toe Raises', sets: 2, reps: '15', restSeconds: 15, description: 'Stand near wall, rise onto toes, hold 2 seconds', icon: 'Activity', sketchType: 'walk', muscleGroups: ['Calves', 'Balance'] },
     ],
   },
   menopauseWalking: {
@@ -394,9 +394,9 @@ const WORKOUTS: Record<string, WorkoutSuggestion> = {
     phase: 'all',
     calorieEstimate: 120,
     exercises: [
-      { name: 'Warm-Up Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Easy pace to get moving', icon: 'Footprints' },
-      { name: 'Brisk Walk', sets: 1, reps: '15 min', restSeconds: 0, description: 'Conversational pace, swing arms naturally', icon: 'Footprints' },
-      { name: 'Cool-Down Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow pace, focus on breathing', icon: 'Footprints' },
+      { name: 'Warm-Up Walk', sets: 1, reps: '5 min', restSeconds: 0, description: 'Easy pace to get moving', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular'] },
+      { name: 'Brisk Walk', sets: 1, reps: '15 min', restSeconds: 0, description: 'Conversational pace, swing arms naturally', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs', 'Cardiovascular', 'Bone Density'] },
+      { name: 'Cool-Down Stroll', sets: 1, reps: '5 min', restSeconds: 0, description: 'Slow pace, focus on breathing', icon: 'Footprints', sketchType: 'walk', muscleGroups: ['Legs'] },
     ],
   },
 };
