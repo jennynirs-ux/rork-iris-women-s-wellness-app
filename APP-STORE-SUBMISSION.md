@@ -13,16 +13,16 @@ Your wellness, visible in your eyes. IRIS uses on-device iris analysis to track 
 
 ### Description
 
-Your eyes reveal more than you think.
+Your eyes are part of your daily wellness ritual.
 
-IRIS is a privacy-first wellness tracker that uses your phone camera to analyze your iris and deliver personalized wellness insights — all processed on your device. No photos are stored. No data leaves your phone unless you choose to share it.
+IRIS is a privacy-first wellness tracker that uses visual patterns from your eyes to deliver personalized wellness insights — all processed on your device. No photos are stored. No data leaves your phone unless you choose to share it.
 
 WHAT MAKES IRIS DIFFERENT
 
 Unlike traditional period trackers, IRIS combines visual wellness patterns from your eyes with daily check-ins and Apple Health data to build a complete picture of your wellness across your entire cycle.
 
 YOUR DAILY WELLNESS IN 10 SECONDS
-Scan your eye. Get six key wellness scores: energy, stress, recovery, hydration, fatigue, and inflammation. Track trends over 7, 30, and 90 days.
+Scan your eye. Get six estimated wellness scores: energy, stress, recovery, hydration, fatigue, and inflammation. Track trends over 7, 30, and 90 days.
 
 CYCLE-AWARE COACHING
 Smart coaching tips adapt to your current phase — menstrual, follicular, ovulation, or luteal. IRIS learns your patterns and suggests nutrition, movement, skincare, and recovery strategies tailored to you.
@@ -34,7 +34,7 @@ DAILY CHECK-IN
 Log mood, energy, sleep, symptoms, and lifestyle factors. IRIS cross-references your check-in with your scan data to surface patterns you might miss.
 
 SHARE WITH YOUR DOCTOR
-Generate a professional PDF wellness report with cycle summaries, 30-day averages, symptom patterns, and trend analysis to bring to your next appointment.
+Generate a professional PDF wellness report with cycle summaries, 30-day averages, symptom patterns, and trend analysis to share with your healthcare provider if you choose.
 
 PRIVACY BY DESIGN
 - Photos analyzed on-device and immediately discarded
