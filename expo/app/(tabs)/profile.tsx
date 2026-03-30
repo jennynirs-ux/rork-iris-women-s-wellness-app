@@ -38,7 +38,6 @@ import {
   Thermometer,
   Eye,
   X,
-  Watch,
   Stethoscope,
   MessageCircle,
   Brain,
@@ -59,7 +58,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { generateDoctorReport } from "@/lib/doctorReport";
 import * as Clipboard from 'expo-clipboard';
 import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
-import { connectOura, disconnectOura, isOuraConnected, getOuraLastSync } from "@/lib/ouraIntegration";
 import { CONDITION_PROFILES, ConditionProfile } from "@/lib/conditionProfiles";
 import { conditionTranslations as ct } from "@/constants/conditionTranslations";
 
@@ -422,11 +420,6 @@ export default function ProfileScreen() {
     }
   }, [partnerCode]);
 
-  // Oura Ring states
-  const [ouraConnected, setOuraConnected] = useState(false);
-  const [ouraLastSync, setOuraLastSync] = useState<string | null>(null);
-  const [ouraLoading, setOuraLoading] = useState(false);
-
   // Condition profiles state
   const [selectedConditions, setSelectedConditions] = useState<ConditionProfile[]>([]);
   const [showConditionsModal, setShowConditionsModal] = useState(false);
@@ -444,19 +437,6 @@ export default function ProfileScreen() {
     loadGameification();
   }, [scans, checkIns, userProfile]);
 
-  // Load Oura connection state
-  useEffect(() => {
-    const loadOura = async () => {
-      const connected = await isOuraConnected();
-      setOuraConnected(connected);
-      if (connected) {
-        const lastSync = await getOuraLastSync();
-        setOuraLastSync(lastSync);
-      }
-    };
-    loadOura();
-  }, []);
-
   // Load condition profiles from AsyncStorage
   useEffect(() => {
     const loadConditions = async () => {
@@ -472,28 +452,6 @@ export default function ProfileScreen() {
     loadConditions();
   }, []);
 
-  const handleToggleOura = async () => {
-    setOuraLoading(true);
-    try {
-      if (ouraConnected) {
-        await disconnectOura();
-        setOuraConnected(false);
-        setOuraLastSync(null);
-      } else {
-        const success = await connectOura();
-        if (success) {
-          setOuraConnected(true);
-          setOuraLastSync(new Date().toISOString());
-        } else {
-          Alert.alert('Connection Failed', 'Could not connect to Oura Ring. Please try again.');
-        }
-      }
-    } catch (e) {
-      logger.error('[Oura] Toggle error:', e);
-    } finally {
-      setOuraLoading(false);
-    }
-  };
 
   const handleToggleCondition = async (condition: ConditionProfile) => {
     const updated = selectedConditions.includes(condition)
@@ -874,29 +832,6 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               )}
 
-              {/* Oura Ring Integration */}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleToggleOura}
-                disabled={ouraLoading}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.menuIcon, { backgroundColor: '#E8F0FF' }]}>
-                  <Watch size={20} color="#4A7DFF" />
-                </View>
-                <View style={styles.menuTextContainer}>
-                  <Text style={styles.menuText}>Oura Ring</Text>
-                  <Text style={styles.menuSubtext}>
-                    {ouraLoading
-                      ? 'Connecting...'
-                      : ouraConnected
-                        ? `Connected${ouraLastSync ? ' \u00B7 ' + new Date(ouraLastSync).toLocaleTimeString(language === 'en' ? 'en-US' : language, { hour: '2-digit', minute: '2-digit' } as Intl.DateTimeFormatOptions) : ''}`
-                        : 'Tap to connect'}
-                  </Text>
-                </View>
-                <View style={[styles.healthStatusDot, ouraConnected && styles.healthStatusDotConnected]} />
-                <ChevronRight size={20} color={colors.textTertiary} />
-              </TouchableOpacity>
 
               {/* Health Conditions */}
               <TouchableOpacity
