@@ -740,7 +740,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.menuIcon}>
-                    <Brain size={20} color="#9B85D6" />
+                    <Brain size={20} color={colors.cognitiveWellness} />
                   </View>
                   <View style={styles.menuTextContainer}>
                     <Text style={styles.menuText}>Brain Wellness</Text>
@@ -787,7 +787,7 @@ export default function ProfileScreen() {
                   onPress={() => router.push('/referral')}
                   activeOpacity={0.7}
                 >
-                  <Share2 size={16} color="#FFFFFF" />
+                  <Share2 size={16} color={colors.white} />
                   <Text style={styles.referralShareButtonText}>{t.referral.shareNow}</Text>
                 </TouchableOpacity>
               </View>
@@ -857,8 +857,8 @@ export default function ProfileScreen() {
                 style={styles.menuItem}
                 onPress={() => setShowHealthModal(true)}
               >
-                <View style={[styles.menuIcon, { backgroundColor: '#FFE8EC' }]}>
-                  <Heart size={20} color="#E8607A" />
+                <View style={[styles.menuIcon, { backgroundColor: colors.appleHealthBg }]}>
+                  <Heart size={20} color={colors.appleHealthIcon} />
                 </View>
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuText}>{t.health.appleHealth}</Text>
@@ -881,8 +881,8 @@ export default function ProfileScreen() {
                 disabled={ouraLoading}
                 activeOpacity={0.7}
               >
-                <View style={[styles.menuIcon, { backgroundColor: '#E8F0FF' }]}>
-                  <Watch size={20} color="#4A7DFF" />
+                <View style={[styles.menuIcon, { backgroundColor: colors.ouraRingBg }]}>
+                  <Watch size={20} color={colors.ouraRingIcon} />
                 </View>
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuText}>Oura Ring</Text>
@@ -904,8 +904,8 @@ export default function ProfileScreen() {
                 onPress={() => setShowConditionsModal(true)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.menuIcon, { backgroundColor: '#FFF0E8' }]}>
-                  <Stethoscope size={20} color="#E87A4A" />
+                <View style={[styles.menuIcon, { backgroundColor: colors.healthConditionsBg }]}>
+                  <Stethoscope size={20} color={colors.healthConditionsIcon} />
                 </View>
                 <View style={styles.menuTextContainer}>
                   <Text style={styles.menuText}>Health Conditions</Text>
@@ -2056,7 +2056,7 @@ export default function ProfileScreen() {
               <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
                 <View style={styles.healthHeaderCard}>
                   <View style={styles.healthLogoContainer}>
-                    <Heart size={28} color="#E8607A" />
+                    <Heart size={28} color={colors.appleHealthIcon} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.healthHeaderTitle}>{t.health.appleHealth}</Text>
@@ -2083,13 +2083,13 @@ export default function ProfileScreen() {
                 <Text style={styles.healthSectionTitle}>{t.health.dataTypes}</Text>
 
                 {[
-                  { id: 'sleep' as HealthDataType, label: t.health.sleep, icon: Moon, color: '#7B68EE' },
-                  { id: 'menstrualCycle' as HealthDataType, label: t.health.menstrualCycle, icon: Activity, color: '#E8607A' },
-                  { id: 'heartRate' as HealthDataType, label: t.health.heartRate, icon: Heart, color: '#FF6B6B' },
-                  { id: 'steps' as HealthDataType, label: t.health.steps, icon: Footprints, color: '#4CAF50' },
-                  { id: 'activeEnergy' as HealthDataType, label: t.health.activeEnergy, icon: Flame, color: '#FF9800' },
-                  { id: 'hrv' as HealthDataType, label: t.health.hrv || 'Heart Rate Variability', icon: Zap, color: '#9C27B0' },
-                  { id: 'temperature' as HealthDataType, label: t.health.temperature || 'Wrist Temperature', icon: Thermometer, color: '#FF5722' },
+                  { id: 'sleep' as HealthDataType, label: t.health.sleep, icon: Moon, color: colors.healthSleep },
+                  { id: 'menstrualCycle' as HealthDataType, label: t.health.menstrualCycle, icon: Activity, color: colors.healthMenstrual },
+                  { id: 'heartRate' as HealthDataType, label: t.health.heartRate, icon: Heart, color: colors.healthHeart },
+                  { id: 'steps' as HealthDataType, label: t.health.steps, icon: Footprints, color: colors.healthSteps },
+                  { id: 'activeEnergy' as HealthDataType, label: t.health.activeEnergy, icon: Flame, color: colors.healthActiveEnergy },
+                  { id: 'hrv' as HealthDataType, label: t.health.hrv || 'Heart Rate Variability', icon: Zap, color: colors.healthHRV },
+                  { id: 'temperature' as HealthDataType, label: t.health.temperature || 'Wrist Temperature', icon: Thermometer, color: colors.healthTemperature },
                 ].map((item) => {
                   const isSelected = selectedHealthTypes.includes(item.id);
                   const IconComponent = item.icon;
@@ -2111,7 +2111,7 @@ export default function ProfileScreen() {
                       </View>
                       <Text style={[styles.healthTypeLabel, isSelected && styles.healthTypeLabelSelected]}>{item.label}</Text>
                       <View style={[styles.healthCheckbox, isSelected && styles.healthCheckboxSelected]}>
-                        {isSelected && <Check size={14} color="#FFFFFF" />}
+                        {isSelected && <Check size={14} color={colors.white} />}
                       </View>
                     </TouchableOpacity>
                   );
@@ -2122,37 +2122,37 @@ export default function ProfileScreen() {
                     <Text style={styles.healthSectionTitle}>{t.health.healthDataFromApple}</Text>
                     {healthData?.sleepHours != null && (
                       <View style={styles.healthDataRow}>
-                        <Moon size={16} color="#7B68EE" />
+                        <Moon size={16} color={colors.healthSleep} />
                         <Text style={styles.healthDataText}>{healthData?.sleepHours} {t.health.hoursSlept}</Text>
                       </View>
                     )}
                     {healthData?.menstrualFlowLevel && (
                       <View style={styles.healthDataRow}>
-                        <Activity size={16} color="#E8607A" />
+                        <Activity size={16} color={colors.healthMenstrual} />
                         <Text style={styles.healthDataText}>{t.health.currentFlow}: {healthData?.menstrualFlowLevel}</Text>
                       </View>
                     )}
                     {healthData?.heartRate != null && (
                       <View style={styles.healthDataRow}>
-                        <Heart size={16} color="#FF6B6B" />
+                        <Heart size={16} color={colors.healthHeart} />
                         <Text style={styles.healthDataText}>{healthData?.heartRate} {t.health.bpm}</Text>
                       </View>
                     )}
                     {healthData?.steps != null && (
                       <View style={styles.healthDataRow}>
-                        <Footprints size={16} color="#4CAF50" />
+                        <Footprints size={16} color={colors.healthSteps} />
                         <Text style={styles.healthDataText}>{healthData?.steps?.toLocaleString()} {t.health.stepsToday}</Text>
                       </View>
                     )}
                     {healthData?.hrv != null && (
                       <View style={styles.healthDataRow}>
-                        <Zap size={16} color="#9C27B0" />
+                        <Zap size={16} color={colors.healthHRV} />
                         <Text style={styles.healthDataText}>{t.health.hrv || 'HRV'}: {healthData?.hrv}</Text>
                       </View>
                     )}
                     {healthData?.wristTemperature != null && (
                       <View style={styles.healthDataRow}>
-                        <Thermometer size={16} color="#FF5722" />
+                        <Thermometer size={16} color={colors.healthTemperature} />
                         <Text style={styles.healthDataText}>{t.health.temperature || 'Wrist Temp'}: {healthData?.wristTemperature}°C</Text>
                       </View>
                     )}
@@ -2189,7 +2189,7 @@ export default function ProfileScreen() {
                       }}
                       activeOpacity={0.8}
                     >
-                      <Heart size={20} color="#FFFFFF" />
+                      <Heart size={20} color={colors.white} />
                       <Text style={styles.healthConnectButtonText}>{t.health.connect}</Text>
                     </TouchableOpacity>
                   ) : (
@@ -2457,7 +2457,7 @@ export default function ProfileScreen() {
                               ? { backgroundColor: colors.primary, borderColor: colors.primary }
                               : { backgroundColor: 'transparent', borderColor: colors.border }
                           ]}>
-                            {isSelected && <Check size={14} color="#fff" />}
+                            {isSelected && <Check size={14} color={colors.white} />}
                           </View>
                         </View>
                         {isSelected && profile.additionalSymptoms.length > 0 && (
@@ -2724,10 +2724,10 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     borderRadius: 8,
   },
   comparisonChangeImproved: {
-    backgroundColor: "#6BCB7720",
+    backgroundColor: colors.changeImproved + "20",
   },
   comparisonChangeWorsened: {
-    backgroundColor: "#FF6B6B20",
+    backgroundColor: colors.changeWorsened + "20",
   },
   comparisonChangeText: {
     fontSize: 13,
@@ -3139,7 +3139,7 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
   referralShareButtonText: {
     fontSize: 14,
     fontWeight: "700" as const,
-    color: "#FFFFFF",
+    color: colors.white,
   },
   settingsGroup: {
     marginBottom: 24,
@@ -3242,12 +3242,12 @@ function createProfileStyles(colors: typeof Colors.light) { return StyleSheet.cr
     padding: 16,
     alignItems: "center" as const,
     borderWidth: 1,
-    borderColor: "#ff4444",
+    borderColor: colors.deleteButton,
   },
   deleteButtonText: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: "#ff4444",
+    color: colors.deleteButton,
   },
   pregnancyEditContainer: {
     marginTop: 8,

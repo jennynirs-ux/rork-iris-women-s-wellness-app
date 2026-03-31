@@ -13,6 +13,7 @@ import { UnitSystem } from "@/lib/unitConversion";
 import logger from "@/lib/logger";
 import { updateWidgetData } from "@/lib/widgetData";
 import { trpcClient } from "@/lib/trpc";
+import { generateCycleRecap, CycleRecap } from "@/lib/cycleRecap";
 
 function getLocalDateString(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -38,6 +39,7 @@ const STORAGE_KEY_DISMISSED_SUGGESTION = "iris_dismissed_life_stage_suggestion";
 const STORAGE_KEY_LANGUAGE = "iris_language";
 const STORAGE_KEY_UNITS = "iris_units";
 const STORAGE_KEY_PHASE_OVERRIDES = "iris_phase_overrides";
+const STORAGE_KEY_CYCLE_RECAP = "iris_cycle_recap";
 
 // Memoized helper functions for lifeStageSuggestion calculation
 const calculatePregnancySymptomScore = (recentCheckIns: DailyCheckIn[]): number => {
@@ -146,6 +148,7 @@ export const [AppContext, useApp] = createContextHook(() => {
   const [cycleHistory, setCycleHistory] = useState<CycleHistory[]>([]);
   const [previousPhase, setPreviousPhase] = useState<CyclePhase | null>(null);
   const [dismissedSuggestion, setDismissedSuggestion] = useState<string | null>(null);
+  const [latestCycleRecap, setLatestCycleRecap] = useState<CycleRecap | null>(null);
   const [language, setLanguage] = useState<Language>('en');
   const [units, setUnits] = useState<UnitSystem>('metric');
   const [healthConnection, setHealthConnection] = useState<HealthConnectionState>({
@@ -280,6 +283,18 @@ export const [AppContext, useApp] = createContextHook(() => {
       return stored ? JSON.parse(stored) : {};
     },
   });
+
+  const cycleRecapQuery = useQuery({
+    queryKey: ["cycleRecap"],
+    queryFn: async () => {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY_CYCLE_RECAP);
+      return stored ? JSON.parse(stored) as CycleRecap : null;
+    },
+  });
+
+  useEffect(() => {
+    if (cycleRecapQuery.data !== undefined) setLatestCycleRecap(cycleRecapQuery.data);
+  }, [cycleRecapQuery.data]);
 
   useEffect(() => {
     if (userQuery.data) setUserProfile(userQuery.data);
@@ -627,7 +642,19 @@ export const [AppContext, useApp] = createContextHook(() => {
       scheduleMenstrualPhaseNotification(date.toISOString(), updated.cycleLength).catch(err => {
         logger.log('Failed to schedule notification:', err);
       });
-      
+
+      // Generate cycle recap for the just-completed cycle
+      try {
+        const recap = generateCycleRecap(updatedHistory, scans, checkIns);
+        if (recap) {
+          await AsyncStorage.setItem(STORAGE_KEY_CYCLE_RECAP, JSON.stringify(recap));
+          setLatestCycleRecap(recap);
+          logger.info('[AppContext] Cycle recap generated for cycle #' + recap.cycleNumber);
+        }
+      } catch (recapErr) {
+        logger.error('[AppContext] Failed to generate cycle recap:', recapErr);
+      }
+
       return updated;
     },
     onSuccess: () => {
@@ -1197,6 +1224,11 @@ export const [AppContext, useApp] = createContextHook(() => {
     }
   }, [currentPhase, enrichedPhaseInfo, todaySummary.recommendedFocus, userProfile.hasCompletedOnboarding]);
 
+  const dismissCycleRecap = useCallback(async () => {
+    setLatestCycleRecap(null);
+    await AsyncStorage.removeItem(STORAGE_KEY_CYCLE_RECAP);
+  }, []);
+
   // Auto-sync Apple Health whenever the app comes back to the foreground
   // Throttle: only sync if last sync was > 30 minutes ago
   useEffect(() => {
@@ -1258,13 +1290,15 @@ export const [AppContext, useApp] = createContextHook(() => {
     deleteAllData: deleteAllDataMutation.mutateAsync,
     phaseOverrides,
     setPhaseOverride: setPhaseOverrideMutation.mutateAsync,
+    latestCycleRecap,
+    dismissCycleRecap,
     isLoading,
   }), [
     userProfile, checkIns, scans, currentPhase, latestScan, todayCheckIn,
     todaySummary, todayHabits, phaseEstimate, enrichedPhaseInfo,
     effectiveCycleStart, baseline, cycleHistory, adaptiveQuestion,
     lifeStageSuggestion, language, t, units, healthConnection, healthData,
-    isHealthSyncing, isLoading, phaseOverrides,
+    isHealthSyncing, isLoading, phaseOverrides, latestCycleRecap, dismissCycleRecap,
     updateUserMutation.mutateAsync, addCheckInMutation.mutate,
     updateCheckInMutation.mutate, addScanMutation.mutate,
     updateHabitMutation.mutate, updateLastPeriodDateMutation.mutateAsync,

@@ -47,24 +47,7 @@ function getLocalDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const PHASE_INFO = {
-  menstrual: { name: "Menstrual", color: "#E89BA4", icon: Moon },
-  follicular: { name: "Follicular", color: "#8BC9A3", icon: Sprout },
-  ovulation: { name: "Ovulation", color: "#F4C896", icon: Sparkles },
-  luteal: { name: "Luteal", color: "#B8A4E8", icon: Flower2 },
-};
-
-const LIFE_STAGE_INFO = {
-  trimester1: { color: "#F4C8D4", icon: Baby },
-  trimester2: { color: "#8BC9A3", icon: Baby },
-  trimester3: { color: "#B8A4E8", icon: Baby },
-  postpartumRecovery: { color: "#E89BA4", icon: Heart },
-  postpartumHealing: { color: "#F4C896", icon: Heart },
-  perimenopause: { color: "#F4C896", icon: Sun },
-  menopause: { color: "#B8A4E8", icon: Sparkles },
-};
-
-type LifeStagePhaseKey = keyof typeof LIFE_STAGE_INFO;
+type LifeStagePhaseKey = 'trimester1' | 'trimester2' | 'trimester3' | 'postpartumRecovery' | 'postpartumHealing' | 'perimenopause' | 'menopause';
 
 function calculateCyclePhase(lastPeriodDate: string, cycleLength: number, date: Date): CyclePhase {
   const lastPeriod = new Date(lastPeriodDate);
@@ -215,6 +198,24 @@ function getLifeStageLegendKeys(lifeStage: LifeStage): LifeStagePhaseKey[] {
 export default function CalendarScreen() {
   const { scans, checkIns, userProfile, t, effectiveCycleStart, phaseOverrides, setPhaseOverride } = useApp();
   const { colors } = useTheme();
+
+  const PHASE_INFO = useMemo(() => ({
+    menstrual: { name: "Menstrual", color: colors.phaseMenstrual, icon: Moon },
+    follicular: { name: "Follicular", color: colors.phaseFollicular, icon: Sprout },
+    ovulation: { name: "Ovulation", color: colors.phaseOvulation, icon: Sparkles },
+    luteal: { name: "Luteal", color: colors.phaseLuteal, icon: Flower2 },
+  }), [colors.phaseMenstrual, colors.phaseFollicular, colors.phaseOvulation, colors.phaseLuteal]);
+
+  const LIFE_STAGE_INFO = useMemo(() => ({
+    trimester1: { color: colors.habitSkincare, icon: Baby },
+    trimester2: { color: colors.phaseFollicular, icon: Baby },
+    trimester3: { color: colors.phaseLuteal, icon: Baby },
+    postpartumRecovery: { color: colors.phaseMenstrual, icon: Heart },
+    postpartumHealing: { color: colors.phaseOvulation, icon: Heart },
+    perimenopause: { color: colors.phaseOvulation, icon: Sun },
+    menopause: { color: colors.phaseLuteal, icon: Sparkles },
+  }), [colors.habitSkincare, colors.phaseFollicular, colors.phaseLuteal, colors.phaseMenstrual, colors.phaseOvulation]);
+
   const isRegularCycle = userProfile.lifeStage === "regular";
   const isPregnancy = userProfile.lifeStage === "pregnancy";
 
@@ -335,7 +336,7 @@ export default function CalendarScreen() {
       icon: info.icon,
       label: getLifeStageLabel(timeline.key, t),
     };
-  }, [selectedMonth, userProfile, t, phaseOverrides]);
+  }, [selectedMonth, userProfile, t, phaseOverrides, PHASE_INFO, LIFE_STAGE_INFO]);
 
   const handleDayPress = useCallback((day: number) => {
     const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day);
@@ -400,7 +401,7 @@ export default function CalendarScreen() {
             <View style={styles.pregnancyCard}>
               <View style={styles.pregnancyHeader}>
                 <View style={styles.pregnancyIconWrap}>
-                  <Baby size={22} color="#fff" />
+                  <Baby size={22} color={colors.white} />
                 </View>
                 <View style={styles.pregnancyHeaderText}>
                   <Text style={styles.pregnancyTitle}>{t.programs.pregnancyProgress}</Text>
@@ -535,7 +536,7 @@ export default function CalendarScreen() {
                       </Text>
                       {isDueDate ? (
                         <View style={styles.dayPhaseIcon}>
-                          <Baby size={8} color="#E85D75" />
+                          <Baby size={8} color={colors.dueDate} />
                         </View>
                       ) : (
                         <View style={styles.dayPhaseIcon}>
@@ -545,7 +546,7 @@ export default function CalendarScreen() {
                       {(hasScan || hasCheckIn || hasOverride) && (
                         <View style={styles.indicators}>
                           {hasOverride && (
-                            <View style={[styles.indicator, { backgroundColor: '#FF9500' }]} />
+                            <View style={[styles.indicator, { backgroundColor: colors.overrideBadge }]} />
                           )}
                           {hasScan && (
                             <View style={[styles.indicator, { backgroundColor: colors.primary }]} />
@@ -622,7 +623,7 @@ export default function CalendarScreen() {
                   </Text>
                   {phaseOverrides[dateStr] && (
                     <View style={styles.overrideBadge}>
-                      <Edit3 size={10} color="#FF9500" />
+                      <Edit3 size={10} color={colors.overrideBadge} />
                     </View>
                   )}
                 </View>
@@ -817,7 +818,7 @@ export default function CalendarScreen() {
                         onPress={() => router.push('/check-in' as any)}
                         activeOpacity={0.8}
                       >
-                        <ClipboardCheck size={20} color="#fff" />
+                        <ClipboardCheck size={20} color={colors.white} />
                         <Text style={styles.checkInCtaText}>{t.programs.completeTodaysCheckIn}</Text>
                       </TouchableOpacity>
                     );
@@ -896,7 +897,7 @@ export default function CalendarScreen() {
               <Text style={styles.legendTitle}>{t.programs.dueDate}</Text>
               <View style={styles.activityLegend}>
                 <View style={styles.activityItem}>
-                  <View style={[styles.dueDateLegendDot, { borderColor: "#E85D75" }]} />
+                  <View style={[styles.dueDateLegendDot, { borderColor: colors.dueDate }]} />
                   <Text style={styles.legendText}>{t.programs.dueDate}</Text>
                 </View>
               </View>
@@ -924,7 +925,7 @@ export default function CalendarScreen() {
             onPress={goToToday}
             activeOpacity={0.85}
           >
-            <Calendar size={14} color="#fff" />
+            <Calendar size={14} color={colors.white} />
             <Text style={styles.todayPillText}>{t.calendar?.today || 'Today'}</Text>
           </TouchableOpacity>
         )}
@@ -991,8 +992,8 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     padding: 18,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: LIFE_STAGE_INFO.trimester2.color + '40',
-    shadowColor: LIFE_STAGE_INFO.trimester2.color,
+    borderColor: colors.phaseFollicular + '40',
+    shadowColor: colors.phaseFollicular,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
@@ -1008,7 +1009,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: LIFE_STAGE_INFO.trimester2.color,
+    backgroundColor: colors.phaseFollicular,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   },
@@ -1046,7 +1047,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   trimesterSegLabel: {
     fontSize: 11,
     fontWeight: "700" as const,
-    color: "#fff",
+    color: colors.white,
     opacity: 0.9,
   },
   trimesterProgressIndicator: {
@@ -1096,7 +1097,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   },
   pastDueBadge: {
     marginTop: 10,
-    backgroundColor: "#E85D75" + '18',
+    backgroundColor: colors.dueDate + '18',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
@@ -1105,7 +1106,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   pastDueText: {
     fontSize: 13,
     fontWeight: "600" as const,
-    color: "#E85D75",
+    color: colors.dueDate,
   },
   monthSelector: {
     flexDirection: "row" as const,
@@ -1169,12 +1170,12 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   },
   dueDateDayContent: {
     borderWidth: 2,
-    borderColor: "#E85D75",
+    borderColor: colors.dueDate,
     borderStyle: "dashed" as const,
   },
   dueDateDayText: {
     fontWeight: "700" as const,
-    color: "#E85D75",
+    color: colors.dueDate,
   },
   todayContent: {
     backgroundColor: colors.primary,
@@ -1197,7 +1198,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   },
   todayText: {
     fontWeight: "800" as const,
-    color: "#FFFFFF",
+    color: colors.white,
   },
   phaseIndicator: {
     flexDirection: "row" as const,
@@ -1480,7 +1481,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   },
   overrideBadge: {
     marginLeft: "auto" as const,
-    backgroundColor: "#FF9500" + "20",
+    backgroundColor: colors.overrideBadge + "20",
     borderRadius: 8,
     padding: 4,
   },
@@ -1551,7 +1552,7 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   todayPillText: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: "#fff",
+    color: colors.white,
   },
   checkInCta: {
     flexDirection: "row" as const,
@@ -1566,6 +1567,6 @@ function createCalendarStyles(colors: typeof Colors.light) { return StyleSheet.c
   checkInCtaText: {
     fontSize: 15,
     fontWeight: "600" as const,
-    color: "#fff",
+    color: colors.white,
   },
 }); }

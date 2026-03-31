@@ -56,6 +56,69 @@ const Colors = {
     statusAttentionBg: "#FEF2F2",
 
     chartLine: "#E89BA4",
+
+    // Coaching tip category colors
+    coachStress: "#FF6B6B",
+    coachEnergy: "#FFD93D",
+    coachRecovery: "#6BCB77",
+    coachHydration: "#4D96FF",
+    coachInflammation: "#FF8C42",
+    coachSleep: "#9D84B7",
+    coachPhase: "#E89BA4",
+    coachTrend: "#66C2FF",
+
+    // Alert severity colors
+    alertInfoBg: "#E8F4FD",
+    alertInfoBorder: "#4D96FF",
+    alertInfoText: "#2D6CB5",
+    alertHeadsUpBg: "#FFF8E8",
+    alertHeadsUpBorder: "#F4A836",
+    alertHeadsUpText: "#B87A1A",
+    alertActionBg: "#FFF0F2",
+    alertActionBorder: "#E89BA4",
+    alertActionText: "#C05B68",
+
+    // Health data type colors
+    healthSleep: "#7B68EE",
+    healthMenstrual: "#E8607A",
+    healthHeart: "#FF6B6B",
+    healthSteps: "#4CAF50",
+    healthActiveEnergy: "#FF9800",
+    healthHRV: "#9C27B0",
+    healthTemperature: "#FF5722",
+    healthConnected: "#4CAF50",
+
+    // Score gauge colors (scan results)
+    scoreGood: "#8BC9A3",
+    scoreModerate: "#F4C896",
+    scoreBad: "#E89BA4",
+
+    // Miscellaneous UI
+    white: "#FFFFFF",
+    black: "#000000",
+    dueDate: "#E85D75",
+    overrideBadge: "#FF9500",
+    deleteButton: "#ff4444",
+    changeImproved: "#6BCB77",
+    changeWorsened: "#FF6B6B",
+    appleHealthBg: "#FFE8EC",
+    appleHealthIcon: "#E8607A",
+    ouraRingBg: "#E8F0FF",
+    ouraRingIcon: "#4A7DFF",
+    healthConditionsBg: "#FFF0E8",
+    healthConditionsIcon: "#E87A4A",
+    appleHealthCardBg: "#FFF0F3",
+    sleepGood: "#F4C896",
+    sleepModerate: "#94A3B8",
+    sleepPoor: "#64748B",
+    cognitiveWellness: "#9B85D6",
+
+    // Cross-insight accent colors
+    insightCaffeine: "#D4A574",
+    insightAlcohol: "#A4C8E8",
+    insightDiet: "#F4D4A4",
+    insightSleepCognitive: "#96E8D4",
+    insightLutealMood: "#F4B896",
   },
   dark: {
     primary: "#C4B2F0",
@@ -114,6 +177,69 @@ const Colors = {
     statusAttentionBg: "#7F1D1D",
 
     chartLine: "#C47A83",
+
+    // Coaching tip category colors
+    coachStress: "#D05A5A",
+    coachEnergy: "#D4B830",
+    coachRecovery: "#5AAF66",
+    coachHydration: "#3D7DD4",
+    coachInflammation: "#D47438",
+    coachSleep: "#8A72A4",
+    coachPhase: "#C47A83",
+    coachTrend: "#52A8D4",
+
+    // Alert severity colors
+    alertInfoBg: "#1A2A3A",
+    alertInfoBorder: "#3D7DD4",
+    alertInfoText: "#7AADD4",
+    alertHeadsUpBg: "#2A2418",
+    alertHeadsUpBorder: "#D4A836",
+    alertHeadsUpText: "#D4B870",
+    alertActionBg: "#2A1A1C",
+    alertActionBorder: "#C47A83",
+    alertActionText: "#D4909A",
+
+    // Health data type colors
+    healthSleep: "#6A58D8",
+    healthMenstrual: "#C8506A",
+    healthHeart: "#D05A5A",
+    healthSteps: "#3A9640",
+    healthActiveEnergy: "#D48010",
+    healthHRV: "#8420A0",
+    healthTemperature: "#D04A20",
+    healthConnected: "#3A9640",
+
+    // Score gauge colors (scan results)
+    scoreGood: "#6DAF88",
+    scoreModerate: "#D4A876",
+    scoreBad: "#C47A83",
+
+    // Miscellaneous UI
+    white: "#FFFFFF",
+    black: "#000000",
+    dueDate: "#C84D65",
+    overrideBadge: "#D48010",
+    deleteButton: "#D04444",
+    changeImproved: "#5AAF66",
+    changeWorsened: "#D05A5A",
+    appleHealthBg: "#2A1A1C",
+    appleHealthIcon: "#C8506A",
+    ouraRingBg: "#1A2230",
+    ouraRingIcon: "#3D6DD4",
+    healthConditionsBg: "#2A2018",
+    healthConditionsIcon: "#C8683A",
+    appleHealthCardBg: "#2A1A1E",
+    sleepGood: "#D4A876",
+    sleepModerate: "#6B7A8A",
+    sleepPoor: "#4A5668",
+    cognitiveWellness: "#8A72C0",
+
+    // Cross-insight accent colors
+    insightCaffeine: "#B48A60",
+    insightAlcohol: "#7AADD4",
+    insightDiet: "#D4B484",
+    insightSleepCognitive: "#76C8B4",
+    insightLutealMood: "#D49876",
   },
 };
 

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield, Apple } from "lucide-react-native";
+import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, TrendingDown, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield, Apple, BookOpen, Activity, BedDouble, HeartCrack, ShieldAlert, Frown } from "lucide-react-native";
 import Colors from "@/constants/colors";
 
 // Convert hex color to react-native-chart-kit callback format
@@ -18,6 +18,7 @@ import { CyclePhase, DailyCheckIn, ScanResult } from "@/types";
 import { router } from "expo-router";
 import { getMarkerTranslation } from "@/lib/insightsTranslations";
 import { translateSymptoms } from "@/lib/symptomTranslation";
+import { analyzeSymptomPatterns, SymptomPattern } from "@/lib/symptomPatterns";
 import { LineChart } from "react-native-chart-kit";
 
 type MarkerType = 'stress' | 'energy' | 'recovery' | 'hydration' | 'inflammation' | 'fatigue' | 
@@ -97,7 +98,8 @@ const generateCheckInInsights = (
   todayCheckIn: DailyCheckIn | null,
   latestScan: ScanResult | null,
   currentPhase: CyclePhase,
-  t: any
+  t: any,
+  themeColors: typeof Colors.light
 ): { icon: any; color: string; title: string; message: string }[] => {
   if (!todayCheckIn || !latestScan) return [];
 
@@ -106,7 +108,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.sleep < 5 && latestScan.fatigueLevel > 6) {
     insights.push({
       icon: Moon,
-      color: "#F4C896",
+      color: themeColors.phaseOvulation,
       title: t.insights.crossSleepFatigueTitle,
       message: t.insights.crossSleepFatigueMsg,
     });
@@ -115,7 +117,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.hadCaffeine && latestScan.stressScore > 7) {
     insights.push({
       icon: Coffee,
-      color: "#D4A574",
+      color: themeColors.insightCaffeine,
       title: t.insights.crossCaffeineStressTitle,
       message: `${t.insights.crossCaffeineStressMsg} ${currentPhase === 'luteal' ? t.insights.crossCaffeineStressLuteal : t.insights.crossCaffeineStressOther}.`,
     });
@@ -124,7 +126,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.hadAlcohol && (latestScan.hydrationLevel < 5 || latestScan.physiologicalStates?.dehydrationTendency > 6)) {
     insights.push({
       icon: Wine,
-      color: "#A4C8E8",
+      color: themeColors.insightAlcohol,
       title: t.insights.crossAlcoholHydrationTitle,
       message: t.insights.crossAlcoholHydrationMsg,
     });
@@ -133,7 +135,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.isIll && latestScan.inflammation > 6) {
     insights.push({
       icon: Thermometer,
-      color: "#E89BA4",
+      color: themeColors.phaseMenstrual,
       title: t.insights.crossIllnessInflammationTitle,
       message: t.insights.crossIllnessInflammationMsg,
     });
@@ -142,7 +144,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.stressLevel && todayCheckIn.stressLevel > 7 && latestScan.emotionalMentalState?.emotionalSensitivity > 6) {
     insights.push({
       icon: Brain,
-      color: "#F4C8D4",
+      color: themeColors.habitSkincare,
       title: t.insights.crossStressEmotionalTitle,
       message: t.insights.crossStressEmotionalMsg,
     });
@@ -151,7 +153,7 @@ const generateCheckInInsights = (
   if ((todayCheckIn.hadSugar || todayCheckIn.hadProcessedFood) && latestScan.inflammation > 6) {
     insights.push({
       icon: Flame,
-      color: "#F4D4A4",
+      color: themeColors.insightDiet,
       title: t.insights.crossDietInflammationTitle,
       message: t.insights.crossDietInflammationMsg,
     });
@@ -160,7 +162,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.sleep < 5 && latestScan.emotionalMentalState?.cognitiveSharpness < 5) {
     insights.push({
       icon: Brain,
-      color: "#96E8D4",
+      color: themeColors.insightSleepCognitive,
       title: t.insights.crossSleepCognitiveTitle,
       message: t.insights.crossSleepCognitiveMsg,
     });
@@ -169,7 +171,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.energy < 4 && latestScan.energyScore < 5 && currentPhase === 'menstrual') {
     insights.push({
       icon: Battery,
-      color: "#E89BA4",
+      color: themeColors.phaseMenstrual,
       title: t.insights.crossMenstrualEnergyTitle,
       message: t.insights.crossMenstrualEnergyMsg,
     });
@@ -178,7 +180,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.symptoms.includes("Cramps") && latestScan.stressScore > 6) {
     insights.push({
       icon: AlertCircle,
-      color: "#E89BA4",
+      color: themeColors.phaseMenstrual,
       title: t.insights.crossCrampsStressTitle,
       message: t.insights.crossCrampsStressMsg,
     });
@@ -187,7 +189,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.symptoms.includes("Headache") && latestScan.fatigueLevel > 6) {
     insights.push({
       icon: AlertCircle,
-      color: "#F4C896",
+      color: themeColors.phaseOvulation,
       title: t.insights.crossHeadacheFatigueTitle,
       message: t.insights.crossHeadacheFatigueMsg,
     });
@@ -196,7 +198,7 @@ const generateCheckInInsights = (
   if (todayCheckIn.mood < 4 && latestScan.emotionalMentalState?.moodVolatilityRisk > 6 && currentPhase === 'luteal') {
     insights.push({
       icon: Heart,
-      color: "#F4B896",
+      color: themeColors.insightLutealMood,
       title: t.insights.crossLutealMoodTitle,
       message: t.insights.crossLutealMoodMsg,
     });
@@ -252,7 +254,7 @@ const calculateVasomotorMetrics = (checkIns: DailyCheckIn[], t: any) => {
 
 
 
-const getPhaseGuidance = (phase: CyclePhase, t: any) => {
+const getPhaseGuidance = (phase: CyclePhase, t: any, themeColors: typeof Colors.light) => {
   switch (phase) {
     case "menstrual":
       return {
@@ -271,7 +273,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.menstrualImprove5
         ],
         icon: Moon,
-        color: "#E89BA4"
+        color: themeColors.phaseMenstrual
       };
     case "follicular":
       return {
@@ -290,7 +292,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.follicularImprove5
         ],
         icon: Sprout,
-        color: "#8BC9A3"
+        color: themeColors.phaseFollicular
       };
     case "ovulation":
       return {
@@ -309,7 +311,7 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.ovulationImprove5
         ],
         icon: Sparkles,
-        color: "#F4C896"
+        color: themeColors.phaseOvulation
       };
     case "luteal":
       return {
@@ -330,14 +332,14 @@ const getPhaseGuidance = (phase: CyclePhase, t: any) => {
           t.phaseGuidance.lutealImprove6
         ],
         icon: Flower2,
-        color: "#B8A4E8"
+        color: themeColors.phaseLuteal
       };
   }
 };
 
 type LifeStageOverride = 'pregnancy' | 'postpartum' | 'perimenopause' | 'menopause';
 
-const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: number, t: any) => {
+const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: number, t: any, themeColors: typeof Colors.light) => {
   switch (lifeStage) {
     case 'pregnancy': {
       const trimester = weeksPregnant <= 13 ? 1 : weeksPregnant <= 27 ? 2 : 3;
@@ -359,7 +361,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
             t.pregnancyGuidance?.t1Improve5 ?? 'Consider prenatal vitamins to support your wellness journey',
           ],
           icon: Baby,
-          color: '#F4C8D4',
+          color: themeColors.habitSkincare,
         },
         2: {
           description: t.pregnancyGuidance?.t2Description ?? 'Often called the "golden trimester." Energy typically improves, nausea subsides, and you may feel more like yourself. Your baby is growing rapidly.',
@@ -377,7 +379,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
             t.pregnancyGuidance?.t2Improve5 ?? 'Consider prenatal classes and prepare for the third trimester',
           ],
           icon: Baby,
-          color: '#F4C896',
+          color: themeColors.phaseOvulation,
         },
         3: {
           description: t.pregnancyGuidance?.t3Description ?? 'The final stretch! Your body is preparing for birth. You may experience increased fatigue, discomfort, and nesting instincts.',
@@ -395,7 +397,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
             t.pregnancyGuidance?.t3Improve5 ?? 'Prepare your birth plan and hospital bag',
           ],
           icon: Baby,
-          color: '#E89BA4',
+          color: themeColors.phaseMenstrual,
         },
       };
       return { ...guidanceMap[trimester], phaseName: t.phases[trimesterKey] };
@@ -417,7 +419,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
           t.postpartumGuidance?.improve5 ?? 'Practice self-compassion — recovery takes time',
         ],
         icon: Heart,
-        color: '#F4C8D4',
+        color: themeColors.habitSkincare,
         phaseName: t.phases.postpartumRecovery,
       };
     case 'perimenopause':
@@ -437,7 +439,7 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
           t.perimenopauseGuidance?.improve5 ?? 'Explore wellness strategies that work best for you',
         ],
         icon: Flower2,
-        color: '#B8A4E8',
+        color: themeColors.phaseLuteal,
         phaseName: t.phases.perimenopauseTransition,
       };
     case 'menopause':
@@ -457,14 +459,14 @@ const getLifeStageGuidance = (lifeStage: LifeStageOverride, weeksPregnant: numbe
           t.menopauseGuidance?.improve5 ?? 'Regular health check-ups and screenings',
         ],
         icon: Sparkles,
-        color: '#96E8D4',
+        color: themeColors.insightSleepCognitive,
         phaseName: t.phases.menopause,
       };
   }
 };
 
 export default function InsightsScreen() {
-  const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language, isLoading, healthData, healthConnection } = useApp();
+  const { scans, currentPhase, todaySummary, latestScan, todayCheckIn, checkIns, userProfile, lifeStageSuggestion, phaseEstimate, t, language, isLoading, healthData, healthConnection, cycleHistory } = useApp();
   const lifeStageOverride = phaseEstimate.lifeStageOverride;
   const isNonCycleLifeStage = !!lifeStageOverride;
   const { colors } = useTheme();
@@ -482,17 +484,21 @@ export default function InsightsScreen() {
 
   const phaseGuidance = useMemo(() => {
     if (lifeStageOverride) {
-      const lsGuidance = getLifeStageGuidance(lifeStageOverride, userProfile.weeksPregnant || 0, t);
-      return lsGuidance || { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: '#E89BA4', phaseName: '' };
+      const lsGuidance = getLifeStageGuidance(lifeStageOverride, userProfile.weeksPregnant || 0, t, colors);
+      return lsGuidance || { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: colors.phaseMenstrual, phaseName: '' };
     }
-    const guidance = getPhaseGuidance(currentPhase, t);
-    return guidance ? { ...guidance, phaseName: t.phases[currentPhase] } : { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: '#E89BA4', phaseName: '' };
-  }, [currentPhase, t, lifeStageOverride, userProfile.weeksPregnant]);
+    const guidance = getPhaseGuidance(currentPhase, t, colors);
+    return guidance ? { ...guidance, phaseName: t.phases[currentPhase] } : { description: '', whatToExpect: [], howToImprove: [], icon: Moon, color: colors.phaseMenstrual, phaseName: '' };
+  }, [currentPhase, t, lifeStageOverride, userProfile.weeksPregnant, colors]);
   const markerInfo = selectedMarker ? getMarkerTranslation(selectedMarker, language, currentPhase, todayCheckIn, latestScan) : null;
 
   const checkInInsights = useMemo(() => {
-    return generateCheckInInsights(todayCheckIn, latestScan, currentPhase, t);
-  }, [todayCheckIn, latestScan, currentPhase, t]);
+    return generateCheckInInsights(todayCheckIn, latestScan, currentPhase, t, colors);
+  }, [todayCheckIn, latestScan, currentPhase, t, colors]);
+
+  const symptomPatterns = useMemo(() => {
+    return analyzeSymptomPatterns(checkIns, scans, cycleHistory, userProfile.cycleLength);
+  }, [checkIns, scans, cycleHistory, userProfile.cycleLength]);
 
   const patternAnalysis = useMemo(() => {
     if (!userProfile.hasCompletedOnboarding) return null;
@@ -830,11 +836,11 @@ export default function InsightsScreen() {
                       {todayCheckIn.sleep >= 7 ? t.common.yes : todayCheckIn.sleep >= 4 ? t.common.somewhat : t.common.no}
                     </Text>
                     {todayCheckIn.sleep >= 7 ? (
-                      <Sparkles size={16} color="#F4C896" />
+                      <Sparkles size={16} color={colors.sleepGood} />
                     ) : todayCheckIn.sleep >= 4 ? (
-                      <Minus size={16} color="#94A3B8" />
+                      <Minus size={16} color={colors.sleepModerate} />
                     ) : (
-                      <Moon size={16} color="#64748B" />
+                      <Moon size={16} color={colors.sleepPoor} />
                     )}
                   </View>
                 </View>
@@ -982,7 +988,7 @@ export default function InsightsScreen() {
             return vmsMetrics ? (
               <View style={styles.vasomotorCard}>
                 <View style={styles.vasomotorHeader}>
-                  <Flame size={24} color="#E89BA4" />
+                  <Flame size={24} color={colors.phaseMenstrual} />
                   <Text style={styles.vasomotorTitle}>{t.menopause?.vasomotorSymptoms || 'Vasomotor Symptoms'}</Text>
                 </View>
 
@@ -1220,8 +1226,8 @@ export default function InsightsScreen() {
                 <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
                 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#A4C8E8" + "20" }]}>
-                    <Droplets size={20} color="#A4C8E8" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.insightAlcohol + "20" }]}>
+                    <Droplets size={20} color={colors.insightAlcohol} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1244,13 +1250,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.hydrationLevel || 0) / 10) * 100}%`, backgroundColor: "#A4C8E8" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.hydrationLevel || 0) / 10) * 100}%`, backgroundColor: colors.insightAlcohol }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#E89BA4" + "20" }]}>
-                    <AlertCircle size={20} color="#E89BA4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.phaseMenstrual + "20" }]}>
+                    <AlertCircle size={20} color={colors.phaseMenstrual} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1273,13 +1279,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.inflammation || 0) / 10) * 100}%`, backgroundColor: "#E89BA4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.inflammation || 0) / 10) * 100}%`, backgroundColor: colors.phaseMenstrual }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4C896" + "20" }]}>
-                    <Moon size={20} color="#F4C896" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.phaseOvulation + "20" }]}>
+                    <Moon size={20} color={colors.phaseOvulation} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1302,7 +1308,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: "#F4C896" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.fatigueLevel || 0) / 10) * 100}%`, backgroundColor: colors.phaseOvulation }]} />
                   </View>
                 </View>
               </View>
@@ -1312,8 +1318,8 @@ export default function InsightsScreen() {
                 <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
                 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#96E8D4" + "20" }]}>
-                    <Brain size={20} color="#96E8D4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.insightSleepCognitive + "20" }]}>
+                    <Brain size={20} color={colors.insightSleepCognitive} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1336,13 +1342,13 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: "#96E8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.cognitiveSharpness || 0) / 10) * 100}%`, backgroundColor: colors.insightSleepCognitive }]} />
                   </View>
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4C8D4" + "20" }]}>
-                    <Heart size={20} color="#F4C8D4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.habitSkincare + "20" }]}>
+                    <Heart size={20} color={colors.habitSkincare} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1365,7 +1371,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: "#F4C8D4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.emotionalSensitivity || 0) / 10) * 100}%`, backgroundColor: colors.habitSkincare }]} />
                   </View>
                 </View>
 
@@ -1399,8 +1405,8 @@ export default function InsightsScreen() {
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4B896" + "20" }]}>
-                    <BarChart3 size={20} color="#F4B896" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.insightLutealMood + "20" }]}>
+                    <BarChart3 size={20} color={colors.insightLutealMood} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1423,7 +1429,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: "#F4B896" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.emotionalMentalState?.moodVolatilityRisk || 0) / 10) * 100}%`, backgroundColor: colors.insightLutealMood }]} />
                   </View>
                 </View>
               </View>
@@ -1462,8 +1468,8 @@ export default function InsightsScreen() {
                 </View>
 
                 <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#F4D4A4" + "20" }]}>
-                    <Flame size={20} color="#F4D4A4" />
+                  <View style={[styles.detailIcon, { backgroundColor: colors.insightDiet + "20" }]}>
+                    <Flame size={20} color={colors.insightDiet} />
                   </View>
                   <View style={styles.detailContent}>
                     <View style={styles.detailTextContent}>
@@ -1486,7 +1492,7 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: "#F4D4A4" }]} />
+                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: colors.insightDiet }]} />
                   </View>
                 </View>
               </View>
@@ -1531,8 +1537,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.scleraYellowness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('underEyeDarkness')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#F4C89620' }]}>
-                      <Moon size={18} color="#F4C896" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.sleepGood + '20' }]}>
+                      <Moon size={18} color={colors.sleepGood} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.underEyeVitality ?? 'Under-Eye Vitality'}</Text>
@@ -1553,8 +1559,8 @@ export default function InsightsScreen() {
                     <Text style={styles.opticalStatsAvg}>{t.insights.average}: {averages.eyeOpenness}/10</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.opticalStatsItem} onPress={() => showMarkerInfo('tearFilmQuality')} activeOpacity={0.7}>
-                    <View style={[styles.opticalStatsIcon, { backgroundColor: '#A4C8E820' }]}>
-                      <Droplets size={18} color="#A4C8E8" />
+                    <View style={[styles.opticalStatsIcon, { backgroundColor: colors.insightAlcohol + '20' }]}>
+                      <Droplets size={18} color={colors.insightAlcohol} />
                     </View>
                     <View style={styles.opticalLabelRow}>
                       <Text style={styles.opticalStatsLabel}>{t.insights.eyeMoisture ?? 'Eye Moisture'}</Text>
@@ -1578,8 +1584,8 @@ export default function InsightsScreen() {
               {patternAnalysis.pregnancyDetected >= 3 && (
                 <View style={styles.patternCard}>
                   <View style={styles.patternHeader}>
-                    <View style={[styles.patternIconBox, { backgroundColor: '#F4C8D420' }]}>
-                      <Baby size={22} color="#E89BA4" />
+                    <View style={[styles.patternIconBox, { backgroundColor: colors.habitSkincare + '20' }]}>
+                      <Baby size={22} color={colors.phaseMenstrual} />
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Pregnancy Indicators</Text>
@@ -1616,7 +1622,7 @@ export default function InsightsScreen() {
                       activeOpacity={0.7}
                     >
                       <Text style={styles.patternActionText}>Update Life Stage</Text>
-                      <ArrowRight size={14} color="#FFFFFF" />
+                      <ArrowRight size={14} color={colors.white} />
                     </TouchableOpacity>
                   )}
                   {patternAnalysis.hasAcceptedPregnancy && (
@@ -1631,8 +1637,8 @@ export default function InsightsScreen() {
               {patternAnalysis.periDetected >= 3 && (
                 <View style={styles.patternCard}>
                   <View style={styles.patternHeader}>
-                    <View style={[styles.patternIconBox, { backgroundColor: '#B8A4E820' }]}>
-                      <Thermometer size={22} color="#B8A4E8" />
+                    <View style={[styles.patternIconBox, { backgroundColor: colors.phaseLuteal + '20' }]}>
+                      <Thermometer size={22} color={colors.phaseLuteal} />
                     </View>
                     <View style={styles.patternHeaderText}>
                       <Text style={styles.patternTitle}>Perimenopause Indicators</Text>
@@ -1669,7 +1675,7 @@ export default function InsightsScreen() {
                       activeOpacity={0.7}
                     >
                       <Text style={styles.patternActionText}>Update Life Stage</Text>
-                      <ArrowRight size={14} color="#FFFFFF" />
+                      <ArrowRight size={14} color={colors.white} />
                     </TouchableOpacity>
                   )}
                   {patternAnalysis.hasAcceptedPeri && (
@@ -1701,8 +1707,8 @@ export default function InsightsScreen() {
               accessibilityLabel="View brain wellness"
               accessibilityRole="button"
             >
-              <View style={[styles.cognitiveNavIcon, { backgroundColor: '#9B85D620' }]}>
-                <Brain size={22} color="#9B85D6" />
+              <View style={[styles.cognitiveNavIcon, { backgroundColor: colors.cognitiveWellness + '20' }]}>
+                <Brain size={22} color={colors.cognitiveWellness} />
               </View>
               <View style={styles.cognitiveNavContent}>
                 <Text style={styles.cognitiveNavTitle}>Brain Wellness</Text>
@@ -1711,6 +1717,77 @@ export default function InsightsScreen() {
               <ArrowRight size={18} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
+
+          {/* ── Your Patterns (Symptom Pattern Analysis) ──────────── */}
+          {symptomPatterns.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{(t.home as any)?.yourPatterns || 'Your Patterns'}</Text>
+              <Text style={[styles.sectionSubtitle, { marginBottom: 12 }]}>{(t.home as any)?.patternsSubtitle || 'Based on your cycle history'}</Text>
+              {symptomPatterns.slice(0, 6).map((pattern) => {
+                const PATTERN_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
+                  Smile: Heart, Zap, BedDouble, Activity, Brain, HeartCrack, ShieldAlert, Frown, Battery, Moon, Thermometer, AlertCircle, HeartPulse: Heart, ShieldCheck: Shield, TrendingDown, TrendingUp,
+                };
+                const IconComp = PATTERN_ICON_MAP[pattern.icon] || AlertCircle;
+                const phaseColor = pattern.phase ? colors[`phase${pattern.phase.charAt(0).toUpperCase() + pattern.phase.slice(1)}` as keyof typeof colors] as string : colors.primary;
+
+                let description = '';
+                if (pattern.type === 'metric_dip') {
+                  description = ((t.home as any)?.patternDip || '{metric} dips during {phase}')
+                    .replace('{metric}', pattern.metric || '')
+                    .replace('{phase}', pattern.phase ? (t.phases?.[pattern.phase] || pattern.phase) : '');
+                } else if (pattern.type === 'metric_peak') {
+                  description = ((t.home as any)?.patternPeak || '{metric} peaks during {phase}')
+                    .replace('{metric}', pattern.metric || '')
+                    .replace('{phase}', pattern.phase ? (t.phases?.[pattern.phase] || pattern.phase) : '');
+                } else if (pattern.type === 'symptom_phase') {
+                  description = ((t.home as any)?.patternSymptom || '{symptom} is common during {phase}')
+                    .replace('{symptom}', pattern.symptom || '')
+                    .replace('{phase}', pattern.phase ? (t.phases?.[pattern.phase] || pattern.phase) : '');
+                }
+
+                const confidenceLabel = pattern.confidence === 'high'
+                  ? ((t.home as any)?.patternConfidenceHigh || 'High confidence')
+                  : ((t.home as any)?.patternConfidenceMedium || 'Moderate confidence');
+
+                return (
+                  <View key={pattern.id} style={[styles.patternItemCard, { borderLeftColor: phaseColor }]}>
+                    <View style={[styles.patternItemIcon, { backgroundColor: phaseColor + '20' }]}>
+                      <IconComp size={18} color={phaseColor} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.patternItemText, { color: colors.text }]}>{description}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <View style={[styles.confidenceBadge, { backgroundColor: pattern.confidence === 'high' ? colors.statusGoodBg : colors.statusModerateBg }]}>
+                          <Text style={{ fontSize: 10, color: pattern.confidence === 'high' ? colors.statusGood : colors.statusModerate, fontWeight: '600' }}>{confidenceLabel}</Text>
+                        </View>
+                        {pattern.frequency != null && (
+                          <Text style={{ fontSize: 10, color: colors.textTertiary }}>
+                            {((t.home as any)?.timesPerCycle || '{percent}% of cycles').replace('{percent}', String(Math.round(pattern.frequency * 100)))}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* ── Wellness Library Entry ──────────────────────────────── */}
+          <TouchableOpacity
+            style={[styles.wellnessLibraryCard, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}
+            onPress={() => router.push('/articles' as any)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.wellnessLibraryIcon, { backgroundColor: colors.primary + '15' }]}>
+              <BookOpen size={24} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.wellnessLibraryTitle, { color: colors.text }]}>{(t as any).articles?.title || 'Wellness Library'}</Text>
+              <Text style={[styles.wellnessLibrarySubtitle, { color: colors.textSecondary }]}>{(t as any).articles?.subtitle || 'Wellness tips for every phase'}</Text>
+            </View>
+            <ArrowRight size={18} color={colors.textTertiary} />
+          </TouchableOpacity>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t.insights.scanHistory}</Text>
@@ -1735,42 +1812,42 @@ export default function InsightsScreen() {
               </View>
               <View style={styles.healthGrid}>
                 {healthData.hrv !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Heart size={20} color={healthData.hrv < 25 ? colors.statusAttention : colors.statusGood} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{Math.round(healthData.hrv)}</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>HRV (ms)</Text>
                   </View>
                 )}
                 {healthData.sleepHours !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Moon size={20} color={healthData.sleepHours < 6 ? colors.statusAttention : colors.statusGood} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.sleepHours.toFixed(1)}h</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Sleep</Text>
                   </View>
                 )}
                 {healthData.steps !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Zap size={20} color={healthData.steps < 3000 ? colors.statusAttention : colors.statusGood} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.steps.toLocaleString()}</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Steps</Text>
                   </View>
                 )}
                 {healthData.heartRate !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Heart size={20} color={colors.primary} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{Math.round(healthData.heartRate)}</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Heart Rate</Text>
                   </View>
                 )}
                 {healthData.wristTemperatureDeviation !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Thermometer size={20} color={healthData.wristTemperatureDeviation > 0.3 ? colors.statusAttention : colors.statusGood} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.wristTemperatureDeviation > 0 ? '+' : ''}{healthData.wristTemperatureDeviation.toFixed(2)}°</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>Temp Δ</Text>
                   </View>
                 )}
                 {healthData.spo2 !== undefined && (
-                  <View style={[styles.healthTile, { backgroundColor: colors.cardBackground }]}>
+                  <View style={[styles.healthTile, { backgroundColor: colors.card }]}>
                     <Shield size={20} color={healthData.spo2 < 95 ? colors.statusAttention : colors.statusGood} />
                     <Text style={[styles.healthTileValue, { color: colors.text }]}>{healthData.spo2.toFixed(1)}%</Text>
                     <Text style={[styles.healthTileLabel, { color: colors.textSecondary }]}>SpO₂</Text>
@@ -2544,7 +2621,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
   disclaimerButtonText: {
     fontSize: 16,
     fontWeight: "700" as const,
-    color: "#FFFFFF",
+    color: colors.white,
   },
   checkInSummaryCard: {
     backgroundColor: colors.card,
@@ -2965,7 +3042,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textTertiary,
   },
   patternActionButton: {
-    backgroundColor: "#E89BA4",
+    backgroundColor: colors.phaseMenstrual,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 20,
@@ -2976,7 +3053,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     alignSelf: "flex-start" as const,
   },
   patternActionText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "600" as const,
   },
@@ -3036,7 +3113,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     color: colors.textSecondary,
   },
   timeRangeButtonTextActive: {
-    color: "#FFFFFF",
+    color: colors.white,
   },
   chartContainer: {
     marginBottom: 24,
@@ -3100,7 +3177,7 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: "#E89BA4",
+    shadowColor: colors.phaseMenstrual,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -3251,5 +3328,55 @@ function createInsightsStyles(colors: typeof Colors.light) { return StyleSheet.c
     fontSize: 11,
     marginTop: 8,
     textAlign: 'right' as const,
+  },
+  patternItemCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    backgroundColor: colors.card,
+    marginBottom: 8,
+  },
+  patternItemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  patternItemText: {
+    fontSize: 13,
+    fontWeight: '500' as const,
+  },
+  confidenceBadge: {
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  wellnessLibraryCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 14,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  wellnessLibraryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  wellnessLibraryTitle: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+  },
+  wellnessLibrarySubtitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
 }); }

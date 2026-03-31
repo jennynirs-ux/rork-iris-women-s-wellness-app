@@ -53,6 +53,8 @@ import {
   Shield,
   MessageCircle,
   Dumbbell,
+  TrendingDown,
+  CalendarDays,
 } from "lucide-react-native";
 
 const COACHING_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -69,6 +71,7 @@ import { Habit } from "@/types";
 import Colors from "@/constants/colors";
 import { generateCoachingTips, generatePatternBasedTips, CoachingTip } from "@/lib/coachingEngine";
 import { generatePredictiveAlerts, PredictiveAlert } from "@/lib/predictiveAlerts";
+import { CycleRecap } from "@/lib/cycleRecap";
 import { trpc } from "@/lib/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
@@ -76,12 +79,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
 import QuickScanModal from "@/components/QuickScanModal";
 
-const PHASE_INFO = {
-  menstrual: { color: "#E89BA4", icon: Moon },
-  follicular: { color: "#8BC9A3", icon: Sprout },
-  ovulation: { color: "#F4C896", icon: Sparkles },
-  luteal: { color: "#B8A4E8", icon: Flower2 },
-};
+const getPhaseInfo = (colors: typeof Colors.light) => ({
+  menstrual: { color: colors.phaseMenstrual, icon: Moon },
+  follicular: { color: colors.phaseFollicular, icon: Sprout },
+  ovulation: { color: colors.phaseOvulation, icon: Sparkles },
+  luteal: { color: colors.phaseLuteal, icon: Flower2 },
+});
 
 const HABIT_ICONS = {
   hydration: Droplets,
@@ -94,16 +97,16 @@ const HABIT_ICONS = {
   pelvicfloor: Activity,
 };
 
-const HABIT_COLORS = {
-  hydration: "#A4C8E8",
-  movement: "#F4A896",
-  nutrition: "#8BC9A3",
-  recovery: "#B8A4E8",
-  skincare: "#F4C8D4",
-  mindfulness: "#96E8D4",
-  selfcheck: "#E89BA4",
-  pelvicfloor: "#F4C896",
-};
+const getHabitColors = (colors: typeof Colors.light) => ({
+  hydration: colors.habitHydration,
+  movement: colors.habitMovement,
+  nutrition: colors.habitNutrition,
+  recovery: colors.habitRecovery,
+  skincare: colors.habitSkincare,
+  mindfulness: colors.habitMindfulness,
+  selfcheck: colors.phaseMenstrual,
+  pelvicfloor: colors.phaseOvulation,
+});
 
 const COMMUNITY_CATEGORY_ICONS = {
   nutrition: Apple,
@@ -113,13 +116,13 @@ const COMMUNITY_CATEGORY_ICONS = {
   sleep: Moon,
 };
 
-const COMMUNITY_CATEGORY_COLORS = {
-  nutrition: "#8BC9A3",
-  exercise: "#F4A896",
-  selfcare: "#F4C8D4",
-  mindfulness: "#96E8D4",
-  sleep: "#B8A4E8",
-};
+const getCommunityColors = (colors: typeof Colors.light) => ({
+  nutrition: colors.habitNutrition,
+  exercise: colors.habitMovement,
+  selfcare: colors.habitSkincare,
+  mindfulness: colors.habitMindfulness,
+  sleep: colors.phaseLuteal,
+});
 
 interface CommunityTip {
   id: string;
@@ -140,7 +143,8 @@ interface HabitCardProps {
 
 const HabitCard = React.memo(({ habit, colors, onPress, styles }: HabitCardProps) => {
   const IconComponent = HABIT_ICONS[habit.category];
-  const habitColor = HABIT_COLORS[habit.category];
+  const habitColors = getHabitColors(colors);
+  const habitColor = habitColors[habit.category];
 
   return (
     <TouchableOpacity
@@ -179,14 +183,14 @@ interface CoachingTipCardProps {
 
 const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: CoachingTipCardProps) => {
   const categoryColors: Record<CoachingTip['category'], string> = {
-    stress: "#FF6B6B",
-    energy: "#FFD93D",
-    recovery: "#6BCB77",
-    hydration: "#4D96FF",
-    inflammation: "#FF8C42",
-    sleep: "#9D84B7",
-    phase: "#E89BA4",
-    trend: "#66C2FF",
+    stress: colors.coachStress,
+    energy: colors.coachEnergy,
+    recovery: colors.coachRecovery,
+    hydration: colors.coachHydration,
+    inflammation: colors.coachInflammation,
+    sleep: colors.coachSleep,
+    phase: colors.coachPhase,
+    trend: colors.coachTrend,
   };
 
   const borderColor = categoryColors[tip.category];
@@ -221,15 +225,94 @@ const CoachingTipCard = React.memo(({ tip, colors, onDismiss, styles }: Coaching
 
 CoachingTipCard.displayName = 'CoachingTipCard';
 
+interface CycleRecapCardProps {
+  recap: CycleRecap;
+  colors: typeof Colors.light;
+  t: any;
+  onDismiss: () => void;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const CycleRecapCard = React.memo(({ recap, colors, t, onDismiss, styles }: CycleRecapCardProps) => {
+  const h = t.home || {};
+  const metrics = [
+    { label: h.avgMood || 'Avg Mood', value: recap.avgMood, key: 'mood' },
+    { label: h.avgEnergy || 'Avg Energy', value: recap.avgEnergy, key: 'energy' },
+    { label: h.avgSleep || 'Avg Sleep', value: recap.avgSleep, key: 'sleep' },
+    { label: h.avgStress || 'Avg Stress', value: recap.avgStress, key: 'stress' },
+    { label: h.avgRecovery || 'Avg Recovery', value: recap.avgRecovery, key: 'recovery' },
+  ].filter(m => m.value > 0);
+
+  const comp = recap.comparedToPrevious;
+
+  return (
+    <View style={[styles.recapCard, { borderLeftColor: colors.phaseMenstrual }]}>
+      <View style={styles.recapHeader}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <CalendarDays size={20} color={colors.phaseMenstrual} />
+          <Text style={[styles.recapTitle, { color: colors.text }]}>{h.cycleRecap || 'Cycle Recap'}</Text>
+        </View>
+        <TouchableOpacity onPress={onDismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <X size={18} color={colors.textTertiary} />
+        </TouchableOpacity>
+      </View>
+      <Text style={[styles.recapSubtitle, { color: colors.textSecondary }]}>
+        {recap.lengthDays} {h.cycleRecapDays || 'days'} · {recap.checkInCount} {h.cycleRecapCheckIns || 'check-ins'} · {recap.scanCount} {h.cycleRecapScans || 'scans'}
+      </Text>
+      <View style={styles.recapGrid}>
+        {metrics.map((m) => (
+          <View key={m.key} style={[styles.recapMetric, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.recapMetricValue, { color: colors.text }]}>{m.value}</Text>
+            <Text style={[styles.recapMetricLabel, { color: colors.textSecondary }]}>{m.label}</Text>
+          </View>
+        ))}
+      </View>
+      {comp && (
+        <View style={styles.recapComparison}>
+          {comp.energyChange !== 0 && (
+            <View style={[styles.recapChangeBadge, { backgroundColor: comp.energyChange > 0 ? colors.changeImproved + '20' : colors.changeWorsened + '20' }]}>
+              {comp.energyChange > 0 ? <TrendingUp size={12} color={colors.changeImproved} /> : <TrendingDown size={12} color={colors.changeWorsened} />}
+              <Text style={{ color: comp.energyChange > 0 ? colors.changeImproved : colors.changeWorsened, fontSize: 11, fontWeight: '600' }}>
+                {comp.energyChange > 0 ? '+' : ''}{comp.energyChange} {h.avgEnergy || 'Energy'} {h.vsLastCycle || 'vs last cycle'}
+              </Text>
+            </View>
+          )}
+          {comp.stressChange !== 0 && (
+            <View style={[styles.recapChangeBadge, { backgroundColor: comp.stressChange < 0 ? colors.changeImproved + '20' : colors.changeWorsened + '20' }]}>
+              {comp.stressChange < 0 ? <TrendingDown size={12} color={colors.changeImproved} /> : <TrendingUp size={12} color={colors.changeWorsened} />}
+              <Text style={{ color: comp.stressChange < 0 ? colors.changeImproved : colors.changeWorsened, fontSize: 11, fontWeight: '600' }}>
+                {comp.stressChange > 0 ? '+' : ''}{comp.stressChange} {h.avgStress || 'Stress'} {h.vsLastCycle || 'vs last cycle'}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+      {recap.topSymptoms.length > 0 && (
+        <View style={{ marginTop: 8 }}>
+          <Text style={[styles.recapMetricLabel, { color: colors.textSecondary, marginBottom: 4 }]}>{h.topSymptoms || 'Top Symptoms'}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {recap.topSymptoms.map((s) => (
+              <View key={s.symptom} style={[styles.recapSymptomChip, { backgroundColor: colors.phaseMenstrual + '15' }]}>
+                <Text style={{ color: colors.phaseMenstrual, fontSize: 11 }}>{s.symptom} ({s.count}x)</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+});
+CycleRecapCard.displayName = 'CycleRecapCard';
+
 const ALERT_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
   BatteryLow, Heart, Moon, Zap, Droplets, Shield,
 };
 
-const ALERT_SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  info: { bg: '#E8F4FD', border: '#4D96FF', text: '#2D6CB5' },
-  'heads-up': { bg: '#FFF8E8', border: '#F4A836', text: '#B87A1A' },
-  action: { bg: '#FFF0F2', border: '#E89BA4', text: '#C05B68' },
-};
+const getAlertSeverityColors = (colors: typeof Colors.light): Record<string, { bg: string; border: string; text: string }> => ({
+  info: { bg: colors.alertInfoBg, border: colors.alertInfoBorder, text: colors.alertInfoText },
+  'heads-up': { bg: colors.alertHeadsUpBg, border: colors.alertHeadsUpBorder, text: colors.alertHeadsUpText },
+  action: { bg: colors.alertActionBg, border: colors.alertActionBorder, text: colors.alertActionText },
+});
 
 interface PredictiveAlertCardProps {
   alert: PredictiveAlert;
@@ -239,7 +322,8 @@ interface PredictiveAlertCardProps {
 }
 
 const PredictiveAlertCard = React.memo(({ alert, colors, onDismiss, styles }: PredictiveAlertCardProps) => {
-  const severityStyle = ALERT_SEVERITY_COLORS[alert.severity] || ALERT_SEVERITY_COLORS.info;
+  const alertSeverityColors = getAlertSeverityColors(colors);
+  const severityStyle = alertSeverityColors[alert.severity] || alertSeverityColors.info;
   const IconComp = ALERT_ICON_MAP[alert.icon];
 
   return (
@@ -285,7 +369,8 @@ interface CommunityTipCardProps {
 
 const CommunityTipCard = React.memo(({ tip, colors, onLike, onReport, styles, isLiked }: CommunityTipCardProps) => {
   const IconComponent = COMMUNITY_CATEGORY_ICONS[tip.category];
-  const categoryColor = COMMUNITY_CATEGORY_COLORS[tip.category];
+  const communityColors = getCommunityColors(colors);
+  const categoryColor = communityColors[tip.category];
 
   return (
     <View style={[styles.communityTipCard, { borderLeftColor: categoryColor }]}>
@@ -476,7 +561,7 @@ function WebDatePicker({ date, onChange, colors }: { date: Date; onChange: (date
 }
 
 export default function HomeScreen() {
-  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t, healthData } = useApp();
+  const { todaySummary, updateHabit, todayHabits, setTodayHabits, latestScan, currentPhase, userProfile, todayCheckIn, updateLastPeriodDate, isLoading, lifeStageSuggestion, dismissLifeStageSuggestion, enrichedPhaseInfo, phaseEstimate, scans, checkIns, cycleHistory, t, healthData, latestCycleRecap, dismissCycleRecap } = useApp();
   const { colors } = useTheme();
   const [showEditPeriodModal, setShowEditPeriodModal] = useState(false);
   const [tempDate, setTempDate] = useState(new Date(userProfile.lastPeriodDate));
@@ -791,9 +876,10 @@ export default function HomeScreen() {
     if (override === 'menopause') {
       return { color: enrichedPhaseInfo.phaseColor, icon: Sparkles, label: enrichedPhaseInfo.phaseName };
     }
-    const info = PHASE_INFO[enrichedPhaseInfo.phase];
+    const phaseInfo = getPhaseInfo(colors);
+    const info = phaseInfo[enrichedPhaseInfo.phase];
     return { color: info.color, icon: info.icon, label: enrichedPhaseInfo.phaseName };
-  }, [enrichedPhaseInfo]);
+  }, [enrichedPhaseInfo, colors]);
 
   const handleHabitPress = useCallback((habitId: string, completed: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -938,7 +1024,7 @@ export default function HomeScreen() {
             <Text style={styles.welcomeButtonText}>
               {t.home?.startFirstScan || 'Start Your First Scan'}
             </Text>
-            <ArrowRight size={18} color="#FFFFFF" />
+            <ArrowRight size={18} color={colors.white} />
           </TouchableOpacity>
         </View>
       )}
@@ -1030,12 +1116,12 @@ export default function HomeScreen() {
           <View style={styles.suggestionIconRow}>
             <View style={[
               styles.suggestionIcon,
-              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? '#F4C8D420' : '#B8A4E820' },
+              { backgroundColor: lifeStageSuggestion.type === 'pregnancy' ? colors.habitSkincare + '20' : colors.phaseLuteal + '20' },
             ]}>
               {lifeStageSuggestion.type === 'pregnancy' ? (
-                <Baby size={22} color="#E89BA4" />
+                <Baby size={22} color={colors.phaseMenstrual} />
               ) : (
-                <Thermometer size={22} color="#B8A4E8" />
+                <Thermometer size={22} color={colors.phaseLuteal} />
               )}
             </View>
             <TouchableOpacity
@@ -1055,12 +1141,22 @@ export default function HomeScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.suggestionButtonText}>Update Life Stage</Text>
-            <ArrowRight size={14} color="#FFFFFF" />
+            <ArrowRight size={14} color={colors.white} />
           </TouchableOpacity>
         </View>
       )}
 
       {/* Daily Tips hidden — redundant with summary card's recommended focus */}
+
+      {latestCycleRecap && (
+        <CycleRecapCard
+          recap={latestCycleRecap}
+          colors={colors}
+          t={t}
+          onDismiss={dismissCycleRecap}
+          styles={styles}
+        />
+      )}
 
       {predictiveAlerts.length > 0 && (
         <View style={styles.predictiveAlertsSection}>
@@ -1114,7 +1210,7 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>{t.home.todaysHabits}</Text>
       </View>
     </View>
-  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, coachingTips, handleDismissCoachingTip, greeting, enrichedPhaseInfo, isNewUser, phaseEstimate, streakData, predictiveAlerts, handleDismissAlert]);
+  ), [lifeStagePhase, userProfile, colors, t, todaySummary, lifeStageSuggestion, dismissLifeStageSuggestion, coachingTips, handleDismissCoachingTip, greeting, enrichedPhaseInfo, isNewUser, phaseEstimate, streakData, predictiveAlerts, handleDismissAlert, latestCycleRecap, dismissCycleRecap]);
 
   const renderFooterComponent = useCallback(() => (
     <View>
@@ -1156,7 +1252,7 @@ export default function HomeScreen() {
                 accessibilityLabel="Share a tip"
                 accessibilityRole="button"
               >
-                <Send size={16} color="#FFFFFF" />
+                <Send size={16} color={colors.white} />
                 <Text style={styles.communityShareButtonText}>Share a tip</Text>
               </TouchableOpacity>
             </View>
@@ -1225,7 +1321,7 @@ export default function HomeScreen() {
                   </View>
                   <View style={styles.habitCheckbox}>
                     {habit.completed ? (
-                      <CheckCircle2 size={24} color="#8BC9A3" />
+                      <CheckCircle2 size={24} color={colors.phaseFollicular} />
                     ) : (
                       <ArrowRight size={24} color={baseColor} />
                     )}
@@ -1355,7 +1451,7 @@ export default function HomeScreen() {
                       <Text
                         style={[
                           styles.categoryButtonText,
-                          communityTipCategory === cat && { color: "#FFFFFF" },
+                          communityTipCategory === cat && { color: colors.white },
                         ]}
                       >
                         {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -1406,7 +1502,7 @@ export default function HomeScreen() {
           accessibilityLabel="Open wellness companion chat"
           accessibilityRole="button"
         >
-          <MessageCircle size={24} color="#FFFFFF" />
+          <MessageCircle size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -1492,7 +1588,7 @@ function createStyles(colors: typeof Colors.light) {
       gap: 8,
     },
     welcomeButtonText: {
-      color: "#FFFFFF",
+      color: colors.white,
       fontSize: 16,
       fontWeight: "600" as const,
     },
@@ -1596,14 +1692,14 @@ function createStyles(colors: typeof Colors.light) {
       color: colors.primary,
     },
     streakCard: {
-      backgroundColor: "#FF6B6B20",
+      backgroundColor: colors.changeWorsened + '20',
       borderRadius: 12,
       padding: 12,
       marginHorizontal: 20,
       marginTop: 16,
       marginBottom: 4,
       borderLeftWidth: 4,
-      borderLeftColor: "#FF6B6B",
+      borderLeftColor: colors.changeWorsened,
     },
     streakText: {
       fontSize: 16,
@@ -1750,7 +1846,7 @@ function createStyles(colors: typeof Colors.light) {
       alignSelf: "flex-start" as const,
     },
     suggestionButtonText: {
-      color: "#FFFFFF",
+      color: colors.white,
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1761,7 +1857,7 @@ function createStyles(colors: typeof Colors.light) {
       alignItems: "center" as const,
     },
     saveButtonText: {
-      color: "#FFFFFF",
+      color: colors.white,
       fontSize: 16,
       fontWeight: "600" as const,
     },
@@ -1899,7 +1995,7 @@ function createStyles(colors: typeof Colors.light) {
       marginBottom: 8,
     },
     communityShareButtonText: {
-      color: "#FFFFFF",
+      color: colors.white,
       fontSize: 14,
       fontWeight: "600" as const,
     },
@@ -1961,7 +2057,7 @@ function createStyles(colors: typeof Colors.light) {
       opacity: 0.5,
     },
     submitTipButtonText: {
-      color: "#FFFFFF",
+      color: colors.white,
       fontSize: 16,
       fontWeight: "600" as const,
     },
@@ -1973,7 +2069,7 @@ function createStyles(colors: typeof Colors.light) {
       padding: 16,
       marginBottom: 10,
       borderLeftWidth: 4,
-      shadowColor: '#000',
+      shadowColor: colors.black,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.06,
       shadowRadius: 6,
@@ -2013,7 +2109,7 @@ function createStyles(colors: typeof Colors.light) {
       backgroundColor: colors.primary,
       alignItems: "center" as const,
       justifyContent: "center" as const,
-      shadowColor: "#000",
+      shadowColor: colors.black,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.2,
       shadowRadius: 8,
@@ -2028,7 +2124,7 @@ function createStyles(colors: typeof Colors.light) {
       flexDirection: "row" as const,
       alignItems: "center" as const,
       gap: 12,
-      shadowColor: "#000",
+      shadowColor: colors.black,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.03,
       shadowRadius: 4,
@@ -2071,6 +2167,66 @@ function createStyles(colors: typeof Colors.light) {
     quickAccessLabel: {
       fontSize: 13,
       fontWeight: "600" as const,
+    },
+    recapCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      borderLeftWidth: 4,
+      padding: 16,
+      marginBottom: 16,
+    },
+    recapHeader: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
+      marginBottom: 4,
+    },
+    recapTitle: {
+      fontSize: 16,
+      fontWeight: "700" as const,
+    },
+    recapSubtitle: {
+      fontSize: 12,
+      marginBottom: 12,
+    },
+    recapGrid: {
+      flexDirection: "row" as const,
+      flexWrap: "wrap" as const,
+      gap: 8,
+    },
+    recapMetric: {
+      borderRadius: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      alignItems: "center" as const,
+      minWidth: 70,
+    },
+    recapMetricValue: {
+      fontSize: 18,
+      fontWeight: "700" as const,
+    },
+    recapMetricLabel: {
+      fontSize: 10,
+      fontWeight: "500" as const,
+    },
+    recapComparison: {
+      flexDirection: "row" as const,
+      flexWrap: "wrap" as const,
+      gap: 6,
+      marginTop: 10,
+    },
+    recapChangeBadge: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 4,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    recapSymptomChip: {
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
     },
   });
 }

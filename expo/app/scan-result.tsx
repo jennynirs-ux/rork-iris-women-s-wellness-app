@@ -11,17 +11,17 @@ import { CheckCircle, Calendar, ClipboardCheck } from "lucide-react-native";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Helper to determine color based on score and metric type
-const getScoreColor = (value: number, metricType: 'good-high' | 'good-low'): string => {
+const getScoreColor = (value: number, metricType: 'good-high' | 'good-low', colors: typeof Colors.light): string => {
   if (metricType === 'good-high') {
     // For energy, recovery, hydration: high is good
-    if (value >= 7) return '#8BC9A3'; // green
-    if (value >= 4) return '#F4C896'; // yellow
-    return '#E89BA4'; // red
+    if (value >= 7) return colors.scoreGood;
+    if (value >= 4) return colors.scoreModerate;
+    return colors.scoreBad;
   } else {
     // For stress, fatigue, inflammation: low is good
-    if (value <= 3) return '#8BC9A3'; // green
-    if (value <= 6) return '#F4C896'; // yellow
-    return '#E89BA4'; // red
+    if (value <= 3) return colors.scoreGood;
+    if (value <= 6) return colors.scoreModerate;
+    return colors.scoreBad;
   }
 };
 
@@ -174,7 +174,7 @@ function ScanResultScreenInner() {
 
           <Animated.View style={[styles.scoresGrid, { opacity: fadeAnim }]}>
             {scores.map((score, idx) => {
-              const color = getScoreColor(score.value, score.type);
+              const color = getScoreColor(score.value, score.type, colors);
               const interpretation = getInterpretation(score.key, score.value, t);
               return (
                 <ScoreGauge
