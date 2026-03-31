@@ -1490,7 +1490,7 @@ export default function OnboardingScreen() {
       <Text style={styles.title}>{t.onboarding?.cycleDetailsTitle || 'Your Cycle'}</Text>
       <Text style={styles.body}>{t.onboarding?.cycleDetailsSubtitle || 'Help us personalize your experience'}</Text>
 
-      <Text style={[styles.label, { marginTop: 24 }]}>{t.onboarding?.cycleRegularityLabel || 'How regular is your cycle?'}</Text>
+      <Text style={[styles.body, { marginTop: 24 }]}>{t.onboarding?.cycleRegularityLabel || 'How regular is your cycle?'}</Text>
       <View style={{ gap: 8, width: '100%', marginTop: 8 }}>
         {CYCLE_REGULARITY_OPTIONS.map((opt) => (
           <TouchableOpacity
@@ -1511,7 +1511,7 @@ export default function OnboardingScreen() {
 
       {cycleRegularity === 'regular' && (
         <View style={{ width: '100%', marginTop: 20 }}>
-          <Text style={styles.label}>{t.onboarding?.typicalLength || 'Typical cycle length'}</Text>
+          <Text style={styles.body}>{t.onboarding?.typicalLength || 'Typical cycle length'}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8 }}>
             <TouchableOpacity
               style={styles.counterButton}
@@ -1533,7 +1533,7 @@ export default function OnboardingScreen() {
         </View>
       )}
 
-      <Text style={[styles.label, { marginTop: 24 }]}>{t.onboarding?.birthControlLabel || 'Birth control'}</Text>
+      <Text style={[styles.body, { marginTop: 24 }]}>{t.onboarding?.birthControlLabel || 'Birth control'}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
         {BIRTH_CONTROL_OPTIONS.map((opt) => (
           <TouchableOpacity

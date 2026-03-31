@@ -49,7 +49,7 @@ function generateRecommendations(
   else if (energy < 5) { recs.push(r.energyLowGentle); }
   if (recovery < 5)    { recs.push(r.recoveryLowSkip); }
   if (hydration < 4)   { recs.push(r.hydrationLowDrink); }
-  if (inflammation > 6){ recs.push(r.inflammationHighAnti); }
+  if (inflammation > 6){ recs.push(r.inflammationHighFoods); }
   return recs.slice(0, 3);
 }
 
@@ -230,13 +230,13 @@ export default function QuickScanModal({ visible, onClose }: Props) {
           </TouchableOpacity>
           <Eye size={48} color={colors.primary} style={{ marginBottom: 16 }} />
           <Text style={[styles.heading, { color: colors.text }]}>
-            {t?.scan?.permissionTitle ?? 'Camera Access Needed'}
+            {t?.scan?.cameraAccessRequired ?? 'Camera Access Needed'}
           </Text>
           <Text style={[styles.body, { color: colors.textSecondary }]}>
-            {t?.scan?.permissionMessage ?? 'IRIS needs camera access to scan your eye.'}
+            {t?.scan?.cameraAccessMessage ?? 'IRIS needs camera access to scan your eye.'}
           </Text>
           <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={requestPermission}>
-            <Text style={styles.btnText}>{t?.scan?.enableCamera ?? 'Enable Camera'}</Text>
+            <Text style={styles.btnText}>{t?.scan?.grantPermission ?? 'Enable Camera'}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -270,14 +270,14 @@ export default function QuickScanModal({ visible, onClose }: Props) {
         {stage === 'preview' && (
           <View style={styles.bottomPanel}>
             <Text style={styles.instructionText}>
-              {t?.scan?.holdSteady ?? 'Position your eye in the oval'}
+              {t?.scan?.positionEyes ?? 'Position your eye in the oval'}
             </Text>
             <TouchableOpacity
               style={[styles.scanBtn, { backgroundColor: colors.primary }]}
               onPress={startCountdown}
             >
               <Eye size={22} color="#fff" />
-              <Text style={styles.scanBtnText}>{t?.scan?.scanNow ?? 'Scan Now'}</Text>
+              <Text style={styles.scanBtnText}>{t?.scan?.startScan ?? 'Scan Now'}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -286,7 +286,7 @@ export default function QuickScanModal({ visible, onClose }: Props) {
           <View style={styles.bottomPanel}>
             <Text style={styles.countdownText}>{countdown}</Text>
             <Text style={styles.instructionText}>
-              {t?.scan?.holdSteady ?? 'Hold steady…'}
+              {t?.scan?.positionEyes ?? 'Hold steady…'}
             </Text>
           </View>
         )}
@@ -297,7 +297,7 @@ export default function QuickScanModal({ visible, onClose }: Props) {
               <ActivityIndicator size="large" color={colors.primary} />
             </Animated.View>
             <Text style={styles.instructionText}>
-              {t?.scan?.analyzing ?? 'Analyzing…'}
+              {t?.scan?.scanning ?? 'Analyzing…'}
             </Text>
           </View>
         )}
@@ -306,7 +306,7 @@ export default function QuickScanModal({ visible, onClose }: Props) {
           <View style={styles.bottomPanel}>
             <CheckCircle size={48} color={colors.statusGood} />
             <Text style={[styles.instructionText, { color: colors.statusGood }]}>
-              {t?.scan?.scanComplete ?? 'Scan complete!'}
+              {t?.scanResult?.scanComplete ?? 'Scan complete!'}
             </Text>
           </View>
         )}
@@ -315,13 +315,13 @@ export default function QuickScanModal({ visible, onClose }: Props) {
           <View style={styles.bottomPanel}>
             <AlertTriangle size={40} color={colors.stressHigh} />
             <Text style={[styles.instructionText, { color: '#fff' }]}>
-              {stage === 'invalid' ? invalidReason : (t?.scan?.scanFailed ?? 'Scan failed. Try again.')}
+              {stage === 'invalid' ? invalidReason : (t?.scan?.tryAgain ?? 'Scan failed. Try again.')}
             </Text>
             <TouchableOpacity
               style={[styles.btn, { backgroundColor: colors.primary }]}
               onPress={() => { setStage('preview'); setCountdown(2); }}
             >
-              <Text style={styles.btnText}>{t?.scan?.retryButton ?? 'Try Again'}</Text>
+              <Text style={styles.btnText}>{t?.scan?.tryAgain ?? 'Try Again'}</Text>
             </TouchableOpacity>
           </View>
         )}

@@ -164,8 +164,8 @@ export default function TrainingPlanScreen() {
   const [totalElapsed, setTotalElapsed] = useState(0);
   const [timerWorkout, setTimerWorkout] = useState<Exercise[] | null>(null);
   const [showCompletion, setShowCompletion] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const elapsedRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Refs for values accessed in timer callbacks to avoid stale closures
   const currentExerciseIndexRef = useRef(currentExerciseIndex);

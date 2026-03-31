@@ -59,7 +59,7 @@ function ShareRecapContent() {
   const router = useRouter();
   const { colors } = useTheme();
   const { t } = useApp();
-  const params = useLocalSearchParams<ShareRecapParams>();
+  const params = useLocalSearchParams() as unknown as ShareRecapParams;
   const [isSharing, setIsSharing] = useState(false);
 
   // Parse route params into card data

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions, DimensionValue } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Eye, Heart, Droplets, AlertCircle, Sparkles, Brain, Zap, Battery, Moon, Flame, Users, BarChart3, TrendingUp, TrendingDown, Lightbulb, Info, Sprout, Flower2, ChevronDown, ChevronUp, Coffee, Wine, Thermometer, Minus, Baby, ArrowRight, CheckCircle, XCircle, Shield, Apple, BookOpen, Activity, BedDouble, HeartCrack, ShieldAlert, Frown } from "lucide-react-native";
 import Colors from "@/constants/colors";
@@ -755,7 +755,7 @@ export default function InsightsScreen() {
     };
   }, [trendData, colors, labelInterval, t]);
 
-  const SkeletonCard = ({ width = '100%' as string | number, height = 80 }: { width?: string | number; height?: number }) => (
+  const SkeletonCard = ({ width = '100%' as DimensionValue, height = 80 }: { width?: DimensionValue; height?: number }) => (
     <View style={[styles.skeletonCard, { width, height }]}>
       <View style={styles.skeletonShimmer} />
     </View>

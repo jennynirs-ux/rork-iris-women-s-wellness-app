@@ -9,6 +9,7 @@ import {
   Platform,
   TextInput,
   RefreshControl,
+  DimensionValue,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -1250,7 +1251,7 @@ export default function HomeScreen() {
     </View>
   ), [communityCollapsed, communityFeedData, likedTips, handleLikeCommunityTip, handleReportCommunityTip, colors, styles]);
 
-  const SkeletonCard = useCallback(({ width = '100%' as string | number, height = 80 }: { width?: string | number; height?: number }) => (
+  const SkeletonCard = useCallback(({ width = '100%' as DimensionValue, height = 80 }: { width?: DimensionValue; height?: number }) => (
     <View style={[styles.skeletonCard, { width, height }]}>
       <View style={styles.skeletonShimmer} />
     </View>

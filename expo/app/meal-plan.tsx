@@ -178,8 +178,8 @@ export default function MealPlanScreen() {
 
   const currentPhase: CyclePhase = enrichedPhaseInfo?.phase ?? "follicular";
   const phaseDay = enrichedPhaseInfo?.phaseDay ?? 1;
-  const phaseColor = PHASE_COLORS[currentPhase];
-  const PhaseIcon = PHASE_ICONS[currentPhase];
+  const phaseColor = PHASE_INFO[currentPhase].color;
+  const PhaseIcon = PHASE_INFO[currentPhase].icon;
 
   const phaseLabelKeys: Record<CyclePhase, string> = {
     menstrual: "phaseMenstrual", follicular: "phaseFollicular",
