@@ -1741,7 +1741,7 @@ function createCheckInStyles(colors: typeof Colors.light) { return StyleSheet.cr
     opacity: 0.5,
   },
   customSymptomSaveButtonText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "600" as const,
   },

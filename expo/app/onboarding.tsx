@@ -26,6 +26,7 @@ import { Language, LANGUAGES } from "@/constants/translations";
 import { getPendingReferralCode, clearPendingReferralCode } from "@/hooks/useDeepLinkReferral";
 import { trackEvent } from "@/lib/analytics";
 import logger from "@/lib/logger";
+import { trackFirstUse } from "@/lib/reviewPrompt";
 
 const LIFE_STAGE_OPTIONS: { value: LifeStage; label: string }[] = [
   { value: "regular", label: "Menstrual cycle" },
@@ -378,6 +379,7 @@ export default function OnboardingScreen() {
     });
 
     trackEvent('onboarding_completed', { lifeStage: selectedLifeStage });
+    trackFirstUse();
     router.replace("/scan" as any);
   };
 
