@@ -74,6 +74,10 @@ const INTENSITY_COLORS: Record<WorkoutIntensity, string> = {
   intense: "#E89BA4",
 };
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+// t() is created inside the component to be language-aware; see below.
+
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 // ─── Helper: parse reps string to seconds (for timed exercises) ─────────────
@@ -97,7 +101,7 @@ export default function TrainingPlanScreen() {
   const { colors } = useTheme();
   const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
 
-  const tt = trainingTranslations[language ?? 'en'] ?? trainingTranslations.en;
+  const tt = trainingTranslations[language] ?? trainingTranslations.en;
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     let value = tt[key] ?? key;
     if (params) {

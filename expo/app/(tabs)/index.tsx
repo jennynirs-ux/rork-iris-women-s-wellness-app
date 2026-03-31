@@ -77,7 +77,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import logger from "@/lib/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { calculateStreaks, StreakData } from "@/lib/gamification";
-import QuickScanModal from "@/components/QuickScanModal";
 
 const getPhaseInfo = (colors: typeof Colors.light) => ({
   menstrual: { color: colors.phaseMenstrual, icon: Moon },
@@ -568,7 +567,6 @@ export default function HomeScreen() {
   const [dismissedCoachingTips, setDismissedCoachingTips] = useState<Set<string>>(new Set());
   const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [showCommunityModal, setShowCommunityModal] = useState(false);
-  const [showQuickScan, setShowQuickScan] = useState(false);
   const [communityTipText, setCommunityTipText] = useState("");
   const [communityTipCategory, setCommunityTipCategory] = useState<"nutrition" | "exercise" | "selfcare" | "mindfulness" | "sleep">("mindfulness");
   const [communityCollapsed, setCommunityCollapsed] = useState(false);
@@ -1194,16 +1192,6 @@ export default function HomeScreen() {
             {t.home?.training || 'Training'}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.quickAccessButton, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}
-          onPress={() => setShowQuickScan(true)}
-          activeOpacity={0.7}
-        >
-          <Eye size={24} color={colors.primary} />
-          <Text style={[styles.quickAccessLabel, { color: colors.primary }]}>
-            {t.scan?.scanNow || 'Scan Now'}
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <View style={styles.habitsList}>
@@ -1506,10 +1494,6 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <QuickScanModal
-        visible={showQuickScan}
-        onClose={() => setShowQuickScan(false)}
-      />
     </SafeAreaView>
   );
 }

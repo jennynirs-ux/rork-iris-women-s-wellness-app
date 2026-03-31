@@ -38,7 +38,6 @@ import {
   Thermometer,
   Eye,
   X,
-  Watch,
   Stethoscope,
   MessageCircle,
   Brain,
@@ -59,7 +58,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { generateDoctorReport } from "@/lib/doctorReport";
 import * as Clipboard from 'expo-clipboard';
 import { calculateMilestones, getMonthlyComparison, Milestone, MonthlyComparison } from "@/lib/gamification";
-import { connectOura, disconnectOura, isOuraConnected, getOuraLastSync } from "@/lib/ouraIntegration";
 import { CONDITION_PROFILES, ConditionProfile } from "@/lib/conditionProfiles";
 import { conditionTranslations as ct } from "@/constants/conditionTranslations";
 
@@ -422,11 +420,6 @@ export default function ProfileScreen() {
     }
   }, [partnerCode]);
 
-  // Oura Ring states
-  const [ouraConnected, setOuraConnected] = useState(false);
-  const [ouraLastSync, setOuraLastSync] = useState<string | null>(null);
-  const [ouraLoading, setOuraLoading] = useState(false);
-
   // Condition profiles state
   const [selectedConditions, setSelectedConditions] = useState<ConditionProfile[]>([]);
   const [showConditionsModal, setShowConditionsModal] = useState(false);
@@ -444,19 +437,6 @@ export default function ProfileScreen() {
     loadGameification();
   }, [scans, checkIns, userProfile]);
 
-  // Load Oura connection state
-  useEffect(() => {
-    const loadOura = async () => {
-      const connected = await isOuraConnected();
-      setOuraConnected(connected);
-      if (connected) {
-        const lastSync = await getOuraLastSync();
-        setOuraLastSync(lastSync);
-      }
-    };
-    loadOura();
-  }, []);
-
   // Load condition profiles from AsyncStorage
   useEffect(() => {
     const loadConditions = async () => {
@@ -472,28 +452,6 @@ export default function ProfileScreen() {
     loadConditions();
   }, []);
 
-  const handleToggleOura = async () => {
-    setOuraLoading(true);
-    try {
-      if (ouraConnected) {
-        await disconnectOura();
-        setOuraConnected(false);
-        setOuraLastSync(null);
-      } else {
-        const success = await connectOura();
-        if (success) {
-          setOuraConnected(true);
-          setOuraLastSync(new Date().toISOString());
-        } else {
-          Alert.alert('Connection Failed', 'Could not connect to Oura Ring. Please try again.');
-        }
-      }
-    } catch (e) {
-      logger.error('[Oura] Toggle error:', e);
-    } finally {
-      setOuraLoading(false);
-    }
-  };
 
   const handleToggleCondition = async (condition: ConditionProfile) => {
     const updated = selectedConditions.includes(condition)
@@ -743,8 +701,8 @@ export default function ProfileScreen() {
                     <Brain size={20} color={colors.cognitiveWellness} />
                   </View>
                   <View style={styles.menuTextContainer}>
-                    <Text style={styles.menuText}>Brain Wellness</Text>
-                    <Text style={styles.menuSubtext}>Cognitive health and brain exercises</Text>
+                    <Text style={styles.menuText}>{t.profile.brainWellness}</Text>
+                    <Text style={styles.menuSubtext}>{t.profile.brainWellnessDescription}</Text>
                   </View>
                   <ChevronRight size={20} color={colors.textTertiary} />
                 </TouchableOpacity>
@@ -874,29 +832,6 @@ export default function ProfileScreen() {
               </TouchableOpacity>
               )}
 
-              {/* Oura Ring Integration */}
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={handleToggleOura}
-                disabled={ouraLoading}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.menuIcon, { backgroundColor: colors.ouraRingBg }]}>
-                  <Watch size={20} color={colors.ouraRingIcon} />
-                </View>
-                <View style={styles.menuTextContainer}>
-                  <Text style={styles.menuText}>Oura Ring</Text>
-                  <Text style={styles.menuSubtext}>
-                    {ouraLoading
-                      ? 'Connecting...'
-                      : ouraConnected
-                        ? `Connected${ouraLastSync ? ' \u00B7 ' + new Date(ouraLastSync).toLocaleTimeString(language === 'en' ? 'en-US' : language, { hour: '2-digit', minute: '2-digit' } as Intl.DateTimeFormatOptions) : ''}`
-                        : 'Tap to connect'}
-                  </Text>
-                </View>
-                <View style={[styles.healthStatusDot, ouraConnected && styles.healthStatusDotConnected]} />
-                <ChevronRight size={20} color={colors.textTertiary} />
-              </TouchableOpacity>
 
               {/* Health Conditions */}
               <TouchableOpacity
@@ -911,7 +846,7 @@ export default function ProfileScreen() {
                   <Text style={styles.menuText}>Health Conditions</Text>
                   <Text style={styles.menuSubtext}>
                     {selectedConditions.length === 0
-                      ? 'None selected'
+                      ? t.settings.noneSelected
                       : selectedConditions.map((c) => ct.conditions[c]?.name || c).join(', ')}
                   </Text>
                 </View>
@@ -1479,11 +1414,11 @@ export default function ProfileScreen() {
                           UTI: 'com.adobe.pdf',
                         });
                       } else {
-                        Alert.alert('Error', 'Sharing is not available on this device');
+                        Alert.alert(t.settings.error, t.settings.sharingNotAvailable);
                       }
                     } catch (e) {
                       logger.error('[Profile] Doctor report generation error:', e);
-                      Alert.alert('Error', 'Failed to generate wellness report. Please try again.');
+                      Alert.alert(t.settings.error, t.settings.generateReportError);
                     } finally {
                       setIsGeneratingReport(false);
                     }
@@ -1602,7 +1537,7 @@ export default function ProfileScreen() {
                               router.replace('/onboarding');
                             } catch (e) {
                               logger.error('[Profile] Delete error:', e);
-                              Alert.alert(t.settings.error, 'Failed to delete data. Please try again.');
+                              Alert.alert(t.settings.error, t.settings.deleteDataError);
                             }
                           }
                         }
@@ -2295,7 +2230,7 @@ export default function ProfileScreen() {
                   activeOpacity={0.8}
                 >
                   <Text style={{ fontSize: 16, fontWeight: '700' as const, color: '#FFFFFF' }}>
-                    {isSyncing ? 'Syncing...' : 'Back Up Now'}
+                    {isSyncing ? t.settings.syncingData : t.settings.backUpNow}
                   </Text>
                 </TouchableOpacity>
 
@@ -2319,14 +2254,14 @@ export default function ProfileScreen() {
                       if (success) {
                         setRestoreId('');
                         setShowSyncModal(false);
-                        Alert.alert('Restored', 'Your data has been restored. Please restart the app to see changes.');
+                        Alert.alert(t.settings.dataRestoredTitle, t.settings.dataRestoredMessage);
                       }
                     }}
                     disabled={isSyncing || !restoreId.trim()}
                     activeOpacity={0.8}
                   >
                     <Text style={{ fontSize: 15, fontWeight: '600' as const, color: colors.primary }}>
-                      {isSyncing ? 'Restoring...' : 'Restore Data'}
+                      {isSyncing ? t.settings.restoringData : t.settings.restoreData}
                     </Text>
                   </TouchableOpacity>
                 </View>

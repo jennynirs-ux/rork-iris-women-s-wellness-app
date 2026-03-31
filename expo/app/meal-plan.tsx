@@ -55,19 +55,7 @@ const MEAL_ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?:
   Beef: Zap,            // Beef mapped to Zap
 };
 
-const PHASE_COLORS: Record<CyclePhase, string> = {
-  menstrual: "#E89BA4",
-  follicular: "#8BC9A3",
-  ovulation: "#F4C896",
-  luteal: "#B8A4E8",
-};
-
-const PHASE_ICONS: Record<CyclePhase, React.ComponentType<{ size?: number; color?: string }>> = {
-  menstrual: Moon,
-  follicular: Sprout,
-  ovulation: Sparkles,
-  luteal: Flower2,
-};
+// PHASE_INFO moved inside component to be language-aware
 
 // Nutrient name → translation key mapping
 const NUTRIENT_KEY_MAP: Record<string, string> = {
@@ -95,7 +83,6 @@ const AVOID_KEY_MAP: Record<string, string> = {
   "Raw fish & sushi": "avoid.rawFishSushi", "Soft unpasteurized cheese": "avoid.softCheese",
   "Excessive caffeine": "avoid.excessiveCaffeine", "Processed foods": "avoid.processedFoods",
   "Spicy food (may trigger hot flashes)": "avoid.spicyFood", "Processed food": "avoid.processedFood",
-  "Excess caffeine": "avoid.excessCaffeine",
 };
 
 const MEAL_TYPE_ICONS: Record<string, React.ComponentType<{ size?: number; color?: string }>> = {
@@ -114,6 +101,8 @@ const MEAL_TYPE_COLORS: Record<string, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// getMealTypeLabel and getMealTranslation moved inside component to be language-aware
+
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 export default function MealPlanScreen() {
@@ -121,7 +110,7 @@ export default function MealPlanScreen() {
   const { colors } = useTheme();
   const { enrichedPhaseInfo, latestScan, todayCheckIn, userProfile, healthData, language } = useApp();
 
-  const mt = mealTranslations[language ?? 'en'] ?? mealTranslations.en;
+  const mt = mealTranslations[language] ?? mealTranslations.en;
 
   const t = useCallback((key: string): string => {
     return mt[key] ?? key;
@@ -137,8 +126,24 @@ export default function MealPlanScreen() {
     return key ? (mt[key] ?? item) : item;
   }, [mt]);
 
+  const PHASE_INFO: Record<CyclePhase, { color: string; icon: React.ComponentType<{ size?: number; color?: string }>; label: string; description: string }> = useMemo(() => ({
+    menstrual: { color: colors.phaseMenstrual, icon: Moon, label: mt.phaseMenstrual, description: mt.phaseDescMenstrual },
+    follicular: { color: colors.phaseFollicular, icon: Sprout, label: mt.phaseFollicular, description: mt.phaseDescFollicular },
+    ovulation: { color: colors.phaseOvulation, icon: Sparkles, label: mt.phaseOvulation, description: mt.phaseDescOvulation },
+    luteal: { color: colors.phaseLuteal, icon: Flower2, label: mt.phaseLuteal, description: mt.phaseDescLuteal },
+  }), [mt, colors]);
+
   const getMealTypeLabel = useCallback((type: MealSuggestion["mealType"]): string => {
-    return mt[type] ?? type;
+    switch (type) {
+      case "breakfast": return mt.breakfast;
+      case "lunch": return mt.lunch;
+      case "dinner": return mt.dinner;
+      case "snack": return mt.snack;
+    }
+  }, [mt]);
+
+  const getMealTranslation = useCallback((key: string): string => {
+    return (mt as Record<string, string>)[key] || key;
   }, [mt]);
 
   const [waterCount, setWaterCount] = useState(0);
