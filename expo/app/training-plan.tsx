@@ -41,6 +41,7 @@ import { trainingTranslations } from "@/constants/trainingTranslations";
 import ExerciseSketch from "@/components/ExerciseSketch";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
+import { maybeRequestReview } from "@/lib/reviewPrompt";
 
 // ─── Icon Map ────────────────────────────────────────────────────────────────
 
@@ -233,6 +234,8 @@ export default function TrainingPlanScreen() {
     await AsyncStorage.setItem(`training_time_${todayStr}`, String(totalElapsed));
     setWorkoutCompleted(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Positive moment — maybe ask for a review
+    maybeRequestReview();
   }, [totalElapsed]);
 
   const advanceToNext = useCallback(() => {
