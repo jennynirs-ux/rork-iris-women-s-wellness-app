@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { AppState, Platform } from "react-native";
 import { predictPhase, updatePersonalBaseline, updatePhaseBaselines, shouldAskAdaptiveQuestion, findEffectiveCycleStart, computeEnrichedPhaseInfo, getPhaseForCycleDay } from "@/lib/phasePredictor";
-import { scheduleMenstrualPhaseNotification } from "@/lib/notifications";
+import { scheduleMenstrualPhaseNotification, scheduleSqueezeDayReminder } from "@/lib/notifications";
 import { Language, getTranslation } from "@/constants/translations";
 import { getHealthKitAvailability, requestHealthKitPermissions, fetchAllHealthData, saveHealthConnection, loadHealthConnection, saveHealthData, loadHealthData } from "@/lib/healthKit";
 import { trackEvent } from "@/lib/analytics";
@@ -744,6 +744,15 @@ export const [AppContext, useApp] = createContextHook(() => {
       });
     }
   }, [userProfile.hasCompletedOnboarding, userProfile.lastPeriodDate, userProfile.cycleLength]);
+
+  // Schedule Squeeze Day (monthly breast self-exam) reminder on app load
+  useEffect(() => {
+    if (userProfile.hasCompletedOnboarding) {
+      scheduleSqueezeDayReminder().catch((err) => {
+        logger.log('Failed to schedule Squeeze Day reminder on app load:', err);
+      });
+    }
+  }, [userProfile.hasCompletedOnboarding]);
 
   const userProfileRef = useRef(userProfile);
   userProfileRef.current = userProfile;

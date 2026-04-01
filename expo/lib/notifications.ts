@@ -12,11 +12,13 @@ const STORAGE_KEY_CHECKIN_HOUR = 'iris_checkin_reminder_hour';
 const STORAGE_KEY_SCAN_ENABLED = 'iris_scan_reminder_enabled';
 const STORAGE_KEY_SCAN_DAY = 'iris_scan_reminder_day';
 const STORAGE_KEY_HYDRATION_ENABLED = 'iris_hydration_reminder_enabled';
+const STORAGE_KEY_SQUEEZE_DAY_ENABLED = 'iris_squeeze_day_enabled';
 
 // Notification type identifiers
 const NOTIFICATION_CHECKIN_REMINDER = 'checkin_reminder';
 const NOTIFICATION_SCAN_REMINDER = 'scan_reminder';
 const NOTIFICATION_HYDRATION_REMINDER = 'hydration_reminder';
+const NOTIFICATION_SQUEEZE_DAY = 'squeeze_day_reminder';
 
 try {
   Notifications.setNotificationHandler({
@@ -411,5 +413,75 @@ export async function cancelHydrationReminders(): Promise<void> {
 
   for (const reminder of hydrationReminders) {
     await Notifications.cancelScheduledNotificationAsync(reminder.identifier);
+  }
+}
+
+// ─── Squeeze Day (Monthly Breast Self-Exam) Reminder ────────────────────────
+
+export async function isSqueezeDayEnabled(): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    return false;
+  }
+  const stored = await AsyncStorage.getItem(STORAGE_KEY_SQUEEZE_DAY_ENABLED);
+  return stored === 'true';
+}
+
+export async function setSqueezeDayEnabled(enabled: boolean): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEY_SQUEEZE_DAY_ENABLED, enabled.toString());
+}
+
+export async function scheduleSqueezeDayReminder(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
+  const enabled = await isSqueezeDayEnabled();
+  if (!enabled) {
+    return;
+  }
+
+  const hasPermission = await requestNotificationPermissions();
+  if (!hasPermission) {
+    return;
+  }
+
+  // Cancel any existing squeeze day reminder
+  await cancelSqueezeDayReminder();
+
+  try {
+    // Schedule for the 1st of every month at 9:00 AM
+    await Notifications.scheduleNotificationAsync({
+      identifier: NOTIFICATION_SQUEEZE_DAY,
+      content: {
+        title: 'Squeeze Day \uD83C\uDF80',
+        body: 'Monthly reminder: Take a moment to do your breast self-exam. Early detection saves lives.',
+        data: { type: 'squeeze_day_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.MONTHLY,
+        day: 1,
+        hour: 9,
+        minute: 0,
+      },
+    });
+
+    logger.log('[Notifications] Scheduled monthly Squeeze Day reminder for the 1st at 9:00 AM');
+  } catch (err) {
+    logger.error('[Notifications] Failed to schedule Squeeze Day reminder:', err);
+  }
+}
+
+export async function cancelSqueezeDayReminder(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
+  const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+  const existing = scheduledNotifications.find(
+    (n) => n.identifier === NOTIFICATION_SQUEEZE_DAY
+  );
+
+  if (existing) {
+    await Notifications.cancelScheduledNotificationAsync(NOTIFICATION_SQUEEZE_DAY);
   }
 }

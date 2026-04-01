@@ -31,6 +31,10 @@ import {
   setHydrationReminderEnabled,
   scheduleHydrationReminders,
   cancelHydrationReminders,
+  isSqueezeDayEnabled,
+  setSqueezeDayEnabled,
+  scheduleSqueezeDayReminder,
+  cancelSqueezeDayReminder,
 } from '@/lib/notifications';
 import logger from '@/lib/logger';
 
@@ -45,6 +49,7 @@ export default function NotificationSettingsScreen() {
   const [scanEnabled, setScanEnabled] = useState(false);
   const [scanDay, setScanDay] = useState(0);
   const [hydrationEnabled, setHydrationEnabled] = useState(false);
+  const [squeezeDayEnabled, setSqueezeDayEnabledState] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -68,12 +73,13 @@ export default function NotificationSettingsScreen() {
   const loadSettings = async () => {
     try {
       setIsLoading(true);
-      const [checkIn, checkInH, scan, scanD, hydration] = await Promise.all([
+      const [checkIn, checkInH, scan, scanD, hydration, squeezeDay] = await Promise.all([
         isCheckInReminderEnabled(),
         getCheckInReminderHour(),
         isScanReminderEnabled(),
         getScanReminderDay(),
         isHydrationReminderEnabled(),
+        isSqueezeDayEnabled(),
       ]);
 
       setCheckInEnabled(checkIn);
@@ -81,6 +87,7 @@ export default function NotificationSettingsScreen() {
       setScanEnabled(scan);
       setScanDay(scanD);
       setHydrationEnabled(hydration);
+      setSqueezeDayEnabledState(squeezeDay);
     } catch (error) {
       logger.log('[NotificationSettings] Error loading settings:', error);
       Alert.alert('Error', t.profile.notificationErrorMessage);
@@ -213,6 +220,38 @@ export default function NotificationSettingsScreen() {
     }
   };
 
+  const handleSqueezeDayToggle = async (value: boolean) => {
+    try {
+      if (Platform.OS === 'web') {
+        Alert.alert('Info', 'Notifications are not available on web');
+        return;
+      }
+
+      if (value) {
+        const hasPermission = await requestNotificationPermissions();
+        if (!hasPermission) {
+          Alert.alert('Error', t.profile.enableNotificationsMessage);
+          return;
+        }
+      }
+
+      setSqueezeDayEnabledState(value);
+      await setSqueezeDayEnabled(value);
+
+      if (value) {
+        await scheduleSqueezeDayReminder();
+      } else {
+        await cancelSqueezeDayReminder();
+      }
+
+      logger.log(`[NotificationSettings] Squeeze Day reminder ${value ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      logger.log('[NotificationSettings] Error toggling Squeeze Day reminder:', error);
+      Alert.alert('Error', t.profile.notificationErrorMessage);
+      setSqueezeDayEnabledState(!value);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -338,7 +377,7 @@ export default function NotificationSettingsScreen() {
         </View>
 
         {/* Hydration Reminder Section */}
-        <View style={styles.section}>
+        <View style={[styles.section, { borderBottomColor: colors.border }]}>
           <Text style={styles.sectionTitle}>{t.notifications.hydrationReminder}</Text>
           <Text style={styles.sectionDescription}>{t.notifications.hydrationReminderDescription}</Text>
 
@@ -355,6 +394,36 @@ export default function NotificationSettingsScreen() {
               ios_backgroundColor={colors.border}
             />
           </View>
+        </View>
+
+        {/* Squeeze Day — Monthly Breast Self-Exam Reminder */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.notifications?.squeezeDayTitle || 'Squeeze Day'}</Text>
+          <Text style={styles.sectionDescription}>
+            {t.notifications?.squeezeDayDescription || 'Get a monthly reminder on the 1st to do your breast self-exam. Early detection saves lives.'}
+          </Text>
+
+          <View style={styles.settingRow}>
+            <View style={styles.settingLabel}>
+              <Text style={styles.settingText}>{t.notifications.enableNotifications}</Text>
+            </View>
+            <Switch
+              value={squeezeDayEnabled}
+              onValueChange={handleSqueezeDayToggle}
+              disabled={isLoading}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={squeezeDayEnabled ? colors.primary : colors.surface}
+              ios_backgroundColor={colors.border}
+            />
+          </View>
+
+          {squeezeDayEnabled && (
+            <View style={{ marginTop: 12, padding: 12, backgroundColor: colors.primaryLight + '22', borderRadius: 10 }}>
+              <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
+                {t.notifications?.squeezeDayInfo || 'You\u2019ll receive a reminder on the 1st of every month at 9:00 AM.'}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
