@@ -53,11 +53,12 @@ function calculateCyclePhase(lastPeriodDate: string, cycleLength: number, date: 
   const lastPeriod = new Date(lastPeriodDate);
   const daysSinceLastPeriod = Math.floor((date.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
   const cycleDay = daysSinceLastPeriod + 1;
-  // If the user is past their expected period start (overdue) and no new period
-  // has been logged, stay in luteal instead of letting modulo wrap to menstrual.
-  // Only applies to "today or future" — past dates still use modulo for history view.
-  const isTodayOrFuture = date.getTime() >= new Date().setHours(0, 0, 0, 0);
-  if (isTodayOrFuture && cycleDay > cycleLength) {
+  // Overdue guard: any date beyond the expected cycle length stays in luteal
+  // until a new period is actually logged (which moves effectiveCycleStart).
+  // This prevents the grid from rendering "predicted menstrual" days as red
+  // when the user hasn't bled. Negative cycleDay (dates before lastPeriodDate)
+  // still uses modulo for true history view.
+  if (cycleDay > cycleLength) {
     return 'luteal';
   }
   return getPhaseForCycleDay(cycleDay, cycleLength);
