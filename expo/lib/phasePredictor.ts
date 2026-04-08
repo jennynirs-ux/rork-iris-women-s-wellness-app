@@ -414,7 +414,9 @@ function getBleedingEvidence(bleedingLevel: BleedingLevel): PhaseProbabilities {
 function getSymptomEvidence(symptoms: string[]): PhaseProbabilities {
   const menstrualSymptoms = ["Cramps", "Back Pain", "Headache"];
   const ovulationSymptoms = ["Breast Tenderness"];
-  const lutealSymptoms = ["Bloating", "Mood Swings", "Acne", "Breast Tenderness"];
+  // Sugar Cravings gets double weight — it's one of the most specific late-luteal
+  // signals (serotonin dip + insulin sensitivity drop) and rarely appears in other phases.
+  const lutealSymptoms = ["Bloating", "Mood Swings", "Acne", "Breast Tenderness", "Sugar Cravings", "Sugar Cravings"];
 
   let menstrualScore = 0;
   let ovulationScore = 0;

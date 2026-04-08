@@ -39,6 +39,7 @@ const SYMPTOM_TRANSLATION_MAP: Record<string, string> = {
   "Irregular Bleeding": "irregularBleeding",
   "Missed Periods": "missedPeriods",
   "Prolonged Bleeding": "prolongedBleeding",
+  "Sugar Cravings": "sugarCravings",
 };
 
 export function translateSymptom(symptom: string, symptoms: Record<string, string>): string {

@@ -1136,6 +1136,7 @@ type Translations = {
     irregularBleeding: string;
     missedPeriods: string;
     prolongedBleeding: string;
+    sugarCravings: string;
   };
   referral: {
     title: string;
@@ -2291,7 +2292,7 @@ const en: Translations = {
     ovulationImprove3: 'Maintain balanced nutrition to sustain energy peaks',
     ovulationImprove4: 'Stay well-hydrated as metabolism is elevated',
     ovulationImprove5: 'This is your power window - use it strategically',
-    lutealDescription: 'Energy may shift — listen to your body as you approach your period.',
+    lutealDescription: 'Energy may shift and sugar cravings are common — listen to your body as you approach your period.',
     lutealExpect1: 'Energy levels naturally decrease in the second half',
     lutealExpect2: 'Increased emotional sensitivity is normal',
     lutealExpect3: 'You may experience PMS symptoms (mood changes, cravings)',
@@ -2430,6 +2431,7 @@ const en: Translations = {
     irregularBleeding: 'Irregular Bleeding',
     missedPeriods: 'Missed Periods',
     prolongedBleeding: 'Prolonged Bleeding',
+    sugarCravings: 'Sugar Cravings',
   },
   referral: {
     title: 'Share & Earn',
@@ -3651,7 +3653,7 @@ const sv: Translations = {
     ovulationImprove3: 'Upprätthåll balanserad näring för att upprätthålla energitoppar',
     ovulationImprove4: 'Håll dig välhydrerad då metabolism är förhöjd',
     ovulationImprove5: 'Detta är ditt kraftfönster - använd det strategiskt',
-    lutealDescription: 'Energin kan skifta — lyssna på din kropp när du närmar dig din mens.',
+    lutealDescription: 'Energin kan skifta och sötsug är vanligt — lyssna på din kropp när du närmar dig din mens.',
     lutealExpect1: 'Energinivåerna minskar naturligt under andra hälften',
     lutealExpect2: 'Ökad emotionell känslighet är normalt',
     lutealExpect3: 'Du kan uppleva PMS-symtom (humörsvängningar, sug)',
@@ -3790,6 +3792,7 @@ const sv: Translations = {
     irregularBleeding: 'Oregelbunden blödning',
     missedPeriods: 'Uteblivna menstruationer',
     prolongedBleeding: 'Förlängd blödning',
+    sugarCravings: 'Sötsug',
   },
   referral: {
     title: 'Dela & Tjäna',
@@ -5138,6 +5141,7 @@ const de: Translations = {
     irregularBleeding: 'Unregelmäßige Blutung',
     missedPeriods: 'Ausgebliebene Perioden',
     prolongedBleeding: 'Verlängerte Blutung',
+    sugarCravings: 'Heißhunger auf Süßes',
   },
   referral: {
     title: 'Teilen & Verdienen',
@@ -6486,6 +6490,7 @@ const fr: Translations = {
     irregularBleeding: 'Saignement irrégulier',
     missedPeriods: 'Règles manquées',
     prolongedBleeding: 'Saignement prolongé',
+    sugarCravings: 'Envies de sucre',
   },
   referral: {
     title: 'Partager & Gagner',
@@ -7834,6 +7839,7 @@ const es: Translations = {
     irregularBleeding: 'Sangrado irregular',
     missedPeriods: 'Períodos perdidos',
     prolongedBleeding: 'Sangrado prolongado',
+    sugarCravings: 'Antojos de dulce',
   },
   referral: {
     title: 'Compartir y Ganar',
@@ -9182,6 +9188,7 @@ const it: Translations = {
     irregularBleeding: 'Sanguinamento irregolare',
     missedPeriods: 'Periodi mancati',
     prolongedBleeding: 'Sanguinamento prolungato',
+    sugarCravings: 'Voglia di dolci',
   },
   referral: {
     title: 'Condividi e Guadagna',
@@ -10530,6 +10537,7 @@ const nl: Translations = {
     irregularBleeding: 'Onregelmatige bloeding',
     missedPeriods: 'Gemiste menstruatie',
     prolongedBleeding: 'Langdurige bloeding',
+    sugarCravings: 'Zin in zoet',
   },
   referral: {
     title: 'Delen & Verdienen',
@@ -11878,6 +11886,7 @@ const pl: Translations = {
     irregularBleeding: 'Nieregularne krwawienie',
     missedPeriods: 'Brak okresu',
     prolongedBleeding: 'Przedłużone krwawienie',
+    sugarCravings: 'Ochota na słodycze',
   },
   referral: {
     title: 'Udostępnij i Zarabiaj',
@@ -13226,6 +13235,7 @@ const pt: Translations = {
     irregularBleeding: 'Sangramento irregular',
     missedPeriods: 'Períodos perdidos',
     prolongedBleeding: 'Sangramento prolongado',
+    sugarCravings: 'Vontade de doce',
   },
   referral: {
     title: 'Compartilhar e Ganhar',
