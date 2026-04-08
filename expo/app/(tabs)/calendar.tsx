@@ -52,8 +52,14 @@ type LifeStagePhaseKey = 'trimester1' | 'trimester2' | 'trimester3' | 'postpartu
 function calculateCyclePhase(lastPeriodDate: string, cycleLength: number, date: Date): CyclePhase {
   const lastPeriod = new Date(lastPeriodDate);
   const daysSinceLastPeriod = Math.floor((date.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
-  // Don't clamp to 1 — let getPhaseForCycleDay handle negative days via modulo
   const cycleDay = daysSinceLastPeriod + 1;
+  // If the user is past their expected period start (overdue) and no new period
+  // has been logged, stay in luteal instead of letting modulo wrap to menstrual.
+  // Only applies to "today or future" — past dates still use modulo for history view.
+  const isTodayOrFuture = date.getTime() >= new Date().setHours(0, 0, 0, 0);
+  if (isTodayOrFuture && cycleDay > cycleLength) {
+    return 'luteal';
+  }
   return getPhaseForCycleDay(cycleDay, cycleLength);
 }
 

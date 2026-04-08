@@ -715,15 +715,16 @@ export const [AppContext, useApp] = createContextHook(() => {
   }, [profileWithEffectiveStart, checkIns, scans, cycleHistory, baseline, phaseBaselines, previousPhase, healthData]);
 
   const currentPhase = useMemo(() => {
-    // Use calendar-math phase to stay consistent with the Calendar tab.
-    // The Bayesian phaseEstimate.mostLikely is still available for
-    // confidence scoring and reasoning text.
+    // Use calendar-math phase to stay consistent with the Home tab.
+    // When the user is overdue (no logged bleeding past expected period start),
+    // stay in luteal instead of wrapping to menstrual via modulo.
     const cycleLength = profileWithEffectiveStart.cycleLength || 28;
     const start = profileWithEffectiveStart.lastPeriodDate;
     if (!start) return phaseEstimate.mostLikely;
     const daysSince = Math.max(1, Math.floor(
       (Date.now() - new Date(start).getTime()) / (1000 * 60 * 60 * 24)
     ) + 1);
+    if (daysSince > cycleLength) return 'luteal' as CyclePhase;
     return getPhaseForCycleDay(daysSince, cycleLength);
   }, [profileWithEffectiveStart, phaseEstimate]);
 
@@ -814,6 +815,17 @@ export const [AppContext, useApp] = createContextHook(() => {
     let pregnancyScore = 0;
     let periScore = 0;
 
+    // Circuit breaker: if the user is actively bleeding (medium/heavy in last 7 days),
+    // suppress the pregnancy suggestion entirely — menstruation and pregnancy symptoms
+    // overlap heavily (fatigue, bloating, breast tenderness, mood swings).
+    const last7CheckIns = recentCheckIns.slice(0, 7);
+    const activelyBleeding = last7CheckIns.some(
+      (ci) => ci.bleedingLevel === 'medium' || ci.bleedingLevel === 'heavy'
+    );
+    const anyBleedingRecently = last7CheckIns.some(
+      (ci) => ci.bleedingLevel && ci.bleedingLevel !== 'none'
+    );
+
     if (hasEnoughCheckIns) {
       pregnancyScore = calculatePregnancySymptomScore(recentCheckIns);
       periScore = calculatePeriSymptomScore(recentCheckIns);
@@ -827,7 +839,9 @@ export const [AppContext, useApp] = createContextHook(() => {
     const lastPeriod = new Date(userProfile.lastPeriodDate);
     const daysSincePeriod = Math.floor((now - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
     const missedPeriod = daysSincePeriod > (userProfile.cycleLength || 28) + 7;
-    if (missedPeriod) pregnancyScore += 3;
+    // Don't count "missed period" if the user has logged any bleeding recently —
+    // that likely means lastPeriodDate is stale, not that a period was actually missed.
+    if (missedPeriod && !anyBleedingRecently) pregnancyScore += 3;
 
     if (hasEnoughScans) {
       const { avgFatigue, avgStress, avgInflammation, avgRecovery, avgEnergy, highFatigueCount, highInflammationCount, lowEnergyCount } = calculateScanAverages(recentScans);
@@ -883,17 +897,25 @@ export const [AppContext, useApp] = createContextHook(() => {
 
     logger.log('[LifeStage] Final scores:', { pregnancyScore, periScore, age, hasEnoughCheckIns, hasEnoughScans });
 
-    const pregnancyThreshold = 5;
+    // Raised from 5 → 6: pregnancy symptom list (fatigue, bloating, breast tenderness,
+    // mood swings, nausea) overlaps almost entirely with PMS.
+    const pregnancyThreshold = 6;
     const periThreshold = 6;
 
-    if (pregnancyScore >= pregnancyThreshold && dismissedSuggestion !== 'pregnancy') {
+    if (
+      pregnancyScore >= pregnancyThreshold &&
+      !activelyBleeding &&
+      dismissedSuggestion !== 'pregnancy'
+    ) {
       return {
         type: 'pregnancy',
         message: 'Based on your recent check-ins and scan patterns, could it be that you are pregnant? You can update your life stage in your profile.',
       };
     }
 
-    if (periScore >= periThreshold && dismissedSuggestion !== 'perimenopause') {
+    // Age floor: perimenopause typically begins in the mid-30s at the earliest.
+    // Don't suggest it for users under 35 regardless of symptom score.
+    if (periScore >= periThreshold && age >= 35 && dismissedSuggestion !== 'perimenopause') {
       return {
         type: 'perimenopause',
         message: 'Your recent symptoms and scan data may suggest perimenopause. Would you like to update your life stage for more tailored insights?',

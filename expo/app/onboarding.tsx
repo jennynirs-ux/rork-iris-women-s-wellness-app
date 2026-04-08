@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, X, Shield } from "lucide-react-native";
+import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, Shield } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -27,6 +27,7 @@ import { getPendingReferralCode, clearPendingReferralCode } from "@/hooks/useDee
 import { trackEvent } from "@/lib/analytics";
 import logger from "@/lib/logger";
 import { trackFirstUse } from "@/lib/reviewPrompt";
+import QuickScanModal from "@/components/QuickScanModal";
 
 const LIFE_STAGE_OPTIONS: { value: LifeStage; label: string }[] = [
   { value: "regular", label: "Menstrual cycle" },
@@ -380,7 +381,11 @@ export default function OnboardingScreen() {
 
     trackEvent('onboarding_completed', { lifeStage: selectedLifeStage });
     trackFirstUse();
-    router.replace("/scan" as any);
+    // Small delay to ensure hasCompletedOnboarding state propagates
+    // before OnboardingGate checks it on the new route
+    setTimeout(() => {
+      router.replace("/(tabs)" as any);
+    }, 150);
   };
 
   const renderStep0 = () => (
@@ -572,7 +577,7 @@ export default function OnboardingScreen() {
         <Text style={styles.scanButtonText}>{t.onboarding.startScan || "Start Scan"}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => setCurrentStep(currentStep + 1)}>
+      <TouchableOpacity onPress={handleComplete} disabled={!canComplete}>
         <Text style={styles.skipScanLink}>{t.onboarding.skipScan || "Skip for now"}</Text>
       </TouchableOpacity>
     </View>
@@ -1636,25 +1641,23 @@ export default function OnboardingScreen() {
           {currentStep === 0 && renderStep0()}
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-          {currentStep === 4 && renderStep4()}
-          {currentStep === 5 && renderStep5()}
-          {currentStep === 6 && renderStep6()}
+          {currentStep === 3 && renderStep4()}
+          {currentStep === 4 && renderStep5()}
+          {currentStep === 5 && renderStep6()}
+          {currentStep === 6 && renderStep3()}
         </ScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              currentStep === LAST_STEP && !canComplete && styles.primaryButtonDisabled,
-            ]}
-            onPress={currentStep === LAST_STEP ? handleComplete : handleContinue}
-            disabled={currentStep === LAST_STEP && !canComplete}
-          >
-            <Text style={styles.primaryButtonText}>
-              {currentStep === LAST_STEP ? t.onboarding.complete : t.onboarding.continue}
-            </Text>
-          </TouchableOpacity>
+          {currentStep !== LAST_STEP && (
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleContinue}
+            >
+              <Text style={styles.primaryButtonText}>
+                {t.onboarding.continue}
+              </Text>
+            </TouchableOpacity>
+          )}
           {currentStep === LAST_STEP && (
             <View style={styles.legalLinksRow}>
               <TouchableOpacity
@@ -1742,78 +1745,14 @@ export default function OnboardingScreen() {
         </View>
       </Modal>
 
-      <Modal
+      <QuickScanModal
         visible={showScanModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowScanModal(false)}
-      >
-        <SafeAreaView style={styles.scanModalContainer}>
-          <View style={styles.scanModalHeader}>
-            <TouchableOpacity
-              onPress={() => setShowScanModal(false)}
-              style={styles.scanModalCloseButton}
-            >
-              <X size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={styles.scanModalTitle}>{t.onboarding.scanNow || "Iris Scan"}</Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <ScrollView
-            style={styles.scanModalScroll}
-            contentContainerStyle={styles.scanModalContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.scanModalIconContainer}>
-              <Eye size={64} color={colors.primary} strokeWidth={1.5} />
-            </View>
-            <Text style={styles.scanModalBodyTitle}>{t.onboarding.readyToScan || "Ready to scan?"}</Text>
-            <Text style={styles.scanModalBodyText}>
-              {t.onboarding.scanInstructions || "Look directly at the camera and let us capture your eye. Make sure you have good lighting."}
-            </Text>
-
-            <View style={styles.scanTipsContainer}>
-              <View style={styles.scanTipItem}>
-                <View style={styles.scanTipIcon}>
-                  <Text style={styles.scanTipNumber}>1</Text>
-                </View>
-                <Text style={styles.scanTipText}>{t.onboarding.scanTip1 || "Find good lighting"}</Text>
-              </View>
-              <View style={styles.scanTipItem}>
-                <View style={styles.scanTipIcon}>
-                  <Text style={styles.scanTipNumber}>2</Text>
-                </View>
-                <Text style={styles.scanTipText}>{t.onboarding.scanTip2 || "Keep your face centered"}</Text>
-              </View>
-              <View style={styles.scanTipItem}>
-                <View style={styles.scanTipIcon}>
-                  <Text style={styles.scanTipNumber}>3</Text>
-                </View>
-                <Text style={styles.scanTipText}>{t.onboarding.scanTip3 || "Hold steady for analysis"}</Text>
-              </View>
-            </View>
-          </ScrollView>
-
-          <View style={styles.scanModalFooter}>
-            <TouchableOpacity
-              style={styles.scanModalButton}
-              onPress={() => {
-                setShowScanModal(false);
-                router.push("/scan" as any);
-              }}
-            >
-              <Text style={styles.scanModalButtonText}>{t.onboarding.startScanNow || "Start Scan"}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.scanModalCancelButton}
-              onPress={() => setShowScanModal(false)}
-            >
-              <Text style={styles.scanModalCancelButtonText}>{t.common.cancel || "Cancel"}</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </Modal>
+        skipNavigation
+        onClose={() => {
+          setShowScanModal(false);
+          if (canComplete) handleComplete();
+        }}
+      />
     </SafeAreaView>
   );
 }

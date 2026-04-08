@@ -34,6 +34,8 @@ type Stage = 'preview' | 'countdown' | 'analyzing' | 'success' | 'failed' | 'inv
 interface Props {
   visible: boolean;
   onClose: () => void;
+  /** When true, skip post-scan navigation (e.g. during onboarding) */
+  skipNavigation?: boolean;
 }
 
 function generateRecommendations(
@@ -53,7 +55,7 @@ function generateRecommendations(
   return recs.slice(0, 3);
 }
 
-export default function QuickScanModal({ visible, onClose }: Props) {
+export default function QuickScanModal({ visible, onClose, skipNavigation = false }: Props) {
   const { colors } = useTheme();
   const { addScan, todayCheckIn, currentPhase, t } = useApp();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -199,14 +201,16 @@ export default function QuickScanModal({ visible, onClose }: Props) {
         if (shouldPrompt) setTimeout(() => showReviewPrompt(), 2000);
       });
 
-      // After brief success flash, close modal and route
+      // After brief success flash, close modal and optionally route
       setTimeout(() => {
         if (!isMountedRef.current) return;
         onClose();
-        if (!todayCheckIn) {
-          router.replace('/check-in' as any);
-        } else {
-          router.replace('/(tabs)/insights' as any);
+        if (!skipNavigation) {
+          if (!todayCheckIn) {
+            router.replace('/check-in' as any);
+          } else {
+            router.replace('/(tabs)/insights' as any);
+          }
         }
       }, 800);
 
@@ -217,7 +221,7 @@ export default function QuickScanModal({ visible, onClose }: Props) {
     } finally {
       isProcessingRef.current = false;
     }
-  }, [currentPhase, todayCheckIn, addScan, onClose, t]);
+  }, [currentPhase, todayCheckIn, addScan, onClose, t, skipNavigation]);
 
   // ── Permission not granted ────────────────────────────────────────────────
 
