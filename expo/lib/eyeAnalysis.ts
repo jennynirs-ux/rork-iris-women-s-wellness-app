@@ -1035,11 +1035,12 @@ export function computeWellnessScores(
 
   const energyScore = clamp(
     Math.round(
-      eyeBrightness * 0.35 +
-      eyeOpenness * 10 * 0.25 +
-      (10 - underEyeDarkness * 10) * 0.15 +
+      eyeBrightness * 0.25 +
+      eyeOpenness * 10 * 0.15 +
+      (10 - underEyeDarkness * 10) * 0.10 +
       (10 - pupilDarkRatio * 10) * 0.05 +
-      checkInEnergy * 0.20
+      checkInEnergy * 0.40 +
+      checkInSleep * 0.05
     ),
     1, 10,
   );

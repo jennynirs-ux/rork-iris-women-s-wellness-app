@@ -1140,7 +1140,7 @@ export default function InsightsScreen() {
               </View>
 
               <View style={styles.chartContainer}>
-                <Text style={styles.chartTitle}>Hydration & Inflammation</Text>
+                <Text style={styles.chartTitle}>Hydration & Irritation</Text>
                 <LineChart
                   data={hydrationInflammationChartData!}
                   width={chartWidth}
@@ -1434,68 +1434,9 @@ export default function InsightsScreen() {
                 </View>
               </View>
 
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.insights.physiologicalInsights}</Text>
-                <Text style={styles.sectionSubtitle}>{t.insights.todayVsAverage}</Text>
-                
-                <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: "#B4E4F4" + "20" }]}>
-                    <Droplets size={20} color="#B4E4F4" />
-                  </View>
-                  <View style={styles.detailContent}>
-                    <View style={styles.detailTextContent}>
-                      <View style={styles.detailLabelRow}>
-                        <Text style={styles.detailLabel}>{t.insights.dehydrationTendency}</Text>
-                        <TouchableOpacity onPress={() => showMarkerInfo('dehydrationTendency')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                          <Info size={12} color={colors.textSecondary} />
-                        </TouchableOpacity>
-                      </View>
-                      <Text style={styles.detailDescription}>{t.insights.fluidBalanceIndicator}</Text>
-                    </View>
-                    <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.dehydrationTendency.toFixed(1) || 0}/10</Text>
-                      <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.dehydrationTendency}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.dehydrationTendency || 0, false, t, colors).label}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.dehydrationTendency || 0) / 10) * 100}%`, backgroundColor: "#B4E4F4" }]} />
-                  </View>
-                </View>
-
-                <View style={styles.detailCard}>
-                  <View style={[styles.detailIcon, { backgroundColor: colors.insightDiet + "20" }]}>
-                    <Flame size={20} color={colors.insightDiet} />
-                  </View>
-                  <View style={styles.detailContent}>
-                    <View style={styles.detailTextContent}>
-                      <View style={styles.detailLabelRow}>
-                        <Text style={styles.detailLabel}>{t.insights.inflammatoryStress}</Text>
-                        <TouchableOpacity onPress={() => showMarkerInfo('inflammatoryStress')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                          <Info size={12} color={colors.textSecondary} />
-                        </TouchableOpacity>
-                      </View>
-                      <Text style={styles.detailDescription}>{t.insights.systemicInflammation}</Text>
-                    </View>
-                    <View style={styles.detailValues}>
-                      <Text style={styles.detailValue}>{latestScan?.physiologicalStates?.inflammatoryStress.toFixed(1) || 0}/10</Text>
-                      <Text style={styles.detailAvgValue}>{t.insights.average}: {averages.inflammatoryStress}</Text>
-                      <View style={[styles.statusBadge, { backgroundColor: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).bgColor }]}>
-                        <Text style={[styles.statusBadgeText, { color: getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).color }]}>
-                          {getMetricStatus(latestScan?.physiologicalStates?.inflammatoryStress || 0, false, t, colors).label}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={styles.miniProgressBar}>
-                    <View style={[styles.miniProgressFill, { width: `${((latestScan?.physiologicalStates?.inflammatoryStress || 0) / 10) * 100}%`, backgroundColor: colors.insightDiet }]} />
-                  </View>
-                </View>
-              </View>
+              {/* Physiological Insights section removed — dehydrationTendency and
+                  inflammatoryStress were just hydrationLevel and inflammation divided
+                  by 10, creating confusing duplicates on a broken 0-1 scale. */}
 
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t.insights.rawEyeMetrics}</Text>

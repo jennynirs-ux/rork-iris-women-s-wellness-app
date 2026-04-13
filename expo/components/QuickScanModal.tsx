@@ -252,12 +252,15 @@ export default function QuickScanModal({ visible, onClose, skipNavigation = fals
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
       <View style={styles.root}>
-        {/* Camera feed — always rendered so it stays warm */}
-        <CameraView
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          facing={'front' as CameraType}
-        />
+        {/* Camera feed — only mounted during preview/countdown to prevent
+            autofocus clicking sounds on devices after capture is done */}
+        {(stage === 'preview' || stage === 'countdown') && (
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing={'front' as CameraType}
+          />
+        )}
 
         {/* Dark overlay */}
         <View style={styles.overlay} />

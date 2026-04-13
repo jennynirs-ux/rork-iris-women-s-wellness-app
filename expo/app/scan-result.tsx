@@ -152,7 +152,7 @@ function ScanResultScreenInner() {
     { key: 'recovery', label: t.home?.recovery || 'Recovery', value: latestScan.recoveryScore ?? 5, type: 'good-high' as const },
     { key: 'hydration', label: t.home?.hydration || 'Hydration', value: latestScan.hydrationLevel ?? 5, type: 'good-high' as const },
     { key: 'fatigue', label: t.insights?.fatigue || 'Fatigue', value: latestScan.fatigueLevel ?? 5, type: 'good-low' as const },
-    { key: 'inflammation', label: t.insights?.inflammation || 'Inflammation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
+    { key: 'inflammation', label: t.insights?.inflammation || 'Irritation', value: latestScan.inflammation ?? 5, type: 'good-low' as const },
   ];
 
   return (

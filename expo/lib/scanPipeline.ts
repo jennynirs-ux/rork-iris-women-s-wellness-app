@@ -230,10 +230,18 @@ export function buildScanResult(
       avoidIrritationFlag:   inflammation > 7,
     },
     emotionalMentalState: {
-      emotionalSensitivity: Math.round(clamp(phase === 'luteal' ? 7.5 : phase === 'menstrual' ? 6 : 4.5) * 10) / 10,
-      socialEnergy:         Math.round(clamp(energyScore > 7 ? 8 : energyScore < 4 ? 3 : 5.5) * 10) / 10,
-      moodVolatilityRisk:   Math.round(clamp(stressScore > 7 ? 7.5 : phase === 'luteal' ? 6 : 3.5) * 10) / 10,
-      cognitiveSharpness:   Math.round(clamp(energyScore > 7 && stressScore < 5 ? 8.5 : fatigueLevel > 7 ? 4 : 6) * 10) / 10,
+      // Blend phase context with actual scan data so scores reflect the user's state,
+      // not just which cycle phase they're in.
+      emotionalSensitivity: Math.round(clamp(
+        stressScore * 0.45 + fatigueLevel * 0.25 +
+        (phase === 'luteal' ? 2 : phase === 'menstrual' ? 1.5 : 0)
+      ) * 10) / 10,
+      socialEnergy:         Math.round(clamp(energyScore * 0.6 + recoveryScore * 0.3 + (10 - stressScore) * 0.1) * 10) / 10,
+      moodVolatilityRisk:   Math.round(clamp(
+        stressScore * 0.5 + fatigueLevel * 0.2 +
+        (phase === 'luteal' ? 1.5 : 0)
+      ) * 10) / 10,
+      cognitiveSharpness:   Math.round(clamp(energyScore * 0.4 + (10 - fatigueLevel) * 0.3 + (10 - stressScore) * 0.3) * 10) / 10,
     },
   };
 }
