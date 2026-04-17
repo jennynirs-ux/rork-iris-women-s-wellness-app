@@ -17,8 +17,9 @@
       "supportsTablet": false,
       "bundleIdentifier": "se.mojjo.iris-wellness",
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+        "NSCameraUsageDescription": "IRIS uses the camera to briefly scan your eye for wellness insights. Images are processed on your device and never stored or sent anywhere.",
+        "NSHealthShareUsageDescription": "IRIS reads data from Apple Health (such as sleep, menstrual flow, heart rate, and activity) to personalize your wellness insights. You choose which data types to share, and your data stays on your device.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -28,8 +29,7 @@
       },
       "package": "se.mojjo.iris_wellness",
       "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO"
+        "CAMERA"
       ]
     },
     "web": {
@@ -47,9 +47,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
+          "cameraPermission": "IRIS uses the camera to briefly scan your eye for wellness insights. Images are processed on your device and never stored or sent anywhere.",
+          "recordAudioAndroid": false
         }
       ],
       [
