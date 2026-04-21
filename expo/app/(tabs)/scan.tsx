@@ -380,7 +380,16 @@ function ScanScreenInner() {
       }
 
     } catch (error) {
-      logger.error('[Scan] Capture/analysis error:', error);
+      // "Camera unmounted during taking photo process" is a benign race
+      // condition that fires when the user navigates away (closes screen,
+      // switches tab) while takePictureAsync is still in flight. It's not a
+      // real failure — suppress it silently.
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('Camera unmounted')) {
+        logger.log('[Scan] Capture aborted — user navigated away');
+      } else {
+        logger.error('[Scan] Capture/analysis error:', error);
+      }
       if (isMountedRef.current) {
         handleCaptureFailed();
       }

@@ -215,7 +215,14 @@ export default function QuickScanModal({ visible, onClose, skipNavigation = fals
       }, 800);
 
     } catch (err) {
-      logger.error('[QuickScan] Error:', err);
+      // "Camera unmounted during taking photo process" is a benign race —
+      // user closed the modal mid-capture. Don't surface it as a red error.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('Camera unmounted')) {
+        logger.log('[QuickScan] Capture aborted — modal closed');
+      } else {
+        logger.error('[QuickScan] Error:', err);
+      }
       if (isMountedRef.current) setStage('failed');
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -252,15 +259,14 @@ export default function QuickScanModal({ visible, onClose, skipNavigation = fals
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={onClose}>
       <View style={styles.root}>
-        {/* Camera feed — only mounted during preview/countdown to prevent
-            autofocus clicking sounds on devices after capture is done */}
-        {(stage === 'preview' || stage === 'countdown') && (
-          <CameraView
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={'front' as CameraType}
-          />
-        )}
+        {/* Camera feed — always mounted to prevent "Camera unmounted during
+            taking photo process" errors if the user closes the modal or
+            stage changes while takePictureAsync is still in flight. */}
+        <CameraView
+          ref={cameraRef}
+          style={StyleSheet.absoluteFill}
+          facing={'front' as CameraType}
+        />
 
         {/* Dark overlay */}
         <View style={styles.overlay} />
