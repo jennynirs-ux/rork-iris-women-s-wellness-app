@@ -275,7 +275,7 @@ function checkHydrationRules(
       id: "hydration-low",
       icon: "Droplets",
       title: "Hydration Tip",
-      message: "You may be dehydrated. Aim for 8 glasses of water today.",
+      message: "Your hydration trend is lower than usual. Try to drink regularly through the day.",
       category: "hydration",
       priority: 3,
     });

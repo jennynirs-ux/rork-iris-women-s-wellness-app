@@ -75,7 +75,7 @@ export const programTranslationsEN: Record<string, string> = {
   stressReliefDay3Tip: 'Even a short walk outside may shift your mood and perspective.',
 
   stressReliefDay4Title: 'Hydrate and Nourish',
-  stressReliefDay4Desc: 'Drink at least 8 glasses of water today and avoid excess caffeine. Dehydration can amplify feelings of stress.',
+  stressReliefDay4Desc: 'Drink regularly through the day and avoid excess caffeine. Dehydration may amplify feelings of stress.',
   stressReliefDay4Tip: 'Herbal teas like peppermint or lemon balm are soothing alternatives to coffee.',
 
   stressReliefDay5Title: 'Digital Detox Hour',
