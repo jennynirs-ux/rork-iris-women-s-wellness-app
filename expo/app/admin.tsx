@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform,
-  ActivityIndicator, Animated, Alert, RefreshControl,
+  ActivityIndicator, Animated, Alert, RefreshControl, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +12,7 @@ import {
   Smartphone, Target, Clock,
   UserCheck, Gift, Crown, Database,
   Share2, Heart, Eye, RefreshCw,
-  Scan, Droplets,
+  Scan, Droplets, X as CloseIcon,
 } from 'lucide-react-native';
 import { useAdmin } from '@/contexts/AdminContext';
 import { trpc } from '@/lib/trpc';
@@ -116,6 +116,7 @@ export default function AdminDashboard() {
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [eyeMetricsExpanded, setEyeMetricsExpanded] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -414,7 +415,12 @@ export default function AdminDashboard() {
                   <Text style={styles.tableCell}>Platform</Text>
                 </View>
                 {stats.userList.map((user) => (
-                  <View key={user.userId} style={styles.tableRow}>
+                  <TouchableOpacity
+                    key={user.userId}
+                    style={styles.tableRow}
+                    onPress={() => setSelectedUserId(user.userId)}
+                    activeOpacity={0.7}
+                  >
                     <Text style={[styles.tableCell, styles.tableCellWide, styles.userIdText]} numberOfLines={1}>
                       {user.userId.slice(0, 14)}...
                     </Text>
@@ -440,7 +446,7 @@ export default function AdminDashboard() {
                     <View style={[styles.tableCell, styles.tableCellBadge, styles.platformBadgeTable]}>
                       <Text style={styles.platformBadgeTableText}>{user.platform}</Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
@@ -1046,7 +1052,315 @@ export default function AdminDashboard() {
         {activeTab === 'referrals' && renderReferrals()}
         {activeTab === 'events' && renderEvents()}
       </ScrollView>
+
+      <UserDetailModal
+        userId={selectedUserId}
+        users={stats?.userList ?? []}
+        onClose={() => setSelectedUserId(null)}
+        canExport={canExport}
+      />
     </View>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// UserDetailModal — per-user drill-down with scan + check-in history.
+// Data is already in stats.userList (anonymous userId only); we just render it.
+// ────────────────────────────────────────────────────────────────────────────
+
+type UserSnapshotLike = {
+  userId: string;
+  firstSeen: string;
+  lastSeen: string;
+  onboardingCompleted: boolean;
+  totalCheckins: number;
+  totalScans: number;
+  isPremium: boolean;
+  lifeStage: string;
+  platform: string;
+  language: string;
+  referralApplied: boolean;
+  healthConnected: boolean;
+  scanMetrics: Array<{
+    timestamp: string;
+    stressScore: number;
+    energyScore: number;
+    recoveryScore: number;
+    hydrationLevel: number;
+    fatigueLevel: number;
+    inflammation: number;
+    scleraYellowness: number;
+    underEyeDarkness: number;
+    eyeOpenness: number;
+    tearFilmQuality: number;
+  }>;
+  checkInEntries: Array<{
+    timestamp: string;
+    energy: number;
+    sleep: number;
+    stressLevel: number;
+    mood: number;
+    symptoms: string[];
+    cyclePhase: string;
+  }>;
+};
+
+function UserDetailModal({
+  userId,
+  users,
+  onClose,
+  canExport,
+}: {
+  userId: string | null;
+  users: UserSnapshotLike[];
+  onClose: () => void;
+  canExport: boolean;
+}) {
+  const user = useMemo(
+    () => (userId ? users.find((u) => u.userId === userId) : null),
+    [userId, users],
+  );
+
+  const sortedScans = useMemo(
+    () =>
+      user
+        ? [...user.scanMetrics].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          )
+        : [],
+    [user],
+  );
+
+  const sortedCheckIns = useMemo(
+    () =>
+      user
+        ? [...user.checkInEntries].sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+          )
+        : [],
+    [user],
+  );
+
+  const handleExportUserCSV = useCallback(() => {
+    if (!user) return;
+    const scanHeaders =
+      'timestamp,energy,stress,recovery,hydration,fatigue,irritation,scleraYellowness,underEyeDarkness,eyeOpenness,tearFilmQuality';
+    const scanRows = sortedScans
+      .map(
+        (s) =>
+          `${s.timestamp},${s.energyScore},${s.stressScore},${s.recoveryScore},${s.hydrationLevel},${s.fatigueLevel},${s.inflammation},${s.scleraYellowness},${s.underEyeDarkness},${s.eyeOpenness},${s.tearFilmQuality}`,
+      )
+      .join('\n');
+    const ciHeaders =
+      '\n\ntimestamp,energy,sleep,stress,mood,phase,symptoms';
+    const ciRows = sortedCheckIns
+      .map(
+        (c) =>
+          `${c.timestamp},${c.energy},${c.sleep},${c.stressLevel},${c.mood},${c.cyclePhase},"${c.symptoms.join('|')}"`,
+      )
+      .join('\n');
+    const csv = scanHeaders + '\n' + scanRows + ciHeaders + '\n' + ciRows;
+
+    if (Platform.OS === 'web') {
+      try {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `iris-user-${user.userId.slice(0, 12)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        Alert.alert('Export', 'CSV export is available on web browser.');
+      }
+    } else {
+      Alert.alert('Export', `User CSV prepared.\nScans: ${sortedScans.length}\nCheck-ins: ${sortedCheckIns.length}\n\nFull export requires web browser.`);
+    }
+  }, [user, sortedScans, sortedCheckIns]);
+
+  if (!user) return null;
+
+  const fmtDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString();
+    } catch {
+      return iso;
+    }
+  };
+
+  return (
+    <Modal
+      visible={!!userId}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <View style={styles.detailModalContainer}>
+        <View style={styles.detailModalHeader}>
+          <View>
+            <Text style={styles.detailModalTitle}>User Detail</Text>
+            <Text style={styles.detailModalSubtitle} numberOfLines={1}>
+              {user.userId}
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {canExport && (
+              <TouchableOpacity style={styles.iconButton} onPress={handleExportUserCSV} activeOpacity={0.7}>
+                <Download color="#9CA3AF" size={14} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.iconButton} onPress={onClose} activeOpacity={0.7}>
+              <CloseIcon color="#9CA3AF" size={16} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.detailModalScroll} showsVerticalScrollIndicator={false}>
+          {/* Summary */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Users color="#60A5FA" size={16} />
+              <View style={styles.sectionHeaderFlex}>
+                <Text style={styles.sectionTitle}>Summary</Text>
+              </View>
+            </View>
+            <View style={styles.detailSummaryGrid}>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Platform</Text>
+                <Text style={styles.detailSummaryValue}>{user.platform}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Life Stage</Text>
+                <Text style={styles.detailSummaryValue}>{user.lifeStage}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Language</Text>
+                <Text style={styles.detailSummaryValue}>{user.language}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>First Seen</Text>
+                <Text style={styles.detailSummaryValue}>{fmtDate(user.firstSeen)}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Last Seen</Text>
+                <Text style={styles.detailSummaryValue}>{fmtDate(user.lastSeen)}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Onboarded</Text>
+                <Text style={styles.detailSummaryValue}>
+                  {user.onboardingCompleted ? 'Yes' : 'No'}
+                </Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Premium</Text>
+                <Text style={styles.detailSummaryValue}>{user.isPremium ? 'Yes' : 'No'}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Health Connected</Text>
+                <Text style={styles.detailSummaryValue}>{user.healthConnected ? 'Yes' : 'No'}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Total Scans</Text>
+                <Text style={styles.detailSummaryValue}>{sortedScans.length}</Text>
+              </View>
+              <View style={styles.detailSummaryRow}>
+                <Text style={styles.detailSummaryLabel}>Total Check-ins</Text>
+                <Text style={styles.detailSummaryValue}>{sortedCheckIns.length}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Scan history */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Eye color="#8B5CF6" size={16} />
+              <View style={styles.sectionHeaderFlex}>
+                <Text style={styles.sectionTitle}>Scan History</Text>
+                <Text style={styles.sectionSubtitle}>{sortedScans.length} scans</Text>
+              </View>
+            </View>
+            {sortedScans.length === 0 ? (
+              <Text style={styles.detailEmptyHint}>No scans recorded.</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View>
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.tableCell, styles.tableCellWide]}>When</Text>
+                    <Text style={styles.tableCell}>Energy</Text>
+                    <Text style={styles.tableCell}>Stress</Text>
+                    <Text style={styles.tableCell}>Recovery</Text>
+                    <Text style={styles.tableCell}>Hydration</Text>
+                    <Text style={styles.tableCell}>Fatigue</Text>
+                    <Text style={styles.tableCell}>Irritation</Text>
+                  </View>
+                  {sortedScans.slice(0, 100).map((s, i) => (
+                    <View key={`${s.timestamp}-${i}`} style={styles.tableRow}>
+                      <Text style={[styles.tableCell, styles.tableCellWide, styles.userIdText]} numberOfLines={1}>
+                        {fmtDate(s.timestamp)}
+                      </Text>
+                      <Text style={styles.tableCell}>{s.energyScore}</Text>
+                      <Text style={styles.tableCell}>{s.stressScore}</Text>
+                      <Text style={styles.tableCell}>{s.recoveryScore}</Text>
+                      <Text style={styles.tableCell}>{s.hydrationLevel}</Text>
+                      <Text style={styles.tableCell}>{s.fatigueLevel}</Text>
+                      <Text style={styles.tableCell}>{s.inflammation}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+          </View>
+
+          {/* Check-in history */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Heart color="#EF4444" size={16} />
+              <View style={styles.sectionHeaderFlex}>
+                <Text style={styles.sectionTitle}>Check-in History</Text>
+                <Text style={styles.sectionSubtitle}>{sortedCheckIns.length} check-ins</Text>
+              </View>
+            </View>
+            {sortedCheckIns.length === 0 ? (
+              <Text style={styles.detailEmptyHint}>No check-ins recorded.</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View>
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.tableCell, styles.tableCellWide]}>When</Text>
+                    <Text style={styles.tableCell}>Energy</Text>
+                    <Text style={styles.tableCell}>Sleep</Text>
+                    <Text style={styles.tableCell}>Stress</Text>
+                    <Text style={styles.tableCell}>Mood</Text>
+                    <Text style={styles.tableCell}>Phase</Text>
+                    <Text style={[styles.tableCell, styles.tableCellWide]}>Symptoms</Text>
+                  </View>
+                  {sortedCheckIns.slice(0, 100).map((c, i) => (
+                    <View key={`${c.timestamp}-${i}`} style={styles.tableRow}>
+                      <Text style={[styles.tableCell, styles.tableCellWide, styles.userIdText]} numberOfLines={1}>
+                        {fmtDate(c.timestamp)}
+                      </Text>
+                      <Text style={styles.tableCell}>{c.energy}</Text>
+                      <Text style={styles.tableCell}>{c.sleep}</Text>
+                      <Text style={styles.tableCell}>{c.stressLevel}</Text>
+                      <Text style={styles.tableCell}>{c.mood}</Text>
+                      <Text style={[styles.tableCell, { fontSize: 9 }]}>{c.cyclePhase}</Text>
+                      <Text style={[styles.tableCell, styles.tableCellWide, { fontSize: 9 }]} numberOfLines={2}>
+                        {c.symptoms.join(', ') || '—'}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            )}
+          </View>
+
+          <Text style={styles.detailPrivacyNote}>
+            All data is anonymous. Only the random userId is stored — no names, emails,
+            device IDs, or photos ever leave the device.
+          </Text>
+        </ScrollView>
+      </View>
+    </Modal>
   );
 }
 
@@ -1889,5 +2203,70 @@ const styles = StyleSheet.create({
   },
   recentEventRowFlex: {
     flex: 1,
+  },
+  // User detail modal
+  detailModalContainer: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  detailModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1F2937',
+  },
+  detailModalTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: '#F9FAFB',
+  },
+  detailModalSubtitle: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginTop: 2,
+  },
+  detailModalScroll: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  detailSummaryGrid: {
+    gap: 8,
+  },
+  detailSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1F2937',
+  },
+  detailSummaryLabel: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  detailSummaryValue: {
+    fontSize: 12,
+    color: '#F9FAFB',
+    fontWeight: '500' as const,
+  },
+  detailEmptyHint: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontStyle: 'italic',
+    padding: 12,
+    textAlign: 'center',
+  },
+  detailPrivacyNote: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: 16,
+    paddingHorizontal: 16,
+    lineHeight: 14,
   },
 });
