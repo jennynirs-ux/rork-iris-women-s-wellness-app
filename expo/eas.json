@@ -12,11 +12,17 @@
           },
           "preview": {
                   "distribution": "internal",
-                  "channel": "preview"
+                  "channel": "preview",
+                  "env": {
+                          "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
+                  }
           },
           "production": {
                   "channel": "production",
-                  "autoIncrement": true
+                  "autoIncrement": true,
+                  "env": {
+                          "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
+                  }
           }
     },
     "submit": {
