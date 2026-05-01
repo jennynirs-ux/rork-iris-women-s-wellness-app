@@ -57,15 +57,21 @@ URL: https://appstoreconnect.apple.com
 
 ### Block 3 — Update `eas.json` with real IDs (~5 min)
 
-In `expo/eas.json`, fill in the submit block:
+> ⚠️ **Critical: do NOT paste World Food Journey's `ascAppId` (`6762470683`)**
+> here. That's your existing app's ID. IRIS gets a *new* ID when you create
+> its record in Block 2. Re-using WFJ's ID makes `eas submit` push the IRIS
+> binary into the WFJ App Store record, which is hard to undo.
+
+In `expo/eas.json`, fill in the submit block. The current placeholders
+(`REPLACE_WITH_*`) will make `eas submit` fail loudly if you forget.
 
 ```json
 "submit": {
   "production": {
     "ios": {
       "appleId": "jenny.nirs@mojjo.se",
-      "ascAppId": "1234567890",                    // from Block 2
-      "appleTeamId": "ABCDEF1234"                  // from Apple Developer Portal → Membership
+      "ascAppId": "1234567890",                // ← IRIS's, NOT WFJ's 6762470683
+      "appleTeamId": "ABCDEF1234"              // from Apple Developer Portal → Membership
     },
     "android": {
       "serviceAccountKeyPath": "./play-service-account.json",
@@ -75,7 +81,13 @@ In `expo/eas.json`, fill in the submit block:
 }
 ```
 
-Apple Team ID is at https://developer.apple.com/account → Membership.
+Where to find each value:
+
+| Field | Where |
+|---|---|
+| `appleId` | Your Apple Developer email |
+| `ascAppId` | App Store Connect → IRIS app page → URL contains `…/apps/<ID>/…` |
+| `appleTeamId` | https://developer.apple.com/account → Membership → Team ID |
 
 ### Block 4 — In-App Purchase setup (~30 min, optional for v1)
 

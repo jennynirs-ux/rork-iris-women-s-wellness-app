@@ -28,9 +28,10 @@
     "submit": {
           "production": {
                   "ios": {
-                            "appleId": "",
-                            "ascAppId": "",
-                            "appleTeamId": ""
+                            "_NOTE": "These are IRIS-specific. DO NOT reuse WFJ's ascAppId 6762470683. Get IRIS's from App Store Connect URL after creating the app record.",
+                            "appleId": "REPLACE_WITH_APPLE_ID_EMAIL",
+                            "ascAppId": "REPLACE_WITH_IRIS_ASC_APP_ID",
+                            "appleTeamId": "REPLACE_WITH_TEAM_ID"
                   },
                   "android": {
                             "serviceAccountKeyPath": "",
