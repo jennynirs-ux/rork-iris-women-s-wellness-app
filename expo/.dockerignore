@@ -10,12 +10,18 @@ components
 constants
 contexts
 hooks
-lib
-types
 widgets
 __tests__
 .claude
 .vscode
+
+# Selectively include only the lib/ and types/ files the backend imports.
+# Backend depends on @/lib/logger, @/lib/crypto, and @/types via tsconfig paths.
+lib/*
+!lib/logger.ts
+!lib/crypto.ts
+types/*
+!types/index.ts
 
 # Build artifacts
 node_modules

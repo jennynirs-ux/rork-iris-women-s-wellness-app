@@ -47,31 +47,28 @@ alter table public.kv_store enable row level security;
 -- ============================================================================
 
 -- Decoded user snapshots view — flatten the analytics-snapshots.json blob
--- into queryable rows. Use this in the SQL editor for ad-hoc admin queries.
+-- into queryable rows. Stored shape: [[userId, snapshotObj], ...].
 create or replace view public.v_user_snapshots as
-with snapshots as (
-  select value as data
-  from public.kv_store
-  where key = 'analytics-snapshots.json'
-)
 select
-  (entry ->> 1)::jsonb ->> 'userId'                               as user_id,
-  (entry ->> 1)::jsonb ->> 'firstSeen'                            as first_seen,
-  (entry ->> 1)::jsonb ->> 'lastSeen'                             as last_seen,
-  ((entry ->> 1)::jsonb ->> 'onboardingCompleted')::boolean       as onboarding_completed,
-  ((entry ->> 1)::jsonb ->> 'totalCheckins')::int                 as total_checkins,
-  ((entry ->> 1)::jsonb ->> 'totalScans')::int                    as total_scans,
-  ((entry ->> 1)::jsonb ->> 'isPremium')::boolean                 as is_premium,
-  (entry ->> 1)::jsonb ->> 'lifeStage'                            as life_stage,
-  (entry ->> 1)::jsonb ->> 'platform'                             as platform,
-  (entry ->> 1)::jsonb ->> 'language'                             as language,
-  ((entry ->> 1)::jsonb ->> 'healthConnected')::boolean           as health_connected,
-  ((entry ->> 1)::jsonb ->> 'paywallViews')::int                  as paywall_views,
-  jsonb_array_length(coalesce((entry ->> 1)::jsonb -> 'scanMetrics', '[]'::jsonb)) as scan_count,
-  jsonb_array_length(coalesce((entry ->> 1)::jsonb -> 'checkInEntries', '[]'::jsonb)) as checkin_count,
-  (entry ->> 1)::jsonb -> 'scanMetrics'                           as scan_metrics,
-  (entry ->> 1)::jsonb -> 'checkInEntries'                        as checkin_entries
-from snapshots, jsonb_array_elements_text(snapshots.data) entry;
+  pair ->> 0                                                       as user_id,
+  (pair -> 1) ->> 'firstSeen'                                      as first_seen,
+  (pair -> 1) ->> 'lastSeen'                                       as last_seen,
+  ((pair -> 1) ->> 'onboardingCompleted')::boolean                 as onboarding_completed,
+  ((pair -> 1) ->> 'totalCheckins')::int                           as total_checkins,
+  ((pair -> 1) ->> 'totalScans')::int                              as total_scans,
+  ((pair -> 1) ->> 'isPremium')::boolean                           as is_premium,
+  (pair -> 1) ->> 'lifeStage'                                      as life_stage,
+  (pair -> 1) ->> 'platform'                                       as platform,
+  (pair -> 1) ->> 'language'                                       as language,
+  ((pair -> 1) ->> 'healthConnected')::boolean                     as health_connected,
+  ((pair -> 1) ->> 'paywallViews')::int                            as paywall_views,
+  jsonb_array_length(coalesce((pair -> 1) -> 'scanMetrics', '[]'::jsonb))    as scan_count,
+  jsonb_array_length(coalesce((pair -> 1) -> 'checkInEntries', '[]'::jsonb)) as checkin_count,
+  (pair -> 1) -> 'scanMetrics'                                     as scan_metrics,
+  (pair -> 1) -> 'checkInEntries'                                  as checkin_entries
+from public.kv_store,
+     jsonb_array_elements(value) as pair
+where key = 'analytics-snapshots.json';
 
 -- Decoded analytics events
 create or replace view public.v_analytics_events as

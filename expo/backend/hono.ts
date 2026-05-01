@@ -9,7 +9,7 @@ const app = new Hono();
 app.use("*", cors({ origin: process.env.CORS_ORIGIN || "*" }));
 
 app.use(
-  "/trpc/*",
+  "/api/trpc/*",
   trpcServer({
     endpoint: "/api/trpc",
     router: appRouter,
