@@ -17,7 +17,7 @@ import { getSupabase, isSupabaseConfigured } from '@/backend/lib/supabase';
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const DEBOUNCE_DELAY = 5000;
 
-const debounceTimers = new Map<string, NodeJS.Timeout>();
+const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
 const pendingWrites = new Map<string, unknown>();
 
 // ─── File-system fallback (only when Supabase is not configured) ────────────
