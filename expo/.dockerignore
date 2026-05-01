@@ -1,0 +1,37 @@
+# Mobile-app-only files we don't need on the server
+.git
+.expo
+.expo-shared
+ios
+android
+assets
+app
+components
+constants
+contexts
+hooks
+lib
+types
+widgets
+__tests__
+.claude
+.vscode
+
+# Build artifacts
+node_modules
+.metro-cache
+.next
+dist
+build
+*.log
+
+# Dev / docs
+README.md
+BACKLOG.md
+SUBMISSION_CHECKLIST.md
+WIDGET_INTEGRATION_CHECKLIST.md
+*.pdf
+
+# Secrets
+.env
+.env.local

@@ -6,6 +6,7 @@
     "start": "bunx rork start -p z2umen4jrrc01e58d1ib1 --tunnel",
     "start-web": "bunx rork start -p z2umen4jrrc01e58d1ib1 --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p z2umen4jrrc01e58d1ib1 --web --tunnel",
+    "start:backend": "bun run backend/server.ts",
     "lint": "expo lint",
     "test": "jest"
   },

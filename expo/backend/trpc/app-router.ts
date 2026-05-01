@@ -28,7 +28,7 @@ export const appRouter = createTRPCRouter({
   referral: createTRPCRouter({
     register: referralRegister,
     validate: referralValidate,
-    apply: referralApply,
+    applyCode: referralApply,
     trackMilestone: referralTrackMilestone,
     stats: referralStats,
   }),

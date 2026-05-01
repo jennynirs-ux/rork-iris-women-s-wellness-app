@@ -162,7 +162,7 @@ export const [ReferralContext, useReferral] = createContextHook(() => {
         return { success: false as const, error: "no_user_id" as const };
       }
       try {
-        const result = await trpcClient.referral.apply.mutate({
+        const result = await trpcClient.referral.applyCode.mutate({
           referralCode: code,
           newUserId: userId,
         });

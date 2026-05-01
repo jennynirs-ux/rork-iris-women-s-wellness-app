@@ -5,7 +5,23 @@
  * leaking to production device logs.
  */
 
-const isDev = __DEV__;
+// Cross-platform dev detection. React Native sets __DEV__; Node/Bun
+// (the Hono backend) does not — fall back to NODE_ENV.
+const isDev: boolean = (() => {
+  try {
+    const dev = (globalThis as { __DEV__?: boolean }).__DEV__;
+    if (typeof dev === 'boolean') return dev;
+  } catch {
+    /* ignore */
+  }
+  try {
+    return (
+      typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'
+    );
+  } catch {
+    return false;
+  }
+})();
 
 export const logger = {
   log: (...args: any[]) => {
@@ -15,7 +31,9 @@ export const logger = {
     if (isDev) console.warn(...args);
   },
   error: (...args: any[]) => {
-    if (isDev) console.error(...args);
+    // Errors always surface, even in production — needed for backend logs
+    // and fly.io diagnostics.
+    console.error(...args);
   },
   info: (...args: any[]) => {
     if (isDev) console.info(...args);
