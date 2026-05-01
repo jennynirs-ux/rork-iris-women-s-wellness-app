@@ -15,9 +15,21 @@ interface SyncedData {
   version: number;
 }
 
-// Initialize from persisted file or empty
-const syncStoreArray = persistence.load<[string, SyncedData][]>('sync-store.json') || [];
-const syncStore = new Map<string, SyncedData>(syncStoreArray);
+const syncStore = new Map<string, SyncedData>();
+
+const hydrationPromise: Promise<void> = (async () => {
+  try {
+    const data = await persistence.loadAsync<[string, SyncedData][]>('sync-store.json');
+    if (!data) return;
+    for (const [k, v] of data) syncStore.set(k, v);
+  } catch (err) {
+    console.error('[Sync] Hydration failed:', err);
+  }
+})();
+
+export async function ensureSyncHydrated(): Promise<void> {
+  await hydrationPromise;
+}
 
 function save(userId: string, data: Omit<SyncedData, "userId" | "lastSyncedAt" | "version">): SyncedData {
   const existing = syncStore.get(userId);

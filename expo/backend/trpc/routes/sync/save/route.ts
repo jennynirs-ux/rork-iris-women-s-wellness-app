@@ -1,6 +1,7 @@
 import { publicProcedure } from "../../../create-context";
 import { z } from "zod";
 import { syncStoreModule } from "../store";
+import { ensureSyncHydrated } from "@/backend/trpc/routes/sync/store";
 
 const saveProcedure = publicProcedure
   .input(
@@ -16,7 +17,8 @@ const saveProcedure = publicProcedure
       themeMode: z.string(),
     })
   )
-  .mutation(({ input }) => {
+  .mutation(async ({ input }) => {
+    await ensureSyncHydrated();
     const { userId, ...data } = input;
     const result = syncStoreModule.save(userId, data as any);
     return {

@@ -1,106 +1,147 @@
+/**
+ * Persistence layer.
+ *
+ * Backed by the `kv_store` Postgres table in Supabase. Each historical
+ * "JSON file" name maps to a row keyed by `key` with JSONB `value`.
+ *
+ * Stores hydrate in-memory state at startup (`loadAsync` once) and use
+ * `saveAsync` for write-through. The synchronous `load`/`save` API is
+ * kept for backward compatibility — it falls back to a local file when
+ * Supabase is not configured (development without a backend DB).
+ */
 import * as fs from 'fs';
 import * as path from 'path';
 import logger from '@/lib/logger';
+import { getSupabase, isSupabaseConfigured } from '@/backend/lib/supabase';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
-const DEBOUNCE_DELAY = 5000; // 5 seconds
+const DEBOUNCE_DELAY = 5000;
 
-// Track debounce timers per filename
 const debounceTimers = new Map<string, NodeJS.Timeout>();
-const pendingWrites = new Map<string, any>();
+const pendingWrites = new Map<string, unknown>();
 
-/**
- * Ensure the data directory exists
- */
+// ─── File-system fallback (only when Supabase is not configured) ────────────
+
 function ensureDataDir(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-/**
- * Load data from a JSON file
- * Returns null if the file doesn't exist or on read error
- */
-export function load<T>(filename: string): T | null {
+function loadFromFile<T>(filename: string): T | null {
   try {
     ensureDataDir();
     const filepath = path.join(DATA_DIR, filename);
-    if (!fs.existsSync(filepath)) {
-      return null;
-    }
-    const content = fs.readFileSync(filepath, 'utf-8');
-    return JSON.parse(content) as T;
+    if (!fs.existsSync(filepath)) return null;
+    return JSON.parse(fs.readFileSync(filepath, 'utf-8')) as T;
   } catch (err) {
-    logger.log(`[Persistence] Error loading ${filename}:`, err);
+    logger.log(`[Persistence] File load error ${filename}:`, err);
     return null;
   }
 }
 
-/**
- * Save data to a JSON file with temp-file-then-rename pattern
- * Uses debouncing to batch writes within a 5-second window
- */
-export function save<T>(filename: string, data: T): void {
-  // Store the pending write
-  pendingWrites.set(filename, data);
-
-  // Clear existing timer if any
-  const existingTimer = debounceTimers.get(filename);
-  if (existingTimer) {
-    clearTimeout(existingTimer);
-  }
-
-  // Set a new debounced timer
-  const timer = setTimeout(() => {
-    performWrite(filename);
-  }, DEBOUNCE_DELAY);
-
-  debounceTimers.set(filename, timer);
-}
-
-/**
- * Internal function that performs the actual write
- */
-function performWrite(filename: string): void {
+function saveToFile<T>(filename: string, data: T): void {
   try {
     ensureDataDir();
-    const data = pendingWrites.get(filename);
-    if (data === undefined) {
-      return;
-    }
-
     const filepath = path.join(DATA_DIR, filename);
     const tempFilepath = `${filepath}.tmp`;
-
-    // Write to temp file first
-    const jsonContent = JSON.stringify(data, null, 2);
-    fs.writeFileSync(tempFilepath, jsonContent, 'utf-8');
-
-    // Atomically rename temp file to target file
+    fs.writeFileSync(tempFilepath, JSON.stringify(data, null, 2), 'utf-8');
     fs.renameSync(tempFilepath, filepath);
-
-    logger.log(`[Persistence] Saved ${filename}`);
-
-    // Clean up
-    debounceTimers.delete(filename);
-    pendingWrites.delete(filename);
   } catch (err) {
-    logger.log(`[Persistence] Error saving ${filename}:`, err);
-    // Keep the timer so it retries on next debounce
+    logger.log(`[Persistence] File save error ${filename}:`, err);
   }
 }
 
-/**
- * Force a flush of all pending writes
- * Useful for graceful shutdown
- */
-export function flushAll(): void {
-  for (const filename of debounceTimers.keys()) {
-    const timer = debounceTimers.get(filename);
-    if (timer) {
-      clearTimeout(timer);
+// ─── Supabase-backed async API ──────────────────────────────────────────────
+
+export async function loadAsync<T>(key: string): Promise<T | null> {
+  const supabase = getSupabase();
+  if (!supabase) return loadFromFile<T>(key);
+
+  try {
+    const { data, error } = await supabase
+      .from('kv_store')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+
+    if (error) {
+      logger.error(`[Persistence] Supabase load error for ${key}:`, error.message);
+      return null;
     }
-    performWrite(filename);
+    return ((data?.value ?? null) as T | null);
+  } catch (err) {
+    logger.error(`[Persistence] Unexpected load error for ${key}:`, err);
+    return null;
+  }
+}
+
+export async function saveAsync<T>(key: string, value: T): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    saveToFile(key, value);
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('kv_store')
+      .upsert({ key, value }, { onConflict: 'key' });
+
+    if (error) {
+      logger.error(`[Persistence] Supabase save error for ${key}:`, error.message);
+    }
+  } catch (err) {
+    logger.error(`[Persistence] Unexpected save error for ${key}:`, err);
+  }
+}
+
+// ─── Sync wrappers (legacy) ─────────────────────────────────────────────────
+// These remain for backwards-compatibility. They only work against the file
+// fallback. Stores SHOULD migrate to loadAsync/saveAsync.
+
+export function load<T>(filename: string): T | null {
+  if (isSupabaseConfigured()) {
+    logger.error(
+      `[Persistence] Sync load() called for "${filename}" with Supabase configured. ` +
+        'This always returns null — switch the caller to loadAsync().',
+    );
+    return null;
+  }
+  return loadFromFile<T>(filename);
+}
+
+export function save<T>(filename: string, data: T): void {
+  // When Supabase is configured we forward to async write-through (debounced).
+  pendingWrites.set(filename, data);
+  const existing = debounceTimers.get(filename);
+  if (existing) clearTimeout(existing);
+
+  debounceTimers.set(
+    filename,
+    setTimeout(() => {
+      const value = pendingWrites.get(filename);
+      pendingWrites.delete(filename);
+      debounceTimers.delete(filename);
+      if (value === undefined) return;
+      if (isSupabaseConfigured()) {
+        void saveAsync(filename, value);
+      } else {
+        saveToFile(filename, value);
+      }
+    }, DEBOUNCE_DELAY),
+  );
+}
+
+export function flushAll(): void {
+  for (const [filename, timer] of debounceTimers.entries()) {
+    clearTimeout(timer);
+    const value = pendingWrites.get(filename);
+    pendingWrites.delete(filename);
+    debounceTimers.delete(filename);
+    if (value === undefined) continue;
+    if (isSupabaseConfigured()) {
+      void saveAsync(filename, value);
+    } else {
+      saveToFile(filename, value);
+    }
   }
 }

@@ -24,13 +24,23 @@ interface CommunityStoreData {
   userTipTracking: [string, UserTipTracker][];
 }
 
-const storedData = persistence.load<CommunityStoreData>("community-tips.json") || {
-  tips: [],
-  userTipTracking: [],
-};
+const tips = new Map<string, CommunityTip>();
+const userTipTracking = new Map<string, UserTipTracker>();
 
-const tips = new Map<string, CommunityTip>(storedData.tips);
-const userTipTracking = new Map<string, UserTipTracker>(storedData.userTipTracking);
+const hydrationPromise: Promise<void> = (async () => {
+  try {
+    const data = await persistence.loadAsync<CommunityStoreData>("community-tips.json");
+    if (!data) return;
+    for (const [k, v] of data.tips ?? []) tips.set(k, v);
+    for (const [k, v] of data.userTipTracking ?? []) userTipTracking.set(k, v);
+  } catch (err) {
+    console.error('[Community] Hydration failed:', err);
+  }
+})();
+
+export async function ensureCommunityHydrated(): Promise<void> {
+  await hydrationPromise;
+}
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

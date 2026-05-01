@@ -36,17 +36,27 @@ interface ReferralStoreData {
   referrerToReferred: [string, ReferredUserEntry[]][];
 }
 
-const storedData = persistence.load<ReferralStoreData>('referral-store.json') || {
-  referralCodes: [],
-  codeToEntry: [],
-  referredUsers: [],
-  referrerToReferred: [],
-};
+const referralCodes = new Map<string, ReferralCodeEntry>();
+const codeToEntry = new Map<string, ReferralCodeEntry>();
+const referredUsers = new Map<string, ReferredUserEntry>();
+const referrerToReferred = new Map<string, ReferredUserEntry[]>();
 
-const referralCodes = new Map<string, ReferralCodeEntry>(storedData.referralCodes);
-const codeToEntry = new Map<string, ReferralCodeEntry>(storedData.codeToEntry);
-const referredUsers = new Map<string, ReferredUserEntry>(storedData.referredUsers);
-const referrerToReferred = new Map<string, ReferredUserEntry[]>(storedData.referrerToReferred);
+const hydrationPromise: Promise<void> = (async () => {
+  try {
+    const data = await persistence.loadAsync<ReferralStoreData>('referral-store.json');
+    if (!data) return;
+    for (const [k, v] of data.referralCodes ?? []) referralCodes.set(k, v);
+    for (const [k, v] of data.codeToEntry ?? []) codeToEntry.set(k, v);
+    for (const [k, v] of data.referredUsers ?? []) referredUsers.set(k, v);
+    for (const [k, v] of data.referrerToReferred ?? []) referrerToReferred.set(k, v);
+  } catch (err) {
+    console.error('[Referral] Hydration failed:', err);
+  }
+})();
+
+export async function ensureReferralHydrated(): Promise<void> {
+  await hydrationPromise;
+}
 
 function isValidCodeFormat(code: string): boolean {
   return REFERRAL_CODE_PATTERN.test(code.toUpperCase());

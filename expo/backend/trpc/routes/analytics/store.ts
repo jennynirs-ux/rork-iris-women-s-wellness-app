@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { load, save } from "../persistence";
+import { loadAsync, save } from "../persistence";
 
 export type EventName =
   | 'app_opened'
@@ -82,10 +82,35 @@ export interface UserSnapshot {
   checkInEntries: CheckInEntry[];
 }
 
-// Initialize from persisted files or empty
-let events: TrackingEvent[] = load<TrackingEvent[]>('analytics-events.json') || [];
-const userSnapshotsArray = load<[string, UserSnapshot][]>('analytics-snapshots.json') || [];
-const userSnapshots = new Map<string, UserSnapshot>(userSnapshotsArray);
+// In-memory state. Hydrated asynchronously on module load via the
+// `hydrationPromise` below. All routes await `ensureHydrated()` before
+// reading. Writes go to in-memory + debounced write-through to Supabase.
+let events: TrackingEvent[] = [];
+const userSnapshots = new Map<string, UserSnapshot>();
+
+const hydrationPromise: Promise<void> = (async () => {
+  try {
+    const [persistedEvents, persistedSnapshots] = await Promise.all([
+      loadAsync<TrackingEvent[]>('analytics-events.json'),
+      loadAsync<[string, UserSnapshot][]>('analytics-snapshots.json'),
+    ]);
+    if (persistedEvents) events = persistedEvents;
+    if (persistedSnapshots) {
+      for (const [userId, snap] of persistedSnapshots) {
+        userSnapshots.set(userId, snap);
+      }
+    }
+    logger.log(
+      `[Analytics] Hydrated: ${events.length} events, ${userSnapshots.size} snapshots`,
+    );
+  } catch (err) {
+    logger.error('[Analytics] Hydration failed:', err);
+  }
+})();
+
+export async function ensureAnalyticsHydrated(): Promise<void> {
+  await hydrationPromise;
+}
 
 function getOrCreateSnapshot(userId: string): UserSnapshot {
   let snap = userSnapshots.get(userId);

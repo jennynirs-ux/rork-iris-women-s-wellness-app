@@ -1,6 +1,7 @@
 import { adminProcedure } from "../../../create-context";
-import { analyticsStore } from "../store";
+import { analyticsStore, ensureAnalyticsHydrated } from "../store";
 
-export default adminProcedure.query(() => {
-    return analyticsStore.getAggregatedStats();
+export default adminProcedure.query(async () => {
+  await ensureAnalyticsHydrated();
+  return analyticsStore.getAggregatedStats();
 });

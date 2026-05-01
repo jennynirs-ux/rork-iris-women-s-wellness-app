@@ -1,6 +1,7 @@
 import { publicProcedure } from "../../../create-context";
 import { z } from "zod";
 import { syncStoreModule } from "../store";
+import { ensureSyncHydrated } from "@/backend/trpc/routes/sync/store";
 
 const loadProcedure = publicProcedure
   .input(
@@ -8,7 +9,8 @@ const loadProcedure = publicProcedure
       userId: z.string().min(1),
     })
   )
-  .query(({ input }) => {
+  .query(async ({ input }) => {
+    await ensureSyncHydrated();
     const data = syncStoreModule.load(input.userId);
     if (!data) {
       return { found: false as const, data: null };

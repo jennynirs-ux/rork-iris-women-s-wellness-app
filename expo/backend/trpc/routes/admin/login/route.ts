@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '@/backend/trpc/create-context';
 import { sha256 } from '@/lib/crypto';
-import { load, save } from '../persistence';
+import { loadAsync, saveAsync } from '../persistence';
 import crypto from 'crypto';
 
 /**
@@ -54,16 +54,16 @@ const SESSIONS_FILE = 'admin-sessions.json';
 /**
  * Load all admin sessions from persistent storage
  */
-function loadSessions(): AdminSessionsFile {
-  const data = load<AdminSessionsFile>(SESSIONS_FILE);
+async function loadSessions(): Promise<AdminSessionsFile> {
+  const data = await loadAsync<AdminSessionsFile>(SESSIONS_FILE);
   return data || { sessions: {} };
 }
 
 /**
  * Save admin sessions to persistent storage
  */
-function saveSessions(data: AdminSessionsFile): void {
-  save<AdminSessionsFile>(SESSIONS_FILE, data);
+async function saveSessions(data: AdminSessionsFile): Promise<void> {
+  await saveAsync<AdminSessionsFile>(SESSIONS_FILE, data);
 }
 
 /**
@@ -123,9 +123,9 @@ export default publicProcedure
     const session = createSession(lowerUsername, cred.role);
 
     // Persist session
-    const sessionData = loadSessions();
+    const sessionData = await loadSessions();
     sessionData.sessions[session.token] = session;
-    saveSessions(sessionData);
+    await saveSessions(sessionData);
 
     return {
       success: true,

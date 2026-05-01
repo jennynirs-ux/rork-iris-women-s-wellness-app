@@ -1,6 +1,4 @@
 /**
- * This is a re-export of the main persistence module.
- * It's placed here for convenience when importing from admin routes.
+ * Re-export of the main persistence module for admin routes.
  */
-
-export { load, save, flushAll } from '../persistence';
+export { load, save, flushAll, loadAsync, saveAsync } from '../persistence';

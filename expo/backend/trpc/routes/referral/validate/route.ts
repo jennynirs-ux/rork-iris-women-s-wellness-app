@@ -2,6 +2,7 @@ import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { referralStore } from "@/backend/trpc/routes/referral/store";
 import logger from "@/lib/logger";
+import { ensureReferralHydrated } from "@/backend/trpc/routes/referral/store";
 
 export default publicProcedure
   .input(
@@ -9,7 +10,8 @@ export default publicProcedure
       referralCode: z.string(),
     })
   )
-  .query(({ input }) => {
+  .query(async ({ input }) => {
+    await ensureReferralHydrated();
     const code = input.referralCode.toUpperCase();
 
     const entry = referralStore.getByCode(code);

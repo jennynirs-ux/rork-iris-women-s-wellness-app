@@ -24,13 +24,23 @@ interface PartnerStoreData {
   partnerCodeToUserId: [string, string][];
 }
 
-const storedData = persistence.load<PartnerStoreData>('partner-links.json') || {
-  partnerLinks: [],
-  partnerCodeToUserId: [],
-};
+const partnerLinks = new Map<string, PartnerLink>();
+const partnerCodeToUserId = new Map<string, string>();
 
-const partnerLinks = new Map<string, PartnerLink>(storedData.partnerLinks);
-const partnerCodeToUserId = new Map<string, string>(storedData.partnerCodeToUserId);
+const hydrationPromise: Promise<void> = (async () => {
+  try {
+    const data = await persistence.loadAsync<PartnerStoreData>('partner-links.json');
+    if (!data) return;
+    for (const [k, v] of data.partnerLinks ?? []) partnerLinks.set(k, v);
+    for (const [k, v] of data.partnerCodeToUserId ?? []) partnerCodeToUserId.set(k, v);
+  } catch (err) {
+    console.error('[Partner] Hydration failed:', err);
+  }
+})();
+
+export async function ensurePartnerHydrated(): Promise<void> {
+  await hydrationPromise;
+}
 
 function getOrCreatePartnerLink(userId: string): PartnerLink {
   let link = partnerLinks.get(userId);

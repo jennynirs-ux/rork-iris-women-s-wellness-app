@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { communityStore } from "@/backend/trpc/routes/community/store";
+import { ensureCommunityHydrated } from "@/backend/trpc/routes/community/store";
 
 export default publicProcedure
   .input(
@@ -9,7 +10,8 @@ export default publicProcedure
       limit: z.number().min(1).max(50).optional().default(10),
     })
   )
-  .query(({ input }) => {
+  .query(async ({ input }) => {
+    await ensureCommunityHydrated();
     const { phase, limit } = input;
 
     const tips = communityStore.getTipsByPhase(phase, limit);

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { communityStore } from "@/backend/trpc/routes/community/store";
 import logger from "@/lib/logger";
+import { ensureCommunityHydrated } from "@/backend/trpc/routes/community/store";
 
 export default publicProcedure
   .input(
@@ -12,7 +13,8 @@ export default publicProcedure
       userId: z.string(),
     })
   )
-  .mutation(({ input }) => {
+  .mutation(async ({ input }) => {
+    await ensureCommunityHydrated();
     const { phase, content, category, userId } = input;
 
     // Check rate limit: max 3 tips per user per day

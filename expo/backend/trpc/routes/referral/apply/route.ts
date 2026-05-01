@@ -2,6 +2,7 @@ import { z } from "zod";
 import { publicProcedure } from "@/backend/trpc/create-context";
 import { referralStore } from "@/backend/trpc/routes/referral/store";
 import logger from "@/lib/logger";
+import { ensureReferralHydrated } from "@/backend/trpc/routes/referral/store";
 
 export default publicProcedure
   .input(
@@ -10,7 +11,8 @@ export default publicProcedure
       newUserId: z.string(),
     })
   )
-  .mutation(({ input }) => {
+  .mutation(async ({ input }) => {
+    await ensureReferralHydrated();
     const { referralCode, newUserId } = input;
     const code = referralCode.toUpperCase();
 

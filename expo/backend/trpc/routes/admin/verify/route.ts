@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '@/backend/trpc/create-context';
-import { load } from '../persistence';
+import { loadAsync } from '../persistence';
 
 interface AdminSession {
   token: string;
@@ -17,11 +17,8 @@ interface AdminSessionsFile {
 
 const SESSIONS_FILE = 'admin-sessions.json';
 
-/**
- * Load all admin sessions from persistent storage
- */
-function loadSessions(): AdminSessionsFile {
-  const data = load<AdminSessionsFile>(SESSIONS_FILE);
+async function loadSessions(): Promise<AdminSessionsFile> {
+  const data = await loadAsync<AdminSessionsFile>(SESSIONS_FILE);
   return data || { sessions: {} };
 }
 
@@ -36,26 +33,20 @@ export default publicProcedure
       token: z.string().min(1),
     })
   )
-  .query(({ input }) => {
+  .query(async ({ input }) => {
     const { token } = input;
 
-    // Load sessions
-    const sessionData = loadSessions();
+    const sessionData = await loadSessions();
     const session = sessionData.sessions[token];
 
-    // Check if session exists and hasn't expired
-    if (!session) {
-      return { valid: false };
-    }
+    if (!session) return { valid: false };
 
     const now = Date.now();
     if (now > session.expiresAt) {
-      // Session expired, clean it up
       delete sessionData.sessions[token];
       return { valid: false };
     }
 
-    // Session is valid
     return {
       valid: true,
       role: session.role,
