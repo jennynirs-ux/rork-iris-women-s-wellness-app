@@ -54,7 +54,8 @@
       },
       "package": "se.mojjo.iris_wellness",
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.CAMERA"
       ]
     },
     "web": {
@@ -83,10 +84,20 @@
           "color": "#E89BA4"
         }
       ],
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": "https://iris-wellness.mojjo.se/"
+      },
+      "eas": {
+        "projectId": "91becd65-84e8-4ad4-b7ed-aa229f2c05e5"
+      }
+    },
+    "owner": "jenny.nirs"
   }
 }

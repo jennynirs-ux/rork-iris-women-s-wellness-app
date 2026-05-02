@@ -1,42 +1,43 @@
 {
-    "cli": {
-          "version": ">= 12.0.0"
+  "cli": {
+    "version": ">= 12.0.0",
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
     },
-    "build": {
-          "development": {
-                  "developmentClient": true,
-                  "distribution": "internal",
-                  "ios": {
-                            "simulator": true
-                  }
-          },
-          "preview": {
-                  "distribution": "internal",
-                  "channel": "preview",
-                  "env": {
-                          "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
-                  }
-          },
-          "production": {
-                  "channel": "production",
-                  "autoIncrement": true,
-                  "env": {
-                          "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
-                  }
-          }
+    "preview": {
+      "distribution": "store",
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
+      }
     },
-    "submit": {
-          "production": {
-                  "ios": {
-                            "_NOTE": "These are IRIS-specific. DO NOT reuse WFJ's ascAppId 6762470683. Get IRIS's from App Store Connect URL after creating the app record.",
-                            "appleId": "REPLACE_WITH_APPLE_ID_EMAIL",
-                            "ascAppId": "REPLACE_WITH_IRIS_ASC_APP_ID",
-                            "appleTeamId": "REPLACE_WITH_TEAM_ID"
-                  },
-                  "android": {
-                            "serviceAccountKeyPath": "",
-                            "track": "internal"
-                  }
-          }
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_RORK_API_BASE_URL": "https://iris-backend.fly.dev"
+      }
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "jenny.nirs@mojjo.se",
+        "ascAppId": "6765703981",
+        "appleTeamId": "9PKHAN7F4Y"
+      },
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
 }
