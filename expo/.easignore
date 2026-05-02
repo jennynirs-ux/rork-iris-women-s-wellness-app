@@ -1,0 +1,16 @@
+# Files NOT to include in EAS uploads (separate from .gitignore)
+.git
+.expo
+node_modules
+ios
+android
+.claude
+.claude/worktrees
+data
+legal
+scripts
+*.log
+*.pdf
+__tests__
+.env
+.env.local
