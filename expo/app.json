@@ -18,9 +18,18 @@
       "bundleIdentifier": "se.mojjo.iris-wellness",
       "infoPlist": {
         "NSCameraUsageDescription": "IRIS uses the camera to briefly scan your eye for wellness insights. Images are processed on your device and never stored or sent anywhere.",
+        "NSMicrophoneUsageDescription": "IRIS does not record audio. This permission is only requested by the camera framework and is never used to capture sound.",
+        "NSPhotoLibraryUsageDescription": "IRIS may ask to access your photo library only if you choose to attach an image to your wellness journal. Photos stay on your device unless you share them.",
+        "NSPhotoLibraryAddUsageDescription": "IRIS may save wellness charts or journal images you create to your photo library when you choose to export them.",
+        "NSLocationWhenInUseUsageDescription": "IRIS does not actively use your location. This permission is included only because a bundled library may reference location APIs.",
         "NSHealthShareUsageDescription": "IRIS reads data from Apple Health (such as sleep, menstrual flow, heart rate, and activity) to personalize your wellness insights. You choose which data types to share, and your data stays on your device.",
         "NSHealthUpdateUsageDescription": "IRIS can write cycle and wellness data (such as menstrual flow and symptoms you log) back to Apple Health so your records stay in sync. You choose which data types to share, and your data stays on your device.",
+        "NSUserTrackingUsageDescription": "IRIS does not track you across other apps or websites.",
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.access": []
       },
       "privacyManifests": {
         "NSPrivacyTracking": false,
