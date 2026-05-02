@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -261,6 +262,22 @@ export default function PaywallScreen() {
         <Text style={styles.legalText}>
           {t.paywall.legalText}
         </Text>
+
+        <View style={styles.legalLinksRow}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://iris-eye-insights.lovable.app/terms')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.legalLinkText}>{t.settings.termsOfService}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalLinkSeparator}>·</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://iris-eye-insights.lovable.app/privacy')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.legalLinkText}>{t.settings.privacyPolicy}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -490,5 +507,22 @@ function createPaywallStyles(colors: typeof Colors.light) { return StyleSheet.cr
     lineHeight: 15,
     marginTop: 12,
     paddingHorizontal: 8,
+  },
+  legalLinksRow: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    marginTop: 8,
+    gap: 8,
+  },
+  legalLinkText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    textDecorationLine: "underline" as const,
+    fontWeight: "500" as const,
+  },
+  legalLinkSeparator: {
+    fontSize: 11,
+    color: colors.textTertiary,
   },
 }); }
