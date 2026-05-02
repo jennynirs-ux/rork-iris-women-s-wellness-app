@@ -84,8 +84,7 @@
           "color": "#E89BA4"
         }
       ],
-      "expo-splash-screen",
-      "expo-sharing"
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true
