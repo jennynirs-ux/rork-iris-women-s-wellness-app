@@ -197,6 +197,19 @@ export interface PersonalBaseline {
   blinkFrequency: number;
   microSaccadeFrequency: number;
   samplesCount: number;
+  /**
+   * v1.2+ measured signals running average. All optional for backward compat with
+   * v1.0/v1.1 baselines persisted in AsyncStorage. Populated only from scans that
+   * carried `ScanResult.measuredOpticalSignals` (i.e. burst-pipeline scans).
+   * `measuredSamplesCount` tracks how many burst-pipeline scans contributed so
+   * the predictor knows when to trust these vs. fall back to the legacy fields.
+   */
+  pupilToIrisRatio?: number;
+  realBlinkRate?: number;
+  tearFilmStability?: number;
+  vesselDensity?: number;
+  limbalRingClarity?: number;
+  measuredSamplesCount?: number;
 }
 
 export interface PhaseBaseline {

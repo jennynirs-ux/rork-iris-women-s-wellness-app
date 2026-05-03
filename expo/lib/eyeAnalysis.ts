@@ -1014,10 +1014,29 @@ export async function analyzeEyeImage(
   return analyzeFromBase64Bytes(base64Data, underEyeBase64);
 }
 
+/**
+ * v1.1 measured signals. When the burst pipeline provides these, computeWellnessScores
+ * will weight them into the existing formulas instead of relying purely on
+ * single-frame proxies. Every field is optional so v1.0 callers keep working.
+ */
+export interface MeasuredSignalsForScoring {
+  /** Real blink rate from cross-frame analysis (blinks/sec). High → tired/dry. */
+  realBlinkRate?: number;
+  /** Tear film stability from std-dev across burst, [0, 1]. High → well hydrated. */
+  tearFilmStability?: number;
+  /** Vessel density in sclera from advancedAnalysis, [0, 1]. High → inflammation. */
+  vesselDensity?: number;
+  /** Pupil-to-iris ratio from advancedAnalysis, ~[0.2, 0.7]. Large = sympathetic activation. */
+  pupilToIrisRatio?: number;
+  /** Limbal ring clarity from advancedAnalysis, [0, 1]. High → collagen vitality. */
+  limbalRingClarity?: number;
+}
+
 export function computeWellnessScores(
   eyeAnalysis: EyeAnalysisResult,
   checkIn: CheckInContext | null,
   cyclePhaseFactor: number,
+  measured?: MeasuredSignalsForScoring,
 ): WellnessScoresFromEyes {
   const {
     brightness, redness, pupilDarkRatio, symmetry, clarity,
@@ -1033,6 +1052,37 @@ export function computeWellnessScores(
   const checkInHydration = clamp(10 - (checkIn?.stressLevel ?? 5) * 0.5 + (checkIn?.sleep ?? 5) * 0.5, 1, 10);
   const checkInInflammation = clamp(scleraRedness * 0.5 + (10 - checkInSleep) * 0.3 + checkInStress * 0.2, 1, 10);
 
+  // ── v1.1 measured-signal contributions (additive, with fallbacks) ─────────
+  // Each contribution is normalized to [0, 10] so it can blend with the existing
+  // 0–10 weighted-sum formulas without changing their final range.
+  //
+  // Blink rate fatigue boost: typical resting human is ~0.25 blinks/sec (15/min).
+  // Above 0.6/sec sustained = significant fatigue / dry eye. We map the range
+  // [0.2, 0.8] → [0, 10] so 0.5/sec contributes 5 to fatigue.
+  const blinkFatigueContribution = measured?.realBlinkRate != null
+    ? clamp(((measured.realBlinkRate - 0.2) / 0.6) * 10, 0, 10)
+    : null;
+  // Tear stability hydration: 1.0 = perfectly stable, 0.0 = highly unstable.
+  // Direct map to 0–10.
+  const tearStabilityHydrationContribution = measured?.tearFilmStability != null
+    ? clamp(measured.tearFilmStability * 10, 0, 10)
+    : null;
+  // Vessel density inflammation: real measurement of conjunctival redness pattern.
+  // Direct map to 0–10.
+  const vesselInflammationContribution = measured?.vesselDensity != null
+    ? clamp(measured.vesselDensity * 10, 0, 10)
+    : null;
+  // Pupil-to-iris ratio stress: large pupils in steady ambient light correlate
+  // with sympathetic arousal. Map [0.3, 0.65] → [0, 10] (typical resting is ~0.4).
+  const pupilStressContribution = measured?.pupilToIrisRatio != null
+    ? clamp(((measured.pupilToIrisRatio - 0.3) / 0.35) * 10, 0, 10)
+    : null;
+  // Limbal ring clarity recovery: sharp limbal ring suggests collagen integrity
+  // and youthful corneal hydration. Direct map to 0–10.
+  const limbalRecoveryContribution = measured?.limbalRingClarity != null
+    ? clamp(measured.limbalRingClarity * 10, 0, 10)
+    : null;
+
   const energyScore = clamp(
     Math.round(
       eyeBrightness * 0.25 +
@@ -1045,66 +1095,86 @@ export function computeWellnessScores(
     1, 10,
   );
 
+  // Fatigue: blend in real blink rate (10% weight) by reducing the openness/pupil shares.
   const fatigueLevel = clamp(
     Math.round(
       underEyeDarkness * 10 * 0.30 +
-      (10 - eyeOpenness * 10) * 0.20 +
-      pupilDarkRatio * 10 * 0.15 +
+      (10 - eyeOpenness * 10) * (blinkFatigueContribution != null ? 0.15 : 0.20) +
+      pupilDarkRatio * 10 * 0.10 +
       scleraRedness * 0.10 +
-      (10 - checkInSleep) * 0.25
+      (10 - checkInSleep) * 0.25 +
+      (blinkFatigueContribution ?? 0) * (blinkFatigueContribution != null ? 0.10 : 0)
     ),
     1, 10,
   );
 
+  // Hydration: blend in tear stability (15% weight) by reducing tearFilmQuality and
+  // yellowness shares slightly.
   const hydrationLevel = clamp(
     Math.round(
-      tearFilmQuality * 10 * 0.25 +
-      (10 - scleraYellowness * 10) * 0.20 +
+      tearFilmQuality * 10 * (tearStabilityHydrationContribution != null ? 0.15 : 0.25) +
+      (10 - scleraYellowness * 10) * (tearStabilityHydrationContribution != null ? 0.15 : 0.20) +
       (10 - scleraRedness) * 0.15 +
       eyeBrightness * 0.10 +
-      checkInHydration * 0.30
+      checkInHydration * 0.30 +
+      (tearStabilityHydrationContribution ?? 0) * (tearStabilityHydrationContribution != null ? 0.15 : 0)
     ),
     1, 10,
   );
 
+  // Inflammation: blend in real vessel density (15% weight) by reducing the
+  // single-frame redness share.
   const inflammation = clamp(
     Math.round(
-      scleraRedness * 0.40 +
+      scleraRedness * (vesselInflammationContribution != null ? 0.25 : 0.40) +
       scleraYellowness * 10 * 0.15 +
       (10 - tearFilmQuality * 10) * 0.10 +
       (10 - eyeBrightness) * 0.10 +
       cyclePhaseFactor * 0.10 +
-      checkInInflammation * 0.15
+      checkInInflammation * 0.15 +
+      (vesselInflammationContribution ?? 0) * (vesselInflammationContribution != null ? 0.15 : 0)
     ),
     1, 10,
   );
 
+  // Recovery: blend in limbal ring clarity (10% weight) by reducing the brightness share.
   const recoveryScore = clamp(
     Math.round(
-      eyeBrightness * 0.20 +
+      eyeBrightness * (limbalRecoveryContribution != null ? 0.10 : 0.20) +
       eyeOpenness * 10 * 0.15 +
       tearFilmQuality * 10 * 0.15 +
       (10 - scleraRedness) * 0.15 +
       (10 - underEyeDarkness * 10) * 0.10 +
-      (10 - fatigueLevel) * 0.25
+      (10 - fatigueLevel) * 0.25 +
+      (limbalRecoveryContribution ?? 0) * (limbalRecoveryContribution != null ? 0.10 : 0)
     ),
     1, 10,
   );
 
+  // Stress: blend in pupil-to-iris ratio (15% weight) — most defensible measured
+  // signal for sympathetic activation. Reduces synthesized pupilDarkRatio share.
   const stressScore = clamp(
     Math.round(
-      pupilDarkRatio * 10 * 0.25 +
+      pupilDarkRatio * 10 * (pupilStressContribution != null ? 0.10 : 0.25) +
       (10 - tearFilmQuality * 10) * 0.15 +
       scleraRedness * 0.10 +
       (10 - eyeBrightness) * 0.10 +
       underEyeDarkness * 10 * 0.10 +
-      checkInStress * 0.30
+      checkInStress * 0.30 +
+      (pupilStressContribution ?? 0) * (pupilStressContribution != null ? 0.15 : 0)
     ),
     1, 10,
   );
 
   logger.log('[EyeAnalysis] Wellness scores computed:', {
     energyScore, fatigueLevel, hydrationLevel, inflammation, recoveryScore, stressScore,
+    measuredSignalsUsed: measured ? {
+      realBlinkRate: measured.realBlinkRate?.toFixed(3),
+      tearFilmStability: measured.tearFilmStability?.toFixed(3),
+      vesselDensity: measured.vesselDensity?.toFixed(3),
+      pupilToIrisRatio: measured.pupilToIrisRatio?.toFixed(3),
+      limbalRingClarity: measured.limbalRingClarity?.toFixed(3),
+    } : 'none (v1.0 fallback)',
     inputs: {
       eyeBrightness: eyeBrightness.toFixed(2),
       scleraRedness: scleraRedness.toFixed(2),

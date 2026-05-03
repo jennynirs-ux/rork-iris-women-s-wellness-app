@@ -352,7 +352,17 @@ function ScanScreenInner() {
         stressLevel: todayCheckIn.stressLevel,
       } : null;
 
-      const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
+      // v1.1: pass measured signals into the scoring engine so real blink rate,
+      // tear stability, vessel density, pupil-to-iris ratio and limbal ring
+      // clarity actually move the 6 wellness scores instead of just sitting in
+      // the ScanResult struct.
+      const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor, {
+        realBlinkRate: crossFrame.realBlinkRate,
+        tearFilmStability: crossFrame.tearFilmStability,
+        vesselDensity: advancedSignals.vesselDensity,
+        pupilToIrisRatio: advancedSignals.pupilToIrisRatio,
+        limbalRingClarity: advancedSignals.limbalRingClarity,
+      });
 
       if (!isMountedRef.current) return;
       buildAndSaveScanResult(wellnessScores, eyeAnalysis, advancedSignals, crossFrame);

@@ -157,15 +157,29 @@ function calcMemoryFactor(scans: ScanResult[]): { score: number; trend: "improvi
 }
 
 /**
- * Calculate focus factor from cognitiveLoad and gazeStability.
- * Weight: 2
+ * Calculate focus factor from cognitiveLoad + gaze/frame stability.
+ *
+ * v1.2 (B-016): When the burst pipeline provides `measuredOpticalSignals.frameStability`
+ * (a real cross-frame measurement of how steady the eye held during the 2-second
+ * scan), prefer it over the synthesized `rawOpticalSignals.gazeStability` (which
+ * was derived from focusLevel = energy + (10−fatigue) + recovery).
+ *
+ * Range note: `frameStability` is [0, 1] from burst capture; `gazeStability` is
+ * also [0, 1] (clamped to [0.5, 1] historically) — both scale to 0–10 the same way.
+ *
+ * Weight in composite: 2
  */
 function calcFocusFactor(scans: ScanResult[]): { score: number; trend: "improving" | "stable" | "declining" } {
   const values = scans.map((s) => {
     const cogLoad = s.physiologicalStates?.cognitiveLoad ?? 5;
-    const gazeStability = s.rawOpticalSignals?.gazeStability ?? 5;
-    // Higher gaze stability = better focus, lower cognitive load = less overwhelmed
-    return clamp((gazeStability + (10 - cogLoad)) / 2, 0, 10);
+    // Prefer real frame stability when available; fall back to synthesized gazeStability.
+    const measured = s.measuredOpticalSignals?.frameStability;
+    const stability01 = measured != null
+      ? measured                                       // already [0, 1]
+      : (s.rawOpticalSignals?.gazeStability ?? 0.5);   // legacy [0, 1]
+    const stabilityOnTen = stability01 * 10;
+    // Higher stability = better focus, lower cognitive load = less overwhelmed
+    return clamp((stabilityOnTen + (10 - cogLoad)) / 2, 0, 10);
   });
   if (values.length === 0) return { score: 5, trend: "stable" };
   return { score: clamp(safeAvg(values), 0, 10), trend: determineTrend(values) };

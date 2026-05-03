@@ -496,19 +496,46 @@ function getScanEvidence(
       { phase: "luteal", baseline: phaseBaselines.luteal! },
     ];
 
+    // v1.2 (B-015): when both the baseline and the current scan carry real measured
+    // signals from the burst pipeline, use those for phase similarity instead of
+    // the synthesized rawOpticalSignals (which are deterministic functions of the
+    // wellness scores and so double-count the same evidence). Falls back to the
+    // legacy synthesized math when measured data is missing or insufficient.
+    const measured = scan.measuredOpticalSignals;
     phases.forEach(({ phase, baseline }) => {
-      if (baseline.samplesCount >= 2) {
+      if (baseline.samplesCount < 2) return;
+
+      const baselineHasMeasured =
+        (baseline.measuredSamplesCount ?? 0) >= 2 &&
+        baseline.pupilToIrisRatio != null &&
+        baseline.realBlinkRate != null &&
+        baseline.tearFilmStability != null;
+
+      let similarity: number;
+      if (baselineHasMeasured && measured) {
+        // Real measurement path: pupil-to-iris ratio + real blink rate + tear film
+        // stability. Each delta uses absolute distance because these are bounded
+        // quantities (not all positive ratios), and we add small denominator
+        // protection.
+        const pirDelta = Math.abs(measured.pupilToIrisRatio - baseline.pupilToIrisRatio!) /
+          Math.max(baseline.pupilToIrisRatio!, 0.05);
+        const blinkDelta = Math.abs(measured.realBlinkRate - baseline.realBlinkRate!) /
+          Math.max(baseline.realBlinkRate!, 0.05);
+        const tearDelta = Math.abs(measured.tearFilmStability - baseline.tearFilmStability!) /
+          Math.max(baseline.tearFilmStability!, 0.05);
+        similarity = 1 / (1 + pirDelta + blinkDelta + tearDelta);
+      } else {
+        // Legacy synthesized path (v1.0 / v1.1 baselines)
         const pupilDelta = Math.abs(signals.pupilDiameter - baseline.pupilDiameter) / baseline.pupilDiameter;
         const latencyDelta = Math.abs(signals.pupilLatency - baseline.pupilLatency) / baseline.pupilLatency;
         const blinkDelta = Math.abs(signals.blinkFrequency - baseline.blinkFrequency) / baseline.blinkFrequency;
-
-        const similarity = 1 / (1 + pupilDelta + latencyDelta + blinkDelta);
-
-        if (phase === "menstrual") menstrualScore += similarity * 0.3;
-        if (phase === "follicular") follicularScore += similarity * 0.3;
-        if (phase === "ovulation") ovulationScore += similarity * 0.3;
-        if (phase === "luteal") lutealScore += similarity * 0.3;
+        similarity = 1 / (1 + pupilDelta + latencyDelta + blinkDelta);
       }
+
+      if (phase === "menstrual") menstrualScore += similarity * 0.3;
+      if (phase === "follicular") follicularScore += similarity * 0.3;
+      if (phase === "ovulation") ovulationScore += similarity * 0.3;
+      if (phase === "luteal") lutealScore += similarity * 0.3;
     });
   } else if (globalBaseline && globalBaseline.samplesCount >= 3) {
     const pupilDelta = (signals.pupilDiameter - globalBaseline.pupilDiameter) / globalBaseline.pupilDiameter;
@@ -816,6 +843,7 @@ export function updatePersonalBaseline(
   }
 
   const signals = newScan.rawOpticalSignals;
+  const measured = newScan.measuredOpticalSignals; // v1.1+ only — may be undefined
 
   if (!currentBaseline || currentBaseline.samplesCount === 0) {
     return {
@@ -825,11 +853,50 @@ export function updatePersonalBaseline(
       blinkFrequency: signals.blinkFrequency,
       microSaccadeFrequency: signals.microSaccadeFrequency,
       samplesCount: 1,
+      // v1.2: seed measured baseline if this is a burst-pipeline scan
+      ...(measured ? {
+        pupilToIrisRatio: measured.pupilToIrisRatio,
+        realBlinkRate: measured.realBlinkRate,
+        tearFilmStability: measured.tearFilmStability,
+        vesselDensity: measured.vesselDensity,
+        limbalRingClarity: measured.limbalRingClarity,
+        measuredSamplesCount: 1,
+      } : {}),
     };
   }
 
   const alpha = 0.2;
   const count = currentBaseline.samplesCount;
+
+  // v1.2: EMA the measured fields when this scan has them; otherwise carry the
+  // existing baseline value forward unchanged. This means a baseline built from
+  // 5 burst scans + 2 legacy scans still has 5 measured samples.
+  const measuredCount = currentBaseline.measuredSamplesCount ?? 0;
+  const measuredUpdate = measured ? {
+    pupilToIrisRatio: currentBaseline.pupilToIrisRatio != null
+      ? currentBaseline.pupilToIrisRatio * (1 - alpha) + measured.pupilToIrisRatio * alpha
+      : measured.pupilToIrisRatio,
+    realBlinkRate: currentBaseline.realBlinkRate != null
+      ? currentBaseline.realBlinkRate * (1 - alpha) + measured.realBlinkRate * alpha
+      : measured.realBlinkRate,
+    tearFilmStability: currentBaseline.tearFilmStability != null
+      ? currentBaseline.tearFilmStability * (1 - alpha) + measured.tearFilmStability * alpha
+      : measured.tearFilmStability,
+    vesselDensity: currentBaseline.vesselDensity != null
+      ? currentBaseline.vesselDensity * (1 - alpha) + measured.vesselDensity * alpha
+      : measured.vesselDensity,
+    limbalRingClarity: currentBaseline.limbalRingClarity != null
+      ? currentBaseline.limbalRingClarity * (1 - alpha) + measured.limbalRingClarity * alpha
+      : measured.limbalRingClarity,
+    measuredSamplesCount: measuredCount + 1,
+  } : {
+    pupilToIrisRatio: currentBaseline.pupilToIrisRatio,
+    realBlinkRate: currentBaseline.realBlinkRate,
+    tearFilmStability: currentBaseline.tearFilmStability,
+    vesselDensity: currentBaseline.vesselDensity,
+    limbalRingClarity: currentBaseline.limbalRingClarity,
+    measuredSamplesCount: measuredCount,
+  };
 
   return {
     pupilDiameter:
@@ -845,6 +912,7 @@ export function updatePersonalBaseline(
       currentBaseline.microSaccadeFrequency * (1 - alpha) +
       signals.microSaccadeFrequency * alpha,
     samplesCount: count + 1,
+    ...measuredUpdate,
   };
 }
 

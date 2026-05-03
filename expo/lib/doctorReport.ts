@@ -1357,6 +1357,60 @@ function buildAppleHealthSection(healthData: HealthData | null | undefined, r: R
   </div>`;
 }
 
+/**
+ * v1.1 measured optical signals section. Renders the latest scan's burst-pipeline
+ * measurements (real blink rate, tear film stability, vessel density, pupil-iris
+ * ratio, limbal ring clarity) when available. Silent when scans pre-date v1.1
+ * (i.e. measuredOpticalSignals is undefined).
+ *
+ * These are still wellness estimates, not medical measurements — same disclaimer
+ * applies.
+ */
+function buildMeasuredSignalsSection(scans: ScanResult[], r: ReportStrings): string {
+  // Find the most recent scan with v1.1 measured signals
+  const recentMeasured = [...scans]
+    .reverse()
+    .find((s) => s.measuredOpticalSignals != null);
+  if (!recentMeasured || !recentMeasured.measuredOpticalSignals) return '';
+
+  const m = recentMeasured.measuredOpticalSignals;
+  const rows: string[] = [];
+
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Burst frames analyzed:</span>
+    <span class="metric-value">${m.burstFramesAnalyzed} / 8 (${m.burstDurationMs} ms)</span>
+  </div>`);
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Real blink rate:</span>
+    <span class="metric-value">${(m.realBlinkRate * 60).toFixed(0)} blinks / min</span>
+  </div>`);
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Tear film stability:</span>
+    <span class="metric-value">${Math.round(m.tearFilmStability * 100)}%</span>
+  </div>`);
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Conjunctival vessel density:</span>
+    <span class="metric-value">${Math.round(m.vesselDensity * 100)}%</span>
+  </div>`);
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Pupil-to-iris ratio:</span>
+    <span class="metric-value">${m.pupilToIrisRatio.toFixed(2)}</span>
+  </div>`);
+  rows.push(`<div class="metric-row">
+    <span class="metric-label">Limbal ring clarity:</span>
+    <span class="metric-value">${Math.round(m.limbalRingClarity * 100)}%</span>
+  </div>`);
+
+  return `
+  <div class="section">
+    <div class="section-title">Advanced Optical Signals (latest scan)</div>
+    ${rows.join('')}
+    <div style="margin-top:8px;padding:8px 10px;background-color:#f0f4ff;border:1px solid #c5d0e6;border-radius:4px;font-size:10px;color:#555;">
+      Measured on-device from an 8-frame burst capture. These are wellness estimates derived from visible eye features &mdash; not medical measurements. Always consult a qualified healthcare provider.
+    </div>
+  </div>`;
+}
+
 function buildCycleHistorySection(cycleHistory: CycleHistory[] | null | undefined, r: ReportStrings, locale: string): string {
   if (!cycleHistory || cycleHistory.length === 0) return '';
 
@@ -1448,6 +1502,7 @@ function buildHTML(
   const weeklyTrends = buildWeeklyTrendsSection(checkIns, r);
   const lifestyleSection = buildLifestyleSection(checkIns, r);
   const appleHealthSection = buildAppleHealthSection(healthData, r);
+  const measuredSignalsSection = buildMeasuredSignalsSection(scans, r);
   const cycleHistorySection = buildCycleHistorySection(cycleHistory, r, locale);
 
   const html = `
@@ -1789,6 +1844,8 @@ function buildHTML(
   ${lifestyleSection}
 
   ${appleHealthSection}
+
+  ${measuredSignalsSection}
 
   ${cycleHistorySection}
 

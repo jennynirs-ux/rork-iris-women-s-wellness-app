@@ -3,7 +3,12 @@ import { CyclePhase } from "@/types";
 import logger from "@/lib/logger";
 
 /**
- * Widget data interface - shared between app and widget
+ * Widget data interface - shared between app and widget.
+ *
+ * v1.2 (B-014 follow-up): added optional scan-quality fields surfaced from the
+ * latest burst-pipeline scan. The native iOS widget can render these as a small
+ * badge ("8/8 frames · sharp" or "needs another scan") to reassure the user
+ * that recent data is fresh and high-quality. All optional for backward compat.
  */
 export interface IrisWidgetData {
   phaseName: string;
@@ -13,6 +18,15 @@ export interface IrisWidgetData {
   todaysFocus: string;
   lastUpdated: number;
   hasData: boolean;
+  /** Latest scan quality summary, undefined if no v1.1+ scan exists yet. */
+  latestScanQuality?: {
+    /** Hours since the most recent scan (rounded). */
+    hoursSinceScan: number;
+    /** Burst frames analyzed (0–8). 0 = legacy v1.0 single-frame scan. */
+    burstFramesAnalyzed: number;
+    /** Coarse quality bucket derived from frameStability + framesAnalyzed. */
+    quality: "excellent" | "good" | "fair" | "retake-suggested";
+  };
 }
 
 /**
@@ -57,20 +71,52 @@ function getPhaseColor(phase: CyclePhase): string {
 }
 
 /**
+ * Compute a coarse scan-quality bucket from a recent burst scan's measured signals.
+ * Returns undefined for legacy (pre-v1.1) scans so the widget can hide the badge.
+ */
+function deriveScanQuality(
+  hoursSinceScan: number,
+  burstFramesAnalyzed: number,
+  frameStability: number,
+): IrisWidgetData["latestScanQuality"] {
+  if (burstFramesAnalyzed === 0) return undefined; // legacy single-frame scan
+  let quality: "excellent" | "good" | "fair" | "retake-suggested";
+  if (burstFramesAnalyzed >= 7 && frameStability >= 0.8) quality = "excellent";
+  else if (burstFramesAnalyzed >= 5 && frameStability >= 0.6) quality = "good";
+  else if (burstFramesAnalyzed >= 3) quality = "fair";
+  else quality = "retake-suggested";
+  return { hoursSinceScan, burstFramesAnalyzed, quality };
+}
+
+/**
  * Updates widget data and stores it for the widget to read
  * Should be called whenever:
  * - Phase changes
  * - New scan is recorded
  * - New check-in is recorded
  * - Coaching tip changes
+ *
+ * v1.2: optional `latestScan` arg lets callers surface burst-pipeline quality
+ * info to the widget. Pass `null` (or omit) to leave quality unchanged.
  */
 export async function updateWidgetData(
   phase: CyclePhase,
   cycleDay: number,
   totalCycleDays: number,
-  todaysFocus: string
+  todaysFocus: string,
+  latestScan?: { timestamp: number; burstFramesAnalyzed: number; frameStability: number } | null,
 ): Promise<void> {
   try {
+    let scanQuality: IrisWidgetData["latestScanQuality"];
+    if (latestScan) {
+      const hoursSinceScan = Math.round((Date.now() - latestScan.timestamp) / (60 * 60 * 1000));
+      scanQuality = deriveScanQuality(
+        hoursSinceScan,
+        latestScan.burstFramesAnalyzed,
+        latestScan.frameStability,
+      );
+    }
+
     const widgetData: IrisWidgetData = {
       phaseName: getPhaseName(phase),
       phaseColor: getPhaseColor(phase),
@@ -79,6 +125,7 @@ export async function updateWidgetData(
       todaysFocus,
       lastUpdated: Date.now(),
       hasData: true,
+      ...(scanQuality ? { latestScanQuality: scanQuality } : {}),
     };
 
     // Store in AsyncStorage
