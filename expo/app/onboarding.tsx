@@ -2442,6 +2442,7 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
   scanButton: {
     flexDirection: "row" as const,
     alignItems: "center" as const,
+    justifyContent: "center" as const,
     gap: 8,
     marginBottom: 16,
   },
