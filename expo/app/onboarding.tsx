@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, Shield } from "lucide-react-native";
+import { Eye, Heart, Sparkles, ChevronDown, Gift, Check, AlertCircle, Shield, Zap, Dumbbell, RefreshCw } from "lucide-react-native";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useApp } from "@/contexts/AppContext";
@@ -1592,7 +1592,21 @@ export default function OnboardingScreen() {
               styles.focusIconContainer,
               selectedFocus.includes(opt.value as any) && { backgroundColor: colors.primary + '20' },
             ]}>
-              <Text style={{ fontSize: 20 }}>{opt.icon === 'Zap' ? '⚡' : opt.icon === 'Heart' ? '❤️' : opt.icon === 'Dumbbell' ? '💪' : opt.icon === 'RefreshCw' ? '🔄' : opt.icon === 'Sparkles' ? '✨' : '👁️'}</Text>
+              {(() => {
+                // Map the option's icon key to a Lucide icon component (replaces
+                // earlier emoji fallbacks so the UI stays consistent across
+                // platforms and reads as a real icon, not an OS-rendered glyph).
+                const iconColor = selectedFocus.includes(opt.value as any) ? colors.primary : colors.text;
+                const iconProps = { size: 20, color: iconColor } as const;
+                switch (opt.icon) {
+                  case 'Zap': return <Zap {...iconProps} />;
+                  case 'Heart': return <Heart {...iconProps} />;
+                  case 'Dumbbell': return <Dumbbell {...iconProps} />;
+                  case 'RefreshCw': return <RefreshCw {...iconProps} />;
+                  case 'Sparkles': return <Sparkles {...iconProps} />;
+                  default: return <Eye {...iconProps} />;
+                }
+              })()}
             </View>
             <Text style={[
               styles.optionCardText,
@@ -1600,7 +1614,7 @@ export default function OnboardingScreen() {
             ]}>{opt.label}</Text>
             {selectedFocus.includes(opt.value as any) && (
               <View style={{ marginLeft: 'auto' }}>
-                <Text style={{ color: colors.primary, fontWeight: '600' }}>✓</Text>
+                <Check size={18} color={colors.primary} strokeWidth={3} />
               </View>
             )}
           </TouchableOpacity>

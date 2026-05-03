@@ -25,7 +25,7 @@ tracking with daily check-ins and an optional 5-second eye scan that runs
 entirely on your device, so you can see how your body is actually doing
 day by day — not just where you are in the calendar.
 
-🌙 WHAT YOU GET
+WHAT YOU GET
 
 • Cycle tracking — log your period, see your phase, and get a clear view
   of menstrual, follicular, ovulatory, and luteal patterns
@@ -46,13 +46,13 @@ day by day — not just where you are in the calendar.
 • Multi-life-stage — designed for regular cycles, hormonal contraception,
   pregnancy, postpartum, perimenopause, and menopause
 
-🔒 PRIVACY-FIRST BY DESIGN
+PRIVACY-FIRST BY DESIGN
 
 Your cycle, mood, symptoms, and scan results live on your device. We do
 not sell or share your data with anyone. The eye-scan photo is discarded
 immediately after analysis — only the resulting wellness scores are kept.
 
-🌸 WELLNESS, NOT MEDICINE
+WELLNESS, NOT MEDICINE
 
 IRIS is a wellness tool. It helps you notice patterns and feel more in
 sync with your body. It is not a medical device, and the wellness scores
