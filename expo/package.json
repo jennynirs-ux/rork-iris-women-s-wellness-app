@@ -80,6 +80,11 @@
   "jest": {
     "preset": "jest-expo"
   },
+  "expo": {
+    "autolinking": {
+      "exclude": ["expo-location"]
+    }
+  },
   "overrides": {
     "expo-location": "~19.0.7"
   },
