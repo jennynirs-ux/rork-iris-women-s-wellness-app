@@ -206,11 +206,7 @@ export default function QuickScanModal({ visible, onClose, skipNavigation = fals
         if (!isMountedRef.current) return;
         onClose();
         if (!skipNavigation) {
-          if (!todayCheckIn) {
-            router.replace('/check-in' as any);
-          } else {
-            router.replace('/(tabs)/insights' as any);
-          }
+          router.replace('/check-in' as any);
         }
       }, 800);
 
