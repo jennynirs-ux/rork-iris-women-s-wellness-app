@@ -25,8 +25,8 @@ step "1. Verify eas.json has real IDs (not placeholders)"
 if grep -q "REPLACE_WITH" eas.json; then
   fail "eas.json still contains REPLACE_WITH_* placeholders. Fill them in."
 fi
-if grep -q "6762470683" eas.json; then
-  fail "eas.json contains WFJ's ascAppId (6762470683). Use IRIS's ID."
+if grep -E '"ascAppId"\s*:\s*"6762470683"' eas.json > /dev/null; then
+  fail "eas.json's ascAppId is WFJ's (6762470683). Use IRIS's ID."
 fi
 ok "eas.json IDs look real"
 
