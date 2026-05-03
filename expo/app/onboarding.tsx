@@ -270,7 +270,7 @@ export default function OnboardingScreen() {
     }
   };
 
-  const TOTAL_STEPS = 7;
+  const TOTAL_STEPS = 6;
   const LAST_STEP = TOTAL_STEPS - 1;
 
   const handleContinue = async () => {
@@ -574,7 +574,7 @@ export default function OnboardingScreen() {
         onPress={() => setShowScanModal(true)}
       >
         <Eye size={20} color={colors.card} />
-        <Text style={styles.scanButtonText}>{t.onboarding.startScan || "Start Scan"}</Text>
+        <Text style={styles.primaryButtonText}>{t.onboarding.startScan || "Start Scan"}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={handleComplete} disabled={!canComplete}>
@@ -1643,8 +1643,7 @@ export default function OnboardingScreen() {
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep4()}
           {currentStep === 4 && renderStep5()}
-          {currentStep === 5 && renderStep6()}
-          {currentStep === 6 && renderStep3()}
+          {currentStep === 5 && renderStep3()}
         </ScrollView>
 
         <View style={styles.footer}>
