@@ -677,6 +677,17 @@ export default function InsightsScreen() {
   const chartWidth = screenWidth - 64; // padding + card margins
   const labelInterval = trendTimeRange <= 7 ? 1 : trendTimeRange <= 30 ? 5 : 15;
 
+  // Invisible anchor dataset that forces the chart-kit Y axis to span [1, 10].
+  // Without this, chart-kit auto-fits the Y range tightly to the data, which
+  // makes all 4 grid labels collapse to the same rounded value (e.g. "3, 3, 3, 3")
+  // when wellness scores cluster in a narrow band.
+  const yScaleAnchor = useCallback((count: number) => {
+    const arr = new Array(Math.max(count, 1));
+    for (let i = 0; i < arr.length; i++) arr[i] = i % 2 === 0 ? 1 : 10;
+    return arr;
+  }, []);
+  const transparentColor = useCallback((_opacity = 1) => 'rgba(0,0,0,0)', []);
+
   const physicalChartData = useMemo(() => {
     if (!trendData) return null;
 
@@ -704,10 +715,17 @@ export default function InsightsScreen() {
           color: hexToChartColor(colors.recoveryHigh),
           strokeWidth: 2,
           label: t.home?.recovery || 'Recovery'
+        },
+        {
+          // Y-axis scale anchor (invisible) — pins range to 1..10
+          data: yScaleAnchor(trendData.length),
+          color: transparentColor,
+          strokeWidth: 0,
+          withDots: false,
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
+  }, [trendData, colors, labelInterval, t, yScaleAnchor, transparentColor]);
 
   const hydrationInflammationChartData = useMemo(() => {
     if (!trendData) return null;
@@ -730,10 +748,16 @@ export default function InsightsScreen() {
           color: hexToChartColor(colors.phaseMenstrual),
           strokeWidth: 2,
           label: t.insights?.inflammation || 'Inflammation'
+        },
+        {
+          data: yScaleAnchor(trendData.length),
+          color: transparentColor,
+          strokeWidth: 0,
+          withDots: false,
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
+  }, [trendData, colors, labelInterval, t, yScaleAnchor, transparentColor]);
 
   const fatigueChartData = useMemo(() => {
     if (!trendData) return null;
@@ -750,10 +774,16 @@ export default function InsightsScreen() {
           color: hexToChartColor(colors.phaseOvulation),
           strokeWidth: 2,
           label: t.insights?.fatigue || t.insights?.chartFatigue || 'Fatigue'
+        },
+        {
+          data: yScaleAnchor(trendData.length),
+          color: transparentColor,
+          strokeWidth: 0,
+          withDots: false,
         }
       ]
     };
-  }, [trendData, colors, labelInterval, t]);
+  }, [trendData, colors, labelInterval, t, yScaleAnchor, transparentColor]);
 
   const SkeletonCard = ({ width = '100%' as DimensionValue, height = 80 }: { width?: DimensionValue; height?: number }) => (
     <View style={[styles.skeletonCard, { width, height }]}>

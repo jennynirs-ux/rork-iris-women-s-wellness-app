@@ -7,7 +7,7 @@ import { useApp } from "@/contexts/AppContext";
 import { router } from "expo-router";
 import Colors from "@/constants/colors";
 import { useTheme } from "@/contexts/ThemeContext";
-import { CheckCircle, Calendar, ClipboardCheck } from "lucide-react-native";
+import { CheckCircle, Calendar, ClipboardCheck, Activity, Eye, Droplet, Sparkles, Zap, Camera } from "lucide-react-native";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Helper to determine color based on score and metric type
@@ -95,6 +95,146 @@ function ScoreGauge({ label, value, interpretation, color, colors, styles }: Sco
   );
 }
 
+// ─── v1.1 Scan Quality Badge ─────────────────────────────────────────────
+// Small reassurance pill at the top of the result screen showing how thorough
+// the burst scan was. Hidden for legacy v1.0 single-frame scans.
+interface ScanQualityBadgeProps {
+  framesAnalyzed: number;
+  frameStability: number;
+  burstDurationMs: number;
+  colors: typeof Colors.light;
+  styles: ReturnType<typeof createScanResultStyles>;
+  t: any;
+}
+
+function ScanQualityBadge({ framesAnalyzed, frameStability, burstDurationMs, colors, styles, t }: ScanQualityBadgeProps) {
+  let qualityLabel: string;
+  let qualityColor: string;
+  if (framesAnalyzed >= 7 && frameStability >= 0.8) {
+    qualityLabel = t.scanResult?.qualityExcellent || 'Excellent capture';
+    qualityColor = colors.statusGood ?? colors.success ?? colors.primary;
+  } else if (framesAnalyzed >= 5 && frameStability >= 0.6) {
+    qualityLabel = t.scanResult?.qualityGood || 'Good capture';
+    qualityColor = colors.statusGood ?? colors.success ?? colors.primary;
+  } else if (framesAnalyzed >= 3) {
+    qualityLabel = t.scanResult?.qualityFair || 'Fair capture';
+    qualityColor = colors.statusAttention ?? colors.warning ?? colors.primary;
+  } else {
+    qualityLabel = t.scanResult?.qualityRetake || 'Retake suggested';
+    qualityColor = colors.statusAttention ?? colors.warning ?? colors.primary;
+  }
+  const seconds = (burstDurationMs / 1000).toFixed(1);
+  return (
+    <View style={styles.qualityBadge}>
+      <Camera size={14} color={qualityColor} />
+      <Text style={[styles.qualityBadgeLabel, { color: qualityColor }]}>{qualityLabel}</Text>
+      <Text style={styles.qualityBadgeMeta}>· {framesAnalyzed}/8 frames · {seconds}s</Text>
+    </View>
+  );
+}
+
+// ─── v1.1 Advanced Optical Signals card ──────────────────────────────────
+// Six measured signals from the burst pipeline + advanced single-frame analysis,
+// shown with friendly labels (no medical jargon). Hidden for legacy scans.
+interface AdvancedSignalRowProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  fillRatio: number; // [0, 1] for visual bar
+  colors: typeof Colors.light;
+  styles: ReturnType<typeof createScanResultStyles>;
+}
+
+function AdvancedSignalRow({ icon, label, value, fillRatio, colors, styles }: AdvancedSignalRowProps) {
+  const safeFill = Math.max(0, Math.min(1, fillRatio));
+  return (
+    <View style={styles.signalRow}>
+      <View style={styles.signalRowLeft}>
+        {icon}
+        <Text style={styles.signalLabel}>{label}</Text>
+      </View>
+      <View style={styles.signalRowRight}>
+        <View style={styles.signalBarTrack}>
+          <View style={[styles.signalBarFill, { width: `${safeFill * 100}%`, backgroundColor: colors.primary }]} />
+        </View>
+        <Text style={styles.signalValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+interface AdvancedSignalsCardProps {
+  measured: NonNullable<import('@/types').ScanResult['measuredOpticalSignals']>;
+  colors: typeof Colors.light;
+  styles: ReturnType<typeof createScanResultStyles>;
+  t: any;
+}
+
+function AdvancedSignalsCard({ measured, colors, styles, t }: AdvancedSignalsCardProps) {
+  const blinksPerMin = Math.round(measured.realBlinkRate * 60);
+  return (
+    <View style={styles.advancedCard}>
+      <View style={styles.advancedHeader}>
+        <Sparkles size={18} color={colors.primary} />
+        <Text style={styles.advancedTitle}>{t.scanResult?.advancedTitle || 'Advanced measurements'}</Text>
+      </View>
+      <Text style={styles.advancedSubtitle}>
+        {t.scanResult?.advancedSubtitle || 'Cross-frame analysis from your 2-second scan'}
+      </Text>
+      <View style={styles.signalsList}>
+        <AdvancedSignalRow
+          icon={<Eye size={16} color={colors.primary} />}
+          label={t.scanResult?.signalScanSteadiness || 'Scan steadiness'}
+          value={`${Math.round(measured.frameStability * 100)}%`}
+          fillRatio={measured.frameStability}
+          colors={colors}
+          styles={styles}
+        />
+        <AdvancedSignalRow
+          icon={<Droplet size={16} color={colors.primary} />}
+          label={t.scanResult?.signalTearStability || 'Tear film stability'}
+          value={`${Math.round(measured.tearFilmStability * 100)}%`}
+          fillRatio={measured.tearFilmStability}
+          colors={colors}
+          styles={styles}
+        />
+        <AdvancedSignalRow
+          icon={<Activity size={16} color={colors.primary} />}
+          label={t.scanResult?.signalBlinkRate || 'Blink rate'}
+          value={`${blinksPerMin} / min`}
+          fillRatio={Math.min(1, blinksPerMin / 30)}
+          colors={colors}
+          styles={styles}
+        />
+        <AdvancedSignalRow
+          icon={<Zap size={16} color={colors.primary} />}
+          label={t.scanResult?.signalPupilResponse || 'Pupil response'}
+          value={measured.pupilToIrisRatio.toFixed(2)}
+          fillRatio={(measured.pupilToIrisRatio - 0.2) / 0.5}
+          colors={colors}
+          styles={styles}
+        />
+        <AdvancedSignalRow
+          icon={<Sparkles size={16} color={colors.primary} />}
+          label={t.scanResult?.signalIrisVitality || 'Iris vitality'}
+          value={`${Math.round(measured.limbalRingClarity * 100)}%`}
+          fillRatio={measured.limbalRingClarity}
+          colors={colors}
+          styles={styles}
+        />
+        <AdvancedSignalRow
+          icon={<Activity size={16} color={colors.primary} />}
+          label={t.scanResult?.signalVesselPattern || 'Vessel pattern'}
+          value={`${Math.round(measured.vesselDensity * 100)}%`}
+          fillRatio={measured.vesselDensity}
+          colors={colors}
+          styles={styles}
+        />
+      </View>
+    </View>
+  );
+}
+
 function ScanResultScreenInner() {
   const { latestScan, updateLastPeriodDate, currentPhase, todayCheckIn, t } = useApp();
   const { colors } = useTheme();
@@ -170,6 +310,16 @@ function ScanResultScreenInner() {
             <CheckCircle size={64} color={colors.success} style={styles.successIcon} />
             <Text style={styles.resultTitle}>{t.scanResult?.title || 'Your Scan Results'}</Text>
             <Text style={styles.resultSubtitle}>{t.scanResult?.subtitle || "Here's your wellness snapshot"}</Text>
+            {latestScan.measuredOpticalSignals && (
+              <ScanQualityBadge
+                framesAnalyzed={latestScan.measuredOpticalSignals.burstFramesAnalyzed}
+                frameStability={latestScan.measuredOpticalSignals.frameStability}
+                burstDurationMs={latestScan.measuredOpticalSignals.burstDurationMs}
+                colors={colors}
+                styles={styles}
+                t={t}
+              />
+            )}
           </Animated.View>
 
           <Animated.View style={[styles.scoresGrid, { opacity: fadeAnim }]}>
@@ -189,6 +339,17 @@ function ScanResultScreenInner() {
               );
             })}
           </Animated.View>
+
+          {latestScan.measuredOpticalSignals && (
+            <Animated.View style={{ opacity: fadeAnim }}>
+              <AdvancedSignalsCard
+                measured={latestScan.measuredOpticalSignals}
+                colors={colors}
+                styles={styles}
+                t={t}
+              />
+            </Animated.View>
+          )}
 
           <Animated.View style={[styles.disclaimerContainer, { opacity: fadeAnim }]}>
             <Text style={styles.disclaimer}>
@@ -352,6 +513,99 @@ function createScanResultStyles(colors: typeof Colors.light) {
       color: colors.textSecondary,
       textAlign: "center" as const,
       lineHeight: 16,
+    },
+    // ─── v1.1 Scan quality badge (under the result header) ─────────────
+    qualityBadge: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 6,
+      marginTop: 12,
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      backgroundColor: colors.primaryLight ?? colors.surface,
+      borderRadius: 999,
+      alignSelf: 'center' as const,
+    },
+    qualityBadgeLabel: {
+      fontSize: 12,
+      fontWeight: '600' as const,
+    },
+    qualityBadgeMeta: {
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
+    // ─── v1.1 Advanced optical signals card ────────────────────────────
+    advancedCard: {
+      backgroundColor: colors.card,
+      borderRadius: 20,
+      padding: 18,
+      marginBottom: 20,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    advancedHeader: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 8,
+      marginBottom: 4,
+    },
+    advancedTitle: {
+      fontSize: 16,
+      fontWeight: '700' as const,
+      color: colors.text,
+    },
+    advancedSubtitle: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginBottom: 14,
+    },
+    signalsList: {
+      gap: 10,
+    },
+    signalRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+      gap: 10,
+    },
+    signalRowLeft: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 8,
+      flex: 0.9,
+    },
+    signalLabel: {
+      fontSize: 13,
+      color: colors.text,
+      fontWeight: '500' as const,
+    },
+    signalRowRight: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 8,
+      flex: 1.1,
+      justifyContent: 'flex-end' as const,
+    },
+    signalBarTrack: {
+      flex: 1,
+      height: 6,
+      backgroundColor: colors.surface,
+      borderRadius: 999,
+      overflow: 'hidden' as const,
+    },
+    signalBarFill: {
+      height: '100%' as const,
+      borderRadius: 999,
+    },
+    signalValue: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      fontVariant: ['tabular-nums'] as const,
+      minWidth: 56,
+      textAlign: 'right' as const,
     },
     disclaimerContainer: {
       backgroundColor: colors.surface,
