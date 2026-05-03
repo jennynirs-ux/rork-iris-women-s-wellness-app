@@ -22,8 +22,7 @@
         "NSPhotoLibraryUsageDescription": "IRIS may ask to access your photo library only if you choose to attach an image to your wellness journal. Photos stay on your device unless you share them.",
         "NSPhotoLibraryAddUsageDescription": "IRIS may save wellness charts or journal images you create to your photo library when you choose to export them.",
         "NSLocationWhenInUseUsageDescription": "IRIS does not actively use your location. This permission is included only because a bundled library may reference location APIs.",
-        "NSHealthShareUsageDescription": "IRIS reads data from Apple Health (such as sleep, menstrual flow, heart rate, and activity) to personalize your wellness insights. You choose which data types to share, and your data stays on your device.",
-        "NSHealthUpdateUsageDescription": "IRIS can write cycle and wellness data (such as menstrual flow and symptoms you log) back to Apple Health so your records stay in sync. You choose which data types to share, and your data stays on your device.",
+        "NSHealthShareUsageDescription": "IRIS reads data from Apple Health (sleep, heart rate, heart rate variability, steps, and wrist temperature) to personalize your wellness insights and improve cycle phase predictions. You choose which data types to share, and your data stays on your device.",
         "NSUserTrackingUsageDescription": "IRIS does not track you across other apps or websites.",
         "ITSAppUsesNonExemptEncryption": false
       },

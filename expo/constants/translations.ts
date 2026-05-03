@@ -2200,7 +2200,7 @@ const en: Translations = {
     prioritizeSleep: 'Tonight: 8+ hours sleep, dark room, wind down 30 min early',
     sleepQuality: 'Prioritize sleep quality - consistent bedtime, cool dark room',
     soothingSelfCare: 'Soothing Self-Care',
-    heatTherapy: 'Heat therapy, gentle back stretches, Epsom bath',
+    heatTherapy: 'Warm compress, gentle back stretches, Epsom bath',
     warmBathLavender: 'Warm bath with lavender, heating pad, rest',
     recoverySupport: 'Recovery Support',
     extraWaterElectrolytes: 'Extra water + electrolytes, B vitamins, light movement only, prioritize rest',

@@ -166,7 +166,7 @@ export const CONDITION_PROFILES: Record<ConditionProfile, ConditionConfig> = {
     ],
     coachingAdjustments: [
       'Emphasize iron-rich food recommendations during and after menstruation',
-      'Suggest tracking clot size for medical reporting',
+      'Suggest tracking flow patterns to share with a healthcare provider',
       'Recommend gentle core exercises, avoid heavy abdominal strain',
       'Monitor energy levels closely due to potential anemia',
     ],

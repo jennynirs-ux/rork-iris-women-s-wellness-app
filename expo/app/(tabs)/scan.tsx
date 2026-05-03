@@ -19,8 +19,13 @@ import { useApp } from "@/contexts/AppContext";
 import { ScanResult } from "@/types";
 import { router } from "expo-router";
 import { incrementScanCount, shouldPromptReview, showReviewPrompt } from "@/lib/reviewPrompt";
-import { analyzeEyeImage, computeWellnessScores, cropEyeRegion, cropUnderEyeRegion, validateEyeImage, detectFacePresence } from "@/lib/eyeAnalysis";
-import type { ImageValidationResult } from "@/lib/eyeAnalysis";
+import { computeWellnessScores, detectFacePresence } from "@/lib/eyeAnalysis";
+import {
+  captureAndAnalyzeBurst,
+  type BurstAnalysisResult,
+  type BurstCrossFrameSignals,
+} from "@/lib/burstCapture";
+import type { AdvancedSignals } from "@/lib/advancedAnalysis";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import logger from "@/lib/logger";
 
@@ -275,7 +280,7 @@ function ScanScreenInner() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setStage('capturing');
 
-    logger.log('[Scan] Capturing photo...');
+    logger.log('[Scan] Starting burst capture (v1.1 pipeline)...');
     try {
       if (!cameraRef.current) {
         logger.log('[Scan] No camera ref');
@@ -283,41 +288,8 @@ function ScanScreenInner() {
         return;
       }
 
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        base64: true,
-        exif: false,
-      });
-
-      if (!photo || !photo.base64 || !photo.uri) {
-        logger.log('[Scan] Photo capture returned no data');
-        handleCaptureFailed();
-        return;
-      }
-
-      logger.log('[Scan] Photo captured:', { width: photo.width, height: photo.height, base64Length: photo.base64.length });
-
-      if (!isMountedRef.current) return;
-
-      const imageWidth = photo.width ?? 640;
-      const imageHeight = photo.height ?? 480;
-
-      const validation: ImageValidationResult = await validateEyeImage(photo.base64, imageWidth, imageHeight);
-      logger.log('[Scan] Image validation result:', validation);
-
-      if (!validation.isValid) {
-        logger.log('[Scan] Image rejected:', validation.reason);
-        if (!isMountedRef.current) return;
-        fadeAnimation.stopAnimation();
-        fadeAnimation.setValue(1);
-        setValidationReason(validation.reason);
-        setStage('invalid_image');
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        return;
-      }
-
-      setStage('analyzing');
-
+      // Start the analyzing pulse animation now — it stays on through the
+      // ~2s burst plus the analysis phase so the UI keeps moving.
       Animated.loop(
         Animated.sequence([
           Animated.timing(fadeAnimation, { toValue: 0.4, duration: 800, useNativeDriver: true }),
@@ -325,59 +297,65 @@ function ScanScreenInner() {
         ])
       ).start();
 
-      let analysisBase64 = photo.base64;
-
+      // v1.1: capture an 8-frame burst over ~2s and run cross-frame analysis
+      // (real blink rate, tear film stability, frame stability) in addition to
+      // the existing per-frame metrics. Results are aggregated via median for
+      // noise resilience.
+      const ANALYSIS_TIMEOUT_MS = 20000;
+      let burstResult: BurstAnalysisResult | null = null;
       try {
-        const ANALYSIS_TIMEOUT_MS = 20000;
-        const analysisPromise = (async () => {
-          let underEyeBase64: string | undefined;
-          if (Platform.OS !== 'web') {
-            const croppedBase64 = await cropEyeRegion(photo.uri, imageWidth, imageHeight);
-            if (croppedBase64) {
-              analysisBase64 = croppedBase64;
-              logger.log('[Scan] Using cropped eye region for analysis');
-            }
-            const underEyeCropped = await cropUnderEyeRegion(photo.uri, imageWidth, imageHeight);
-            if (underEyeCropped) {
-              underEyeBase64 = underEyeCropped;
-              logger.log('[Scan] Using cropped under-eye region for analysis');
-            }
-          }
-
-          const eyeAnalysis = await analyzeEyeImage(analysisBase64, imageWidth, imageHeight, underEyeBase64);
-          logger.log('[Scan] Eye analysis complete:', eyeAnalysis);
-
-          analysisBase64 = '';
-
-          if (!eyeAnalysis) {
-            logger.log('[Scan] Eye analysis returned null — image not analyzable');
-            if (isMountedRef.current) handleCaptureFailed();
-            return;
-          }
-
-          const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
-          const checkInContext = todayCheckIn ? {
-            energy: todayCheckIn.energy,
-            sleep: todayCheckIn.sleep,
-            stressLevel: todayCheckIn.stressLevel,
-          } : null;
-
-          const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
-
-          if (!isMountedRef.current) return;
-          buildAndSaveScanResult(wellnessScores, eyeAnalysis);
-        })();
-
+        const burstPromise = captureAndAnalyzeBurst(cameraRef.current);
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Analysis timed out')), ANALYSIS_TIMEOUT_MS)
+          setTimeout(() => reject(new Error('Burst analysis timed out')), ANALYSIS_TIMEOUT_MS)
         );
-
-        await Promise.race([analysisPromise, timeoutPromise]);
+        burstResult = await Promise.race([burstPromise, timeoutPromise]);
       } catch (analysisError) {
-        logger.error('[Scan] Analysis pipeline error:', analysisError);
+        logger.error('[Scan] Burst pipeline error:', analysisError);
         if (isMountedRef.current) handleCaptureFailed();
         return;
       }
+
+      if (!isMountedRef.current) return;
+
+      // No frames passed validation — surface the same UX as the old single-shot
+      // "invalid image" path. Reason is generic because individual frame reasons
+      // are folded inside analyzeBurst().
+      if (!burstResult || burstResult.crossFrame.framesAnalyzed === 0) {
+        logger.log('[Scan] Burst yielded no analyzable frames');
+        fadeAnimation.stopAnimation();
+        fadeAnimation.setValue(1);
+        setValidationReason('no_face');
+        setStage('invalid_image');
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        return;
+      }
+
+      // Switch from "capturing" UI cue to the analyzing tint now that the
+      // bulk of work is done (burst already analyzed each frame internally).
+      setStage('analyzing');
+
+      const eyeAnalysis = burstResult.aggregated;
+      const advancedSignals = burstResult.advanced;
+      const crossFrame = burstResult.crossFrame;
+
+      logger.log('[Scan] Burst analysis complete:', {
+        framesAnalyzed: crossFrame.framesAnalyzed,
+        burstDurationMs: crossFrame.burstDurationMs,
+        realBlinkRate: crossFrame.realBlinkRate.toFixed(3),
+        tearFilmStability: crossFrame.tearFilmStability.toFixed(3),
+      });
+
+      const cyclePhaseFactor = getCyclePhaseFactor(currentPhase);
+      const checkInContext = todayCheckIn ? {
+        energy: todayCheckIn.energy,
+        sleep: todayCheckIn.sleep,
+        stressLevel: todayCheckIn.stressLevel,
+      } : null;
+
+      const wellnessScores = computeWellnessScores(eyeAnalysis, checkInContext, cyclePhaseFactor);
+
+      if (!isMountedRef.current) return;
+      buildAndSaveScanResult(wellnessScores, eyeAnalysis, advancedSignals, crossFrame);
 
     } catch (error) {
       // "Camera unmounted during taking photo process" is a benign race
@@ -424,6 +402,8 @@ function ScanScreenInner() {
   const buildAndSaveScanResult = (
     scores: { energyScore: number; fatigueLevel: number; hydrationLevel: number; inflammation: number; recoveryScore: number; stressScore: number },
     rawEyeAnalysis: { brightness: number; redness: number; clarity: number; pupilDarkRatio: number; symmetry: number; scleraYellowness: number; underEyeDarkness: number; eyeOpenness: number; tearFilmQuality: number },
+    advancedSignals?: AdvancedSignals,
+    crossFrame?: BurstCrossFrameSignals,
   ) => {
     const clamp = (val: number, min: number = 0, max: number = 10) => {
       const v = Number.isFinite(val) ? val : 5;
@@ -470,19 +450,48 @@ function ScanScreenInner() {
       recommendations: generateRecommendations(stressScore, energyScore, recoveryScore, hydrationLevel, inflammation),
       rawOpticalSignals: {
         pupilDiameter: Math.round(eyeAnalysis.pupilDarkRatio * 100) / 100,
+        // v1.1: pupilContractionSpeed/DilationSpeed/Latency/RecoveryTime remain
+        // synthesized estimates — measuring them properly requires controlled-flash
+        // pupillometry (planned for v2). The values below are deterministic
+        // functions of the wellness scores and exist for backward compat with
+        // the phase-predictor baseline tracking.
         pupilContractionSpeed: 220 + (stressScore - 5) * 15,
         pupilDilationSpeed: 200 + (energyScore - 5) * 10,
         pupilLatency: 250 - (energyScore - 5) * 10 + fatigueLevel * 5,
         pupilRecoveryTime: 1200 + fatigueLevel * 30 - recoveryScore * 20,
         pupilSymmetry: Math.min(1, Math.max(0.8, eyeAnalysis.symmetry)),
-        blinkFrequency: Math.round(bodyBalance * 100) / 100,
+        // v1.1: blinkFrequency now reflects REAL measured rate (blinks/sec) when
+        // burst data is available. Falls back to the body-balance estimate if not.
+        blinkFrequency: crossFrame
+          ? Math.round(crossFrame.realBlinkRate * 100) / 100
+          : Math.round(bodyBalance * 100) / 100,
         blinkDuration: 110 + fatigueLevel * 3,
         microSaccadeFrequency: 1.5 + (stressScore - 5) * 0.15,
         gazeStability: Math.min(1, Math.max(0.5, focusLevel)),
         scleraRedness: Math.round(eyeAnalysis.redness * 6 * 100) / 100,
         scleraBrightness: Math.round(eyeAnalysis.brightness * 255),
-        tearFilmReflectivity: Math.min(1, Math.max(0.3, eyeAnalysis.tearFilmQuality * 0.6 + eyeAnalysis.brightness * 0.4)),
+        // v1.1: tearFilmReflectivity now blends REAL stability with the legacy
+        // single-frame estimate when burst data is available.
+        tearFilmReflectivity: crossFrame
+          ? Math.min(1, Math.max(0.3,
+              crossFrame.tearFilmStability * 0.6 + eyeAnalysis.tearFilmQuality * 0.4
+            ))
+          : Math.min(1, Math.max(0.3, eyeAnalysis.tearFilmQuality * 0.6 + eyeAnalysis.brightness * 0.4)),
       },
+      // v1.1: measured optical signals from burst capture + advanced analysis.
+      // Absent on v1.0 scans persisted in AsyncStorage.
+      ...(advancedSignals && crossFrame ? {
+        measuredOpticalSignals: {
+          pupilToIrisRatio: advancedSignals.pupilToIrisRatio,
+          limbalRingClarity: advancedSignals.limbalRingClarity,
+          vesselDensity: advancedSignals.vesselDensity,
+          realBlinkRate: crossFrame.realBlinkRate,
+          tearFilmStability: crossFrame.tearFilmStability,
+          frameStability: crossFrame.frameStability,
+          burstFramesAnalyzed: crossFrame.framesAnalyzed,
+          burstDurationMs: crossFrame.burstDurationMs,
+        },
+      } : {}),
       physiologicalStates: {
         stressLevel: stressScore > 7 ? "high" : stressScore > 4 ? "medium" : "low",
         sympatheticActivation: Math.round((stressScore / 10) * 100) / 100,

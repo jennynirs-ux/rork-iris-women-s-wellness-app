@@ -47,21 +47,21 @@ export async function requestHealthKitPermissions(): Promise<boolean> {
     return false;
   }
 
+  // Only request permissions for data we actually use:
+  // - HRV + AppleSleepingWristTemperature: feed phase predictor
+  // - SleepAnalysis, HeartRate, StepCount, BodyTemperature: surfaced on Insights tab
+  // Permissions previously requested but unused (MenstrualFlow, ActiveEnergyBurned,
+  // OxygenSaturation, RespiratoryRate, MindfulSession, AppleStandTime) were removed
+  // to comply with Apple Guideline 5.1.1 (request only what the app actually needs).
   const permissions = {
     permissions: {
       read: [
         AppleHealthKit.Constants?.Permissions?.SleepAnalysis,
-        AppleHealthKit.Constants?.Permissions?.MenstrualFlow,
         AppleHealthKit.Constants?.Permissions?.HeartRate,
         AppleHealthKit.Constants?.Permissions?.StepCount,
-        AppleHealthKit.Constants?.Permissions?.ActiveEnergyBurned,
         AppleHealthKit.Constants?.Permissions?.HeartRateVariability,
         AppleHealthKit.Constants?.Permissions?.BodyTemperature,
-        AppleHealthKit.Constants?.Permissions?.OxygenSaturation,
-        AppleHealthKit.Constants?.Permissions?.RespiratoryRate,
         AppleHealthKit.Constants?.Permissions?.AppleSleepingWristTemperature,
-        AppleHealthKit.Constants?.Permissions?.MindfulSession,
-        AppleHealthKit.Constants?.Permissions?.AppleStandTime,
       ].filter(Boolean),
     },
   };

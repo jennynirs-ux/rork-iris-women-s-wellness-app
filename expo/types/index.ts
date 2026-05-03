@@ -109,6 +109,35 @@ export interface RawOpticalSignals {
   tearFilmReflectivity: number;
 }
 
+/**
+ * v1.1 measured optical signals.
+ *
+ * Unlike `RawOpticalSignals`, every field here is computed from actual pixel
+ * data (or cross-frame analysis from the burst) rather than synthesized from
+ * other wellness scores. Set by the burst capture pipeline only; absent on
+ * legacy single-frame scans.
+ *
+ * Fields:
+ *  - pupilToIrisRatio: pupil width / total eye width, ~[0.2, 0.7]
+ *  - limbalRingClarity: sharpness of iris/sclera boundary, [0, 1]
+ *  - vesselDensity: red branching pattern density in sclera, [0, 1]
+ *  - realBlinkRate: blinks per second from cross-frame openness transitions
+ *  - tearFilmStability: 1 − std-dev of tear film quality across burst, [0, 1]
+ *  - frameStability: low brightness/pupil variance across frames = steady scan, [0, 1]
+ *  - burstFramesAnalyzed: count of frames that passed validation; 0 = single-frame fallback
+ *  - burstDurationMs: span of the burst (first to last capture timestamp)
+ */
+export interface MeasuredOpticalSignals {
+  pupilToIrisRatio: number;
+  limbalRingClarity: number;
+  vesselDensity: number;
+  realBlinkRate: number;
+  tearFilmStability: number;
+  frameStability: number;
+  burstFramesAnalyzed: number;
+  burstDurationMs: number;
+}
+
 export interface PhysiologicalStates {
   stressLevel: "low" | "medium" | "high";
   sympatheticActivation: number;
@@ -151,6 +180,11 @@ export interface ScanResult {
   phaseEstimate?: PhaseEstimate;
   recommendations: string[];
   rawOpticalSignals: RawOpticalSignals;
+  /**
+   * v1.1+ only: real measured signals from burst capture + advanced analysis.
+   * Optional for backward compat with v1.0 scans persisted in AsyncStorage.
+   */
+  measuredOpticalSignals?: MeasuredOpticalSignals;
   physiologicalStates: PhysiologicalStates;
   skinBeautySignals: SkinBeautySignals;
   emotionalMentalState: EmotionalMentalState;
