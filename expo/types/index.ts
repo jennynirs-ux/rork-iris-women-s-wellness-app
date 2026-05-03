@@ -93,19 +93,50 @@ export interface DailyCheckIn {
   tookHRT?: boolean;
 }
 
+/**
+ * Single-frame raw signals stored on every ScanResult.
+ *
+ * Fields fall into two groups:
+ *
+ *   Real measurements (computed from pixel data):
+ *      - pupilDiameter, scleraRedness, scleraBrightness
+ *      - tearFilmReflectivity, pupilSymmetry
+ *
+ *   Synthesized estimates (deterministic functions of the wellness scores;
+ *      kept for backward compat with v1.0 phase-predictor baselines and analytics
+ *      schema). When `ScanResult.measuredOpticalSignals` is present, prefer those
+ *      real cross-frame measurements (see MeasuredOpticalSignals). The fields
+ *      below are scheduled for removal in v1.3 once historical baselines have
+ *      aged out — see BACKLOG B-015 / B-016.
+ */
 export interface RawOpticalSignals {
   pupilDiameter: number;
+  /** @deprecated Synthesized from stress score; prefer measuredOpticalSignals.pupilToIrisRatio. */
   pupilContractionSpeed: number;
+  /** @deprecated Synthesized from energy score; no real measurement available. */
   pupilDilationSpeed: number;
+  /** @deprecated Synthesized from energy + fatigue scores. */
   pupilLatency: number;
+  /** @deprecated Synthesized from fatigue + recovery scores. */
   pupilRecoveryTime: number;
   pupilSymmetry: number;
+  /**
+   * v1.1+: now reflects REAL blinks/sec from cross-frame analysis when
+   * burst-pipeline data is present; synthesized fallback otherwise.
+   */
   blinkFrequency: number;
+  /** @deprecated Synthesized from fatigue score; real measurement requires high-fps video. */
   blinkDuration: number;
+  /** @deprecated Synthesized from stress score; real measurement requires 60+ fps tracking. */
   microSaccadeFrequency: number;
+  /** @deprecated Synthesized from energy + fatigue + recovery; prefer measuredOpticalSignals.frameStability. */
   gazeStability: number;
   scleraRedness: number;
   scleraBrightness: number;
+  /**
+   * v1.1+: now blends REAL cross-frame tear film stability with the
+   * single-frame estimate when burst data is present.
+   */
   tearFilmReflectivity: number;
 }
 
