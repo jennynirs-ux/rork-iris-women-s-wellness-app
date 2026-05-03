@@ -577,7 +577,12 @@ export default function OnboardingScreen() {
         <Text style={styles.primaryButtonText}>{t.onboarding.startScan || "Start Scan"}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleComplete} disabled={!canComplete}>
+      <TouchableOpacity
+        onPress={handleComplete}
+        hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
+        style={styles.skipScanLinkButton}
+        activeOpacity={0.7}
+      >
         <Text style={styles.skipScanLink}>{t.onboarding.skipScan || "Skip for now"}</Text>
       </TouchableOpacity>
     </View>
@@ -2444,6 +2449,11 @@ function createOnboardingStyles(colors: typeof Colors.light) { return StyleSheet
     fontSize: 16,
     fontWeight: "600" as const,
     color: colors.card,
+  },
+  skipScanLinkButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignSelf: "center" as const,
   },
   skipScanLink: {
     fontSize: 15,
