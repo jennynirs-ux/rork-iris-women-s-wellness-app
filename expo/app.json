@@ -23,6 +23,7 @@
         "NSPhotoLibraryAddUsageDescription": "IRIS may save wellness charts or journal images you create to your photo library when you choose to export them.",
         "NSLocationWhenInUseUsageDescription": "IRIS does not actively use your location. This permission is included only because a bundled library may reference location APIs.",
         "NSHealthShareUsageDescription": "IRIS reads data from Apple Health (sleep, heart rate, heart rate variability, steps, and wrist temperature) to personalize your wellness insights and improve cycle phase predictions. You choose which data types to share, and your data stays on your device.",
+        "NSHealthUpdateUsageDescription": "IRIS can write wellness data you log in the app (such as cycle, symptoms, or mindfulness sessions) to Apple Health so it stays in sync with your other health apps. You choose which data types to share, and your data stays on your device.",
         "NSUserTrackingUsageDescription": "IRIS does not track you across other apps or websites.",
         "ITSAppUsesNonExemptEncryption": false
       },
